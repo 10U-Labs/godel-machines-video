@@ -2,7 +2,7 @@
 
 - [Never quote the user verbatim](never-quote-the-user-verbatim.md) — restate what the user says in fresh words in memories, commits, comments, and summaries
 - [Video production decisions](video-production-decisions.md) — original look with a Kurzgesagt feel, voice Kokoro af_heart (no credit owed), synthesized music, no length limit, general-public audience
-- [No analogies in script](no-analogies-in-script.md) — general public, but explain real mechanisms plainly; no analogies
+- [No analogies in script](no-analogies-in-script.md) — narration explains real mechanisms with no analogies; pictures may use visual metaphor
 - [Render in GitHub workflows](render-in-github-workflows.md) — no local renders; push and let Actions render, fetch artifacts with gh
 - [Oxford commas](oxford-commas.md) — asked for in the repo's About; apply to other repo prose too
 - [Long-running commands in the background](long-running-commands-in-the-background.md) — anything past about a minute is a background Bash call with a time limit; no foreground wait after it
@@ -13,3 +13,4 @@
 - [Plain everyday words](plain-everyday-words.md) — only words a general viewer knows; restate hard source words, do not quote them
 - [State facts plainly](state-facts-plainly.md) — say concretely what happened; no words that hype an event, no phrases that gesture at it
 - [Script holds only narration](script-holds-only-narration.md) — no source notes in the script; do not add material the user did not ask for
+- [Show people, not panels](show-people-not-panels.md) — illustrated scenes with people and places; no slide-deck panels or captions that repeat the voice
