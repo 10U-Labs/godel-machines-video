@@ -51,7 +51,7 @@ jobs:
         with:
           lfs: "true"
       - name: Install libraries Blender needs
-        run: sudo apt-get update && sudo apt-get install --yes libegl1 libgl1 libice6 libsm6 libxfixes3 libxi6 libxkbcommon0 libxrender1 libxxf86vm1
+        run: sudo apt-get update && sudo apt-get install --yes libegl1 libegl-mesa0 libgl1 libgl1-mesa-dri libice6 libsm6 libxfixes3 libxi6 libxkbcommon0 libxrender1 libxxf86vm1
       - name: Restore Blender
         uses: actions/cache@v6
         with:
@@ -127,7 +127,7 @@ jobs:
         run: python src/voice/make_voice.py script/script.md
       - id: plan
         name: Plan render chunks
-        run: echo "chunks=$(python src/blender/plan.py out/voice/timings.json --chunk 60)" >> "$GITHUB_OUTPUT"
+        run: echo "chunks=$(python src/blender/plan.py out/voice/timings.json --chunk 90)" >> "$GITHUB_OUTPUT"
       - name: Upload narration
         uses: actions/upload-artifact@v7
         with:

@@ -567,7 +567,7 @@ def motes(n=30, seed=5, colour=MINT):
             key(ob, 'location', f, ((x + 0.2 * math.sin(t * 0.5 + ph)) * s, (y + speed * t) * s, z))
 
 
-def camera(path, focus_z=1.0, fstop=0.12, step=2):
+def camera(path, focus_z=1.0, fstop=0.3, step=2):
     """A camera that looks straight down the z axis.
 
     path(t) returns (x, y, height) at time t in seconds; focus stays on depth focus_z.
@@ -578,17 +578,15 @@ def camera(path, focus_z=1.0, fstop=0.12, step=2):
     data.lens = 36 * H0 / 16
     data.dof.use_dof = True
     data.dof.aperture_fstop = fstop
+    data.dof.focus_object = empty('focus', loc=(0, 0, focus_z))   # depth is all that counts
     cam = link(bpy.data.objects.new('camera', data))
     bpy.context.scene.camera = cam
     for f in every(step):
-        x, y, z = path(sec(f))
-        key(cam, 'location', f, (x, y, z))
-        data.dof.focus_distance = z - focus_z
-        data.dof.keyframe_insert('focus_distance', frame=f)
+        key(cam, 'location', f, path(sec(f)))
     return cam
 
 
-def configure(scene, out, start, end, samples=16, engine='cycles'):
+def configure(scene, out, start, end, samples=16, engine='eevee'):
     if engine == 'eevee':
         names = [e.identifier for e in bpy.types.RenderSettings.bl_rna.properties['engine'].enum_items]
         scene.render.engine = 'BLENDER_EEVEE_NEXT' if 'BLENDER_EEVEE_NEXT' in names else 'BLENDER_EEVEE'
