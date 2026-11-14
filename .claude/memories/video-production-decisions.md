@@ -7,7 +7,7 @@ metadata:
 
 The user settled the four items that BRIEF.md lists as still open (2026-11-14):
 
-- Narration voice: Kokoro `am_michael` (American male, `en-us`) was the first choice, but after hearing it in the first rendered scene (2026-11-14) the user found it off and asked what else is available. The voice is open again until the user picks one by ear; do not treat `am_michael` as settled.
+- Narration voice: Kokoro `af_heart` (American woman, `en-us`, speed 0.95), set in `src/voice/make_voice.py`. The user chose it by ear on 2026-11-14 from seventeen free samples reading the film's opening. Before that, `am_michael` was judged off after the first render, and a Pocket TTS voice (`alba`) was picked and then dropped once the user learned it needs credits. Kokoro is Apache 2.0, so the film owes no credit for the voice.
 - Music: a synthesized bed with basic sound effects that Claude generates; no licensed track.
 - Length: no limit. The content decides how long the video runs.
 - Audience: the general public, with the constraint in [No analogies in script](no-analogies-in-script.md).
