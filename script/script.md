@@ -81,7 +81,7 @@ He called that first machine the last invention humans would ever need to make. 
 Good did not say how to build such a machine. And there is a hard problem inside the idea.
 
 > Source: I. J. Good, "Speculations Concerning the First Ultraintelligent Machine", Advances in Computers vol. 6, pp. 31-88 (offprint dated 1965), section 2, p. 33: "there would then unquestionably be an 'intelligence explosion,' and the intelligence of man would be left far behind. Thus the first ultraintelligent machine is the last invention that man need ever make, provided that the machine is docile enough to tell us how to keep it under control." The narration restates this in everyday words and does not quote it; "obedient" stands for Good's "docile". The phrase "recursive self-improvement" is later; the earliest use found is from 2000, so the narration does not attribute it to Good.
-> Good at Bletchley Park in Turing's codebreaking team: to pin to a primary or standard reference before final (secondary sources agree; found so far in Quote Investigator's entry on the quotation and in press profiles).
+> Good as a wartime codebreaker beside Turing: he started in Hut 8 at Bletchley Park, the naval Enigma section, on 27 May 1941 and worked closely with Alan Turing (Guardian obituary, 2009; Oxford Dictionary of National Biography; Virginia Tech's memorial notice, 2009).
 
 ## 03-hard-problem | The hard problem
 
@@ -136,7 +136,7 @@ The most careful answer to the hard problem existed only on paper. For twenty ye
 
 ## 05-coding-agents | Programs that write programs
 
-But in those twenty years, something else changed. Programs learned to write.
+But in those twenty years, something else changed. Programs learned to write programs.
 
 A language model is a program that has been trained on a huge amount of text. Give it some text, and it produces the text that is likely to come next. It is the kind of program behind today's chatbots. And because much of the text it learned from is program code, it can write code.
 
@@ -152,7 +152,7 @@ Now notice two things. The code around the model is itself a program. And a codi
 
 So a coding agent can be handed its own code, and told: improve this.
 
-> Source: SWE-bench (Jimenez et al., 2024), not named in the narration; it can be named on screen. To verify before final: the one-sentence description of its tasks.
+> Source: SWE-bench (Jimenez et al., arXiv 2310.06770, ICLR 2024), not named in the narration; it can be named on screen. Each task is built from a real GitHub issue and the pull request that fixed it, in one of 12 Python projects; a task counts as solved when the project's tests that the fix should make pass do pass, and the tests that passed before still pass.
 
 ## 06-darwin-godel-machine | Giving up on proof
 
@@ -256,7 +256,7 @@ They could do that because every change is kept in the archive. And every agent 
 
 ## 09-where-this-stands | Where this stands
 
-Three machines, and three answers to one question. How does a program that changes itself know that it is getting better?
+So where does that leave the question we started with? How does a program that changes itself know that it is getting better? Three machines gave three answers.
 
 The Gödel Machine: prove it. But it has never been built.
 
