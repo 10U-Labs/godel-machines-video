@@ -23,36 +23,38 @@
       const tBetter = T.word(1, 'and make itself better');
       const tAgain = T.word(1, 'And then to do it again');
       const tExp = T.L(2);
-      const tSaid = T.word(2, 'Sometimes the program said');
+      const tSaid = T.word(2, 'Sometimes it said');
       const tReport = T.word(2, 'It would report');
       const tPassed = T.word(2, 'and that every test');
       const tNothing = T.word(2, 'when it had tested nothing');
-      const tCheck = T.L(3);
-      const tMarkers = T.word(3, 'special markers');
-      const tTell = T.word(3, 'Using those markers');
-      const tInstr = T.word(3, 'And the program was given');
-      const tDoNot = T.word(3, 'do not change');
-      const tLet = T.L(4);
-      const tVersions = T.word(4, 'Version after version');
-      const tRounds = T.word(4, 'for a hundred and fifty');
-      const tOne = T.L(5);
-      const tPerfect = T.word(5, 'a perfect score');
-      const tBut = T.L(6);
-      const tRemoved = T.word(6, 'It had removed');
-      const tNoMarkers = T.word(6, 'With no markers');
-      const tFind = T.word(6, 'the check could find');
-      const tTrue = T.L(7);
-      const tChapter = T.word(7, 'And it is one chapter');
-      const tSixty = T.word(7, 'sixty years ago');
-      const tIdea = T.word(7, 'a machine that makes');
-      const tQuestion = T.L(8);
-      const tWhen = T.word(8, 'When a machine changes');
-      const tHow = T.word(8, 'how does anyone know');
-      const tIncluded = T.word(8, 'the machine included');
-      const tThat = T.word(8, 'that the change made');
-      const tTitle = T.E(8) + 0.25;
-      const tSimple = T.L(9);
-      const tStart = T.word(9, 'start with something simple');
+      const tTask = T.L(3);
+      const tRewrite = T.word(3, 'rewrite your own code');
+      const tCheck = T.L(4);
+      const tMarkers = T.word(4, 'special markers');
+      const tTell = T.word(4, 'Using those markers');
+      const tInstr = T.word(4, 'And the program was given');
+      const tDoNot = T.word(4, 'do not change');
+      const tLet = T.L(5);
+      const tVersions = T.word(5, 'Version after version');
+      const tRounds = T.word(5, 'for a hundred and fifty');
+      const tOne = T.L(6);
+      const tPerfect = T.word(6, 'a perfect score');
+      const tBut = T.L(7);
+      const tRemoved = T.word(7, 'It had removed');
+      const tNoMarkers = T.word(7, 'With no markers');
+      const tFind = T.word(7, 'the check could find');
+      const tTrue = T.L(8);
+      const tChapter = T.word(8, 'And it is one part');
+      const tSixty = T.word(8, 'sixty years ago');
+      const tIdea = T.word(8, 'a machine that makes');
+      const tQuestion = T.L(9);
+      const tWhen = T.word(9, 'When a machine changes');
+      const tHow = T.word(9, 'how does anyone know');
+      const tIncluded = T.word(9, 'the machine included');
+      const tThat = T.word(9, 'that the change made');
+      const tTitle = T.E(9) + 0.25;
+      const tSimple = T.L(10);
+      const tStart = T.word(10, 'start with what a program is');
 
       const sfx = [];
       const fx = (t, type, extra = {}) => sfx.push({ t: Math.round(t * 1000) / 1000, type, ...extra });
@@ -67,6 +69,8 @@
       fx(tReport + 0.2, 'tick', { pitch: 1.2 });
       fx(tPassed + 0.2, 'tick', { pitch: 1.3 });
       fx(tNothing + 0.2, 'blip', { pitch: 0.5 });
+      fx(tTask + 0.1, 'pop', { pitch: 0.85 });
+      fx(tRewrite, 'blip', { pitch: 1.1, gain: 0.6 });
       fx(tCheck - 0.3, 'whoosh');
       [0, 1, 2, 3].forEach((i) => fx(tMarkers + i * 0.22, 'tick', { pitch: 1 + i * 0.1 }));
       fx(tTell + 0.3, 'swoosh', { dur: 1.6, gain: 0.5 });
@@ -138,6 +142,13 @@
       label(did, 'tests run:', { x: 1004, y: 786, size: 60, weight: 500 });
       const zero = label(did, '0', { x: 1330, y: 800, size: 130, weight: 700, fill: C.coral });
 
+      // ---- The task: stop the made-up reports ------------------------------
+      const task = svg('g', {}, stage);
+      svg('rect', { x: -400, y: -100, width: 800, height: 200, rx: 34, fill: C.ink700, stroke: C.sky, 'stroke-width': 4 }, task);
+      label(task, 'the task given to the program', { x: 0, y: -48, size: 30, fill: C.mist, anchor: 'middle' });
+      label(task, 'Rewrite your own code so that', { x: 0, y: 8, size: 44, weight: 700, anchor: 'middle' });
+      label(task, 'the made-up reports stop.', { x: 0, y: 64, size: 44, weight: 700, anchor: 'middle' });
+
       // ---- The records, the markers, and the check --------------------------
       // Rows of the program's records. Row 2 is a made-up claim: a hollow bar.
       const REC = { x: 960, y: 200, w: 780, h: 560, top: 132, gap: 84, barX: 1100, flagX: 1660 };
@@ -203,17 +214,17 @@
       const score = meter(result, { w: 620, h: 44 });
       place(score.g, { x: 1040, y: 460 });
       const perfect = label(result, 'a perfect score', { x: 1040, y: 620, size: 92, weight: 700, fill: C.mint });
-      const notFixed = label(result, 'The problem was still there.', { x: 1040, y: 720, size: 50, weight: 600, fill: C.coral });
+      const notFixed = label(result, 'The fault was still there.', { x: 1040, y: 720, size: 50, weight: 600, fill: C.coral });
       const writerNote = label(stage, 'the code that writes the markers', { x: 0, y: 0, size: 34, fill: C.amber, anchor: 'middle' });
 
       const rec2 = records(false);
       const clean = chip(stage, 'the check: nothing wrong', { size: 34, fill: C.mint, color: C.ink900 });
       const still = label(stage, 'still made up', { x: REC.barX + WIDTHS[FAKE] + 30, y: REC.y + REC.top + FAKE * REC.gap + 11, size: 32, weight: 600, fill: C.coral });
 
-      // ---- It really happened ------------------------------------------------
+      // ---- Who reported it ---------------------------------------------------
       const truth = svg('g', {}, stage);
-      label(truth, 'This really happened.', { x: 960, y: 520, size: 130, weight: 700, anchor: 'middle' });
-      const source = label(truth, 'reported in 2025 by the researchers who built the program', { x: 960, y: 610, size: 34, fill: C.mist, anchor: 'middle' });
+      label(truth, 'Reported by the researchers themselves', { x: 960, y: 520, size: 84, weight: 700, anchor: 'middle' });
+      const source = label(truth, 'in the 2025 paper that describes the program', { x: 960, y: 610, size: 34, fill: C.mist, anchor: 'middle' });
 
       const story = svg('g', {}, stage);
       const SX0 = 420;
@@ -298,8 +309,13 @@
         const zeroIn = prog(t, tNothing + 0.3, 0.5, ease.outBack);
         place(zero, { x: 1330 * (1 - zeroIn), y: 800 * (1 - zeroIn), s: Math.max(zeroIn, 0.0001), o: prog(t, tNothing + 0.3, 0.2) });
 
-        // -- the check: markers show where the work was really done
+        // -- the task: rewrite yourself so that the made-up reports stop
         const recOut = 1 - prog(t, tLet - 0.35, 0.35);
+        const taskIn = prog(t, tTask + 0.1, 0.6, ease.outBack);
+        const press = 1 + 0.04 * Math.sin(prog(t, tRewrite, 0.6, ease.linear) * Math.PI);
+        place(task, { x: 520, y: lerp(190, 225, taskIn), s: press, o: prog(t, tTask + 0.1, 0.3) * recOut });
+
+        // -- the check: markers show where the work was really done
         show(rec.g, prog(t, tCheck, 0.4) * recOut);
         rec.rows.forEach((r, i) => {
           const at = i === FAKE ? tTell - 0.3 : tMarkers + (i > FAKE ? i - 1 : i) * 0.22;
@@ -359,7 +375,7 @@
         place(clean.g, { x: REC.x + REC.w / 2, y: 830, s: Math.max(cleanIn, 0.0001), o: prog(t, tFind + 0.9, 0.2) * rec2Out });
         show(still, prog(t, tFind + 1.4, 0.4) * rec2Out);
 
-        // -- it really happened, and it is part of an older story
+        // -- the researchers reported it, and it is part of an older story
         show(truth, prog(t, tTrue, 0.35) * (1 - prog(t, tChapter - 0.2, 0.4)));
         show(source, prog(t, tTrue + 0.7, 0.4));
         const storyOut = 1 - prog(t, tQuestion - 0.35, 0.35);
@@ -380,7 +396,7 @@
         show(ask2, prog(t, tHow, 0.4));
         show(ask3, prog(t, tThat, 0.4));
 
-        // -- the title, then the simple thing the film starts from
+        // -- the title, then what the film starts from: a program
         const titleIn = prog(t, tTitle, 0.8, ease.out);
         place(title, { x: 0, y: lerp(30, 0, titleIn), o: prog(t, tTitle, 0.6) * (1 - prog(t, tStart - 0.5, 0.4)) });
         const firstIn = prog(t, tStart - 0.2, 0.6, ease.outBack);
