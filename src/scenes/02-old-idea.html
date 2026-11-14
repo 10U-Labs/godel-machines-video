@@ -29,7 +29,13 @@
       const tWrote = T.L(3);
       const tExplosion = T.word(3, 'an intelligence explosion');
       const tBehind = T.word(3, 'and human intelligence');
-      const tBut = T.L(5); // line 4, on the last invention, has no picture of its own yet
+      const tLast = T.L(4);
+      const tInvention = T.word(4, 'the last invention');
+      const tNeed = T.word(4, 'humans would ever');
+      const tCond = T.word(4, 'But he attached');
+      const tObey = T.word(4, 'The machine would have');
+      const tTell = T.word(4, 'to tell us');
+      const tBut = T.L(5);
       const tHard = T.word(5, 'And there is a hard problem');
 
       const ACTS = ['mathematics', 'science', 'writing', 'medicine', 'designing machines'];
@@ -57,6 +63,9 @@
       fx(tWrote - 0.4, 'whoosh');
       fx(tExplosion, 'rise', { dur: 1.5, pitch: 0.8 });
       fx(tBehind + 0.2, 'blip', { pitch: 0.7 });
+      fx(tLast - 0.3, 'whoosh');
+      fx(tInvention, 'chime', { pitch: 0.9, dur: 1.4 });
+      fx(tCond, 'blip', { pitch: 0.6 });
       fx(tBut - 0.3, 'whoosh');
       fx(tBut, 'pop', { pitch: 0.8 });
       fx(tHard + 0.15, 'chime', { pitch: 0.6, dur: 1.6 });
@@ -177,9 +186,18 @@
 
       const quote = svg('g', {}, stage);
       const q1 = svg('text', { x: 960, y: 196, 'font-size': 40, 'font-weight': 500, 'text-anchor': 'middle', fill: C.paper }, quote);
-      svg('tspan', { text: '“…there would then unquestionably be an ' }, q1);
-      svg('tspan', { fill: C.amber, 'font-weight': 700, text: '‘intelligence explosion,’' }, q1);
-      const q2 = label(quote, 'and the intelligence of man would be left far behind.”', { x: 960, y: 252, size: 40, weight: 500, anchor: 'middle' });
+      svg('tspan', { text: 'The result would be an ' }, q1);
+      svg('tspan', { fill: C.amber, 'font-weight': 700, text: '“intelligence explosion”' }, q1);
+      const q2 = label(quote, 'and human intelligence would be left far behind.', { x: 960, y: 252, size: 40, weight: 500, anchor: 'middle' });
+
+      // ---- The last invention, and the condition attached to it -------------
+      const last = svg('g', {}, stage);
+      const lastTitle = label(last, 'The last invention', { x: 960, y: 410, size: 96, weight: 700, fill: C.amber, anchor: 'middle' });
+      const lastSub = label(last, 'humans would ever need to make', { x: 960, y: 486, size: 44, weight: 500, anchor: 'middle' });
+      const condRule = svg('line', { y1: 590, y2: 590, stroke: C.coral, 'stroke-width': 4, 'stroke-linecap': 'round' }, last);
+      const condTag = label(last, 'on one condition', { x: 960, y: 650, size: 34, fill: C.coral, anchor: 'middle' });
+      const cond1 = label(last, 'The machine must be obedient enough', { x: 960, y: 738, size: 48, weight: 500, anchor: 'middle' });
+      const cond2 = label(last, 'to tell us how to keep it under control.', { x: 960, y: 802, size: 48, weight: 500, anchor: 'middle' });
 
       // ---- What Good left open ----------------------------------------------
       const IX = 960;
@@ -255,7 +273,7 @@
         show(rowG, 1 - prog(t, tWrote - 0.45, 0.4));
 
         // -- the intelligence explosion, in Good's words
-        const leave = 1 - prog(t, tBut - 0.35, 0.4);
+        const leave = 1 - prog(t, tLast - 0.35, 0.4);
         show(chart, prog(t, tWrote - 0.1, 0.4) * leave);
         show(quote, leave);
         show(q1, prog(t, tWrote + 0.2, 0.5));
@@ -272,6 +290,18 @@
         show(behind, prog(t, tBehind + 0.6, 0.4));
 
         // -- what Good did not say, and the problem inside the idea
+        // -- the last invention, and its condition
+        show(last, 1 - prog(t, tBut - 0.35, 0.4));
+        place(lastTitle, { x: 0, y: lerp(30, 0, prog(t, tInvention - 0.1, 0.6)), o: prog(t, tInvention - 0.1, 0.5) });
+        show(lastSub, prog(t, tNeed, 0.5));
+        const ruleHalf = 220 * prog(t, tCond, 0.6, ease.inOut);
+        condRule.setAttribute('x1', (960 - ruleHalf).toFixed(1));
+        condRule.setAttribute('x2', (960 + ruleHalf).toFixed(1));
+        show(condRule, prog(t, tCond, 0.2));
+        show(condTag, prog(t, tCond + 0.3, 0.4));
+        show(cond1, prog(t, tObey, 0.5));
+        show(cond2, prog(t, tTell, 0.5));
+
         const ideaIn = prog(t, tBut, 0.6, ease.outBack);
         place(idea.g, { x: IX, y: IY + lerp(40, 0, ideaIn), s: ideaIn, o: prog(t, tBut, 0.25) });
         const asking = 1 - prog(t, tHard - 0.1, 0.3);
