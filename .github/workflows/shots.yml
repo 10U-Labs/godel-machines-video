@@ -1,0 +1,95 @@
+---
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
+env:
+  BLENDER: blender-4.5.16-linux-x64
+  CHUNK: "45"
+jobs:
+  frames:
+    needs: yamllint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+      - name: Install libraries Blender needs
+        run: sudo apt-get update && sudo apt-get install --yes libegl1 libgl1 libice6 libsm6 libxfixes3 libxi6 libxkbcommon0 libxrender1 libxxf86vm1
+      - name: Restore Blender
+        uses: actions/cache@v6
+        with:
+          key: ${{ env.BLENDER }}
+          path: tools/${{ env.BLENDER }}
+      - name: Download Blender
+        run: |
+          mkdir -p tools
+          test -d "tools/$BLENDER" && exit 0
+          curl -fsSL "https://download.blender.org/release/Blender4.5/$BLENDER.tar.xz" | tar -xJ -C tools
+      - name: Render frames
+        run: |
+          start=$(( ${{ matrix.chunk }} * CHUNK + 1 ))
+          end=$(( start + CHUNK - 1 ))
+          "tools/$BLENDER/blender" -b --factory-startup -P src/blender/bletchley.py -- \
+            --root . --out out/shot/frames --start "$start" --end "$end"
+      - name: Upload frames
+        uses: actions/upload-artifact@v7
+        with:
+          if-no-files-found: error
+          name: frames-${{ matrix.chunk }}
+          path: out/shot/frames
+          retention-days: 3
+    strategy:
+      fail-fast: true
+      matrix:
+        chunk: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+  shot:
+    needs: frames
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install --yes ffmpeg
+      - name: Download frames
+        uses: actions/download-artifact@v8
+        with:
+          merge-multiple: "true"
+          path: out/shot/frames
+          pattern: frames-*
+      - name: Encode the shot and pick stills
+        run: |
+          cd out/shot
+          ffmpeg -v error -framerate 30 -i frames/frame_%04d.png -c:v libx264 -pix_fmt yuv420p -crf 18 bletchley.mp4
+          mkdir stills
+          for n in 0001 0060 0120 0180 0240 0300 0360 0420; do cp "frames/frame_$n.png" "stills/$n.png"; done
+      - name: Upload shot
+        uses: actions/upload-artifact@v7
+        with:
+          if-no-files-found: error
+          name: shot
+          path: |
+            out/shot/bletchley.mp4
+            out/shot/stills
+  yamllint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+      - name: Lint YAML
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          config_data: >-
+            {extends: default, rules: {
+            empty-lines: {max: 0, max-start: 0, max-end: 1},
+            key-ordering: enable,
+            line-length: disable,
+            new-line-at-end-of-file: enable,
+            truthy: {allowed-values: ["true", "false", "on"]}}}
+          file_or_dir: .github/workflows/shots.yml
+          strict: "true"
+name: shots
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/shots.yml"
+      - "src/blender/**"
+  workflow_dispatch: {}
