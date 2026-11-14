@@ -15,3 +15,4 @@
 - [Script holds only narration](script-holds-only-narration.md) — no source notes in the script; do not add material the user did not ask for
 - [Show people, not panels](show-people-not-panels.md) — illustrated scenes with people and places; no slide-deck panels or captions that repeat the voice
 - [One idea at a time](one-idea-at-a-time.md) — each scene carries one idea; cut true but extra details
+- [Only the four concepts](only-the-four-concepts.md) — RSI, Gödel, DGM, HGM at concept level; no history, mechanism details, or name origins
