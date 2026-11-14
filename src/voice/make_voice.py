@@ -30,7 +30,7 @@ from kokoro_onnx import Kokoro
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
 
-VOICE = "am_michael"
+VOICE = "af_heart"
 LANG = "en-us"
 SPEED = 0.95
 

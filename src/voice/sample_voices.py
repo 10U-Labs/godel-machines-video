@@ -25,11 +25,11 @@ PEAK = 0.7          # every sample is brought to the same peak, for a fair compa
 
 # (voice, language code, description). Kokoro's model and voices are Apache 2.0.
 KOKORO = [
-    ("am_michael", "en-us", "American man; the voice of the first render"),
+    ("am_michael", "en-us", "American man; the voice of the first renders"),
     ("am_fenrir", "en-us", "American man"),
     ("am_puck", "en-us", "American man"),
     ("am_onyx", "en-us", "American man"),
-    ("af_heart", "en-us", "American woman"),
+    ("af_heart", "en-us", "American woman; the voice chosen for the film"),
     ("af_bella", "en-us", "American woman"),
     ("bm_george", "en-gb", "British man"),
     ("bm_fable", "en-gb", "British man"),
