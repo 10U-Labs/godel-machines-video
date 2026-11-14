@@ -14,5 +14,5 @@ Run every command that can take more than about a minute as a background Bash ca
 - Give a command that might not end a time limit as well. macOS has no `timeout`, so use `perl -e 'alarm 60; exec @ARGV' <command>`.
 - Send the output to a file in the scratchpad and read that file once the notification arrives.
 - Never follow a background command with a foreground wait: no `sleep`, no `until` loop, and no rereading its output file until it fills. Any of them blocks the session again.
-- Other work that does not depend on the result may go on meanwhile, except while a workflow run is in progress, when nothing but the wait goes on. Once only the result is left to wait for, end the turn. The exception comes from the sibling versions of this memory; the user did not name it separately, and carrying it over is Claude's reading of the request.
+- Other work that does not depend on the result may go on meanwhile, including while a workflow run is in progress. Once only the result is left to wait for, end the turn. The sibling versions of this memory forbid other work during a run; the user dropped that restriction for this repo on 2026-11-14.
 - A turn made of many short foreground calls also holds the session for its whole length. Split long work at its natural boundaries, such as after a batch of edits.
