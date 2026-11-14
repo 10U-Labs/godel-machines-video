@@ -380,8 +380,8 @@
         show(source, prog(t, tTrue + 0.7, 0.4));
         const storyOut = 1 - prog(t, tQuestion - 0.35, 0.35);
         show(story, prog(t, tChapter + 0.2, 0.4) * storyOut);
-        span.setAttribute('x1', lerp(SX1, SX0, prog(t, tSixty - 0.3, 1.1, ease.inOut)).toFixed(1));
-        show(then, prog(t, tSixty + 0.7, 0.3));
+        span.setAttribute('x1', lerp(SX1, SX0, prog(t, tChapter + 0.3, Math.max(1.1, tSixty + 0.4 - tChapter), ease.inOut)).toFixed(1));
+        show(then, prog(t, Math.max(tChapter + 0.3 + 1.1, tSixty + 0.4) - 0.2, 0.3));
         show(sixty, prog(t, tSixty + 0.2, 0.4));
         const ideaIn = prog(t, tIdea, 0.6, ease.outBack);
         const up = prog(t, tQuestion - 0.3, 0.7, ease.inOut);
