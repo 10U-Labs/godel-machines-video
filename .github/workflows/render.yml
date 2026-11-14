@@ -36,12 +36,16 @@ jobs:
         run: python src/audio/mix.py
       - name: Assemble the film
         run: python src/render/assemble.py
+      - name: Write the captions
+        run: python src/render/captions.py
       - name: Upload film
         uses: actions/upload-artifact@v7
         with:
           if-no-files-found: error
           name: film
-          path: out/film.mp4
+          path: |
+            out/film.mp4
+            out/film.srt
   frames:
     needs: narration
     runs-on: ubuntu-latest

@@ -1,0 +1,121 @@
+"""Write closed captions for the film from the narration timings.
+
+    python src/render/captions.py
+
+Reads out/voice/timings.json, which holds every narration line with its
+start and end inside its scene. Scenes play one after another, so a line's
+time in the film is the length of the scenes before it plus its start (the
+same rule src/audio/mix.py uses to place the voice). Long lines are broken
+into captions of at most two short rows, and each caption gets a share of
+the line's time in proportion to its length. Writes out/film.srt.
+"""
+import argparse
+import json
+import re
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+ROW = 42            # most characters on one caption row
+GAP = 0.05          # seconds of blank between two captions from one line
+
+
+def split_rows(text):
+    """The best way to break text into two rows that each fit, or None."""
+    words = text.split()
+    best = None
+    for i in range(1, len(words)):
+        top, bottom = " ".join(words[:i]), " ".join(words[i:])
+        if len(top) > ROW or len(bottom) > ROW:
+            continue
+        # rows of about equal length, and a break after punctuation if one is close
+        score = abs(len(top) - len(bottom)) - (10 if top[-1] in ".,;:?!" else 0)
+        if best is None or score < best[0]:
+            best = (score, top, bottom)
+    return None if best is None else best[1:]
+
+
+def fits(text):
+    return len(text) <= ROW or split_rows(text) is not None
+
+
+def pieces(text):
+    """Split text into captions that each fit on two rows, at the most natural breaks.
+
+    Whole sentences are kept together where they fit. A sentence too long for
+    one caption is cut in two near its middle, after a comma if one is close,
+    so no caption is left with only a word or two.
+    """
+    if fits(text):
+        return [text]
+    sentences = re.split(r"(?<=[.?!])\s+", text)
+    if len(sentences) > 1:
+        out = [sentences[0]]
+        for p in sentences[1:]:
+            if fits(out[-1] + " " + p):
+                out[-1] += " " + p
+            else:
+                out.append(p)
+        if len(out) > 1:
+            return [q for part in out for q in pieces(part)]
+    words = text.split()
+    best = None
+    for i in range(1, len(words)):
+        head = " ".join(words[:i])
+        score = abs(len(head) - len(text) / 2) - (12 if head[-1] in ",;:" else 0)
+        if best is None or score < best[0]:
+            best = (score, i)
+    i = best[1]
+    return pieces(" ".join(words[:i])) + pieces(" ".join(words[i:]))
+
+
+def rows(text):
+    """Break one caption into one or two rows of about equal length."""
+    if len(text) <= ROW:
+        return text
+    top, bottom = split_rows(text)
+    return f"{top}\n{bottom}"
+
+
+def stamp(seconds):
+    ms = int(round(seconds * 1000))
+    h, ms = divmod(ms, 3_600_000)
+    m, ms = divmod(ms, 60_000)
+    s, ms = divmod(ms, 1000)
+    return f"{h:02}:{m:02}:{s:02},{ms:03}"
+
+
+def captions(timings):
+    out = []
+    offset = 0.0
+    for scene in timings["scenes"]:
+        for line in scene["lines"]:
+            parts = pieces(line["text"])
+            start, end = offset + line["start"], offset + line["end"]
+            total = sum(len(p) for p in parts)
+            t = start
+            for k, p in enumerate(parts):
+                t_end = end if k == len(parts) - 1 else t + (end - start) * len(p) / total
+                out.append((t, t_end - (0 if k == len(parts) - 1 else GAP), rows(p)))
+                t = t_end
+        offset += scene["duration"]
+    return out
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--voice", type=Path, default=ROOT / "out/voice")
+    ap.add_argument("--out", type=Path, default=ROOT / "out/film.srt")
+    args = ap.parse_args()
+
+    timings = json.loads((args.voice / "timings.json").read_text(encoding="utf-8"))
+    cues = captions(timings)
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(
+        "\n".join(f"{i}\n{stamp(a)} --> {stamp(b)}\n{text}\n" for i, (a, b, text) in enumerate(cues, 1)),
+        encoding="utf-8",
+    )
+    print(f"{len(cues)} captions -> {args.out}")
+
+
+if __name__ == "__main__":
+    main()
