@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
+        with:
+          lfs: "true"
       - name: Install libraries Blender needs
         run: sudo apt-get update && sudo apt-get install --yes libegl1 libgl1 libice6 libsm6 libxfixes3 libxi6 libxkbcommon0 libxrender1 libxxf86vm1
       - name: Restore Blender
@@ -28,7 +30,7 @@ jobs:
         run: |
           start=$(( ${{ matrix.chunk }} * CHUNK + 1 ))
           end=$(( start + CHUNK - 1 ))
-          "tools/$BLENDER/blender" -b --factory-startup -P src/blender/bletchley.py -- \
+          "tools/$BLENDER/blender" -b --factory-startup --python-exit-code 1 -P src/blender/bletchley.py -- \
             --root . --out out/shot/frames --start "$start" --end "$end"
       - name: Upload frames
         uses: actions/upload-artifact@v7
