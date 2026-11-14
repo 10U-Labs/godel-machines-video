@@ -1,4 +1,18 @@
 /* Shared stage for every scene. Colours live in palette.js, the single source. */
+@font-face {
+  font-family: 'Figtree';
+  src: url('../fonts/Figtree.ttf') format('truetype');
+  font-weight: 300 900;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('../fonts/JetBrainsMono.ttf') format('truetype');
+  font-weight: 100 800;
+  font-display: block;
+}
+
 html,
 body {
   margin: 0;
@@ -12,6 +26,6 @@ svg#stage {
   display: block;
   width: 1920px;
   height: 1080px;
-  font-family: 'Avenir Next', 'Avenir', 'Helvetica Neue', sans-serif;
+  font-family: 'Figtree', sans-serif;
   text-rendering: geometricPrecision;
 }

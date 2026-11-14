@@ -1,0 +1,151 @@
+---
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
+jobs:
+  film:
+    needs:
+      - narration
+      - scene
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          cache: pip
+          python-version: "3.12"
+      - name: Install Python packages
+        run: pip install -r requirements.txt
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install --yes ffmpeg
+      - name: Download narration
+        uses: actions/download-artifact@v8
+        with:
+          name: narration
+          path: out/voice
+      - name: Download scenes
+        uses: actions/download-artifact@v8
+        with:
+          merge-multiple: "true"
+          path: out/scenes
+          pattern: scene-*
+      - name: Mix the soundtrack
+        run: python src/audio/mix.py
+      - name: Assemble the film
+        run: python src/render/assemble.py
+      - name: Upload film
+        uses: actions/upload-artifact@v7
+        with:
+          if-no-files-found: error
+          name: film
+          path: out/film.mp4
+  narration:
+    outputs:
+      scenes: ${{ steps.scenes.outputs.scenes }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+      - id: scenes
+        name: List scenes
+        run: |
+          ls src/scenes | sed -n 's/^\([0-9][0-9]-.*\)\.html$/\1/p' > scenes.txt
+          echo "scenes=$(jq -R . scenes.txt | jq -sc .)" >> "$GITHUB_OUTPUT"
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          cache: pip
+          python-version: "3.12"
+      - name: Install Python packages
+        run: pip install -r requirements.txt
+      - name: Restore voice model
+        uses: actions/cache@v6
+        with:
+          key: kokoro-v1.0-fp16
+          path: models/kokoro
+      - name: Download voice model
+        run: |
+          mkdir -p models/kokoro
+          cd models/kokoro
+          base=https://github.com/thewh1teagle/kokoro-onnx/releases/download
+          for file in kokoro-v1.0.fp16.onnx voices-v1.0.bin; do
+            test -f "$file" && continue
+            curl -fsSL -o "$file" "$base/model-files-v1.0/$file"
+          done
+      - name: Generate narration
+        run: python src/voice/make_voice.py script/script.md
+      - name: Upload narration
+        uses: actions/upload-artifact@v7
+        with:
+          if-no-files-found: error
+          name: narration
+          path: |
+            out/voice/*.wav
+            out/voice/timings.json
+  scene:
+    needs: narration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          lfs: "true"
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          cache: npm
+          node-version: "26"
+      - name: Install Node packages
+        run: npm ci
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install --yes ffmpeg
+      - name: Download narration
+        uses: actions/download-artifact@v8
+        with:
+          name: narration
+          path: out/voice
+      - name: Render scene
+        run: >-
+          node src/render/capture.mjs
+          src/scenes/${{ matrix.scene }}.html
+          --out out/scenes/${{ matrix.scene }}.mp4
+      - name: Extract a still every two seconds
+        run: >-
+          mkdir -p out/stills &&
+          ffmpeg -hide_banner -loglevel error
+          -i out/scenes/${{ matrix.scene }}.mp4
+          -vf "select=not(mod(n\,60))" -fps_mode vfr -q:v 3
+          out/stills/%03d.jpg
+      - name: Upload scene
+        uses: actions/upload-artifact@v7
+        with:
+          if-no-files-found: error
+          name: scene-${{ matrix.scene }}
+          path: |
+            out/scenes/${{ matrix.scene }}.mp4
+            out/scenes/${{ matrix.scene }}.sfx.json
+      - name: Upload stills
+        uses: actions/upload-artifact@v7
+        with:
+          if-no-files-found: error
+          name: stills-${{ matrix.scene }}
+          path: out/stills
+    strategy:
+      fail-fast: false
+      matrix:
+        scene: ${{ fromJSON(needs.narration.outputs.scenes) }}
+name: render
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/render.yml"
+      - "package-lock.json"
+      - "package.json"
+      - "requirements.txt"
+      - "script/**"
+      - "src/**"
+  workflow_dispatch: {}

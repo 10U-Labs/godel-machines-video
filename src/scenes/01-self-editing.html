@@ -38,8 +38,49 @@
       const tMeans = T.word(7, 'Recursive means');
       const tResult = T.word(7, 'applied to its own');
 
+      const STARTS = [tNew + 1.3, tNext, tAfter]; // when versions 2, 3, and 4 appear
+
+      // ---- Sound cues, for the soundtrack mixer ---------------------------
+      const sfx = [];
+      const fx = (t, type, extra = {}) => sfx.push({ t: Math.round(t * 1000) / 1000, type, ...extra });
+      fx(0.15, 'pop');
+      for (let i = 0; i < 5; i++) fx(0.9 + i * 0.36, 'tick', { pitch: 1 + i * 0.05 });
+      for (let i = 0; i < 5; i++) fx(tList + (i * (tFile - tList)) / 5, 'blip', { pitch: 0.8 + i * 0.1, gain: 0.5 });
+      fx(tFile, 'chime', { pitch: 1.5, gain: 0.5, dur: 1.2 });
+      fx(tPeople, 'pop', { pitch: 0.8 });
+      for (let i = 0; i < 11; i++) fx(tPeople + 0.7 + (i * 1.5) / 11, 'tick', { gain: 0.7 });
+      fx(tStay - 0.1, 'pop', { pitch: 1.2, gain: 0.6 });
+      for (let i = 0; i < 22; i++) fx(tChange + 0.7 + (i * 1.1) / 22, 'tick', { gain: 0.6 });
+      fx(tRead - 0.25, 'whoosh');
+      fx(tRead + 0.2, 'pop');
+      fx(tRead + 0.8, 'swoosh', { dur: 0.7 });
+      fx(tWrite + 0.1, 'swoosh', { dur: 0.7 });
+      for (let i = 0; i < 3; i++) fx(tWrite + 0.7 + i * 0.35, 'tick', { pitch: 1.2 });
+      fx(tOpen - 0.25, 'whoosh');
+      fx(tOpen + 0.6, 'swoosh', { dur: 1.5 });
+      fx(tOwn, 'blip', { pitch: 1.5, gain: 0.6 });
+      fx(tEdit + 0.1, 'tick', { pitch: 0.7 });
+      fx(tEdit + 0.6, 'rise', { dur: 0.8 });
+      fx(tSuppose + 0.2, 'rise', { dur: 0.7, pitch: 0.75, gain: 0.6 });
+      fx(tBetter, 'rise', { dur: 0.8 });
+      fx(tJob - 0.2, 'whoosh');
+      fx(tJob + 0.5, 'pop');
+      fx(tJob + 1.5, 'swoosh', { dur: 0.7 });
+      fx(tJob + 2.7, 'rise', { dur: 0.8 });
+      fx(tNew - 0.3, 'whoosh');
+      STARTS.forEach((t0, k) => {
+        fx(t0, 'swoosh', { dur: 0.7 });
+        fx(t0 + 0.55, 'pop', { pitch: 1 + k * 0.12 });
+        fx(t0 + 1.05, 'rise', { dur: 0.8, pitch: 1 + k * 0.2 });
+      });
+      fx(tName - 0.3, 'whoosh');
+      fx(tName + 0.15, 'chime');
+      [0, 0.55, 1.1].forEach((d, i) => fx(tMeans + d, 'pop', { pitch: 1 + i * 0.15 }));
+      fx(tResult, 'swoosh', { dur: 1.0 });
+      for (let lapT = tResult + 1.0; lapT < T.duration - 0.5; lapT += 1.5) fx(lapT, 'blip', { pitch: 1.25, gain: 0.4 });
+
       // ---- The program ------------------------------------------------------
-      const CH = 18.06; // width of one Menlo character at 30px
+      const CH = 18; // width of one JetBrains Mono character at 30px
       const CODE = [
         { indent: 0, bar: C.sky, parts: [['numbers = read(', C.paper], ['"data.txt"', C.mint], [')', C.paper]] },
         { indent: 0, bar: C.mist, parts: [['total = 0', C.paper]] },
@@ -255,15 +296,14 @@
         place(jobChip.g, { x: 1440, y: 716 + lerp(20, 0, prog(t, tJob + 0.9, 0.5)), o: prog(t, tJob + 0.9, 0.4) * otherOff });
 
         // -- each version produces the next, and each step is bigger
-        const starts = [tNew + 1.3, tNext, tAfter];
         versions.forEach((v, k) => {
-          const t0 = starts[k];
+          const t0 = STARTS[k];
           v.arc.draw(prog(t, t0, 0.7, ease.inOut));
           const p = prog(t, t0 + 0.55, 0.6, ease.outBack);
           place(v.w.g, { x: VX[k + 1], y: VY + lerp(24, 0, p), s: VS * p, o: prog(t, t0 + 0.55, 0.2) });
         });
         VX.forEach((_, k) => {
-          const t0 = k === 0 ? tNew + 0.7 : starts[k - 1] + 0.9;
+          const t0 = k === 0 ? tNew + 0.7 : STARTS[k - 1] + 0.9;
           vLabels[k].setAttribute('opacity', prog(t, t0, 0.4).toFixed(3));
           vMeters[k].g.setAttribute('opacity', prog(t, t0, 0.4).toFixed(3));
           vMeters[k].set(LEVELS[k] * prog(t, t0 + 0.15, 0.8, ease.out));
@@ -289,7 +329,7 @@
         runner.setAttribute('opacity', prog(t, lapStart, 0.2).toFixed(3));
       }
 
-      mount({ duration: DURATION, render });
+      mount({ duration: DURATION, render, sfx });
     </script>
   </body>
 </html>

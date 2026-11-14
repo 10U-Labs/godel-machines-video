@@ -3,15 +3,16 @@
 //   node src/render/capture.mjs <scene.html> --out out/scene.mp4 [--from 0 --to 12.5]
 //   node src/render/capture.mjs <scene.html> --still 3.2 --out out/still.png
 //
-// Scene contract: the page sets window.SCENE = { duration, render(t) } where
+// Scene contract: the page sets window.SCENE = { duration, render(t), sfx } where
 // render(t) draws the frame for time t (seconds) as a pure function of t, and
 // window.SCENE_READY is a promise that resolves once fonts and assets are loaded.
+// A full render also writes the scene's sound cues beside the video, as
+// <name>.sfx.json, for the soundtrack mixer.
 
-import puppeteer from 'puppeteer-core';
+import puppeteer from 'puppeteer';
 import { spawn } from 'node:child_process';
 import http from 'node:http';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -33,21 +34,6 @@ const MIME = {
   '.woff2': 'font/woff2',
   '.ttf': 'font/ttf',
 };
-
-function findChrome() {
-  if (process.env.CHROME_PATH) return process.env.CHROME_PATH;
-  const base = path.join(os.homedir(), '.cache', 'puppeteer', 'chrome-headless-shell');
-  if (fs.existsSync(base)) {
-    for (const version of fs.readdirSync(base).sort().reverse()) {
-      const dir = path.join(base, version);
-      for (const sub of fs.readdirSync(dir)) {
-        const bin = path.join(dir, sub, 'chrome-headless-shell');
-        if (fs.existsSync(bin)) return bin;
-      }
-    }
-  }
-  throw new Error('No headless Chrome found. Set CHROME_PATH to a Chrome or chrome-headless-shell binary.');
-}
 
 // Static file server for the project folder, on localhost only.
 function serve() {
@@ -123,9 +109,12 @@ async function main() {
   const server = await serve();
   const { port } = server.address();
   const browser = await puppeteer.launch({
-    executablePath: findChrome(),
+    executablePath: process.env.CHROME_PATH || undefined,
     headless: 'shell',
-    args: ['--hide-scrollbars', '--force-color-profile=srgb', '--font-render-hinting=none'],
+    args: [
+      '--hide-scrollbars', '--force-color-profile=srgb', '--font-render-hinting=none',
+      ...(process.env.CI ? ['--no-sandbox'] : []),
+    ],
   });
 
   try {
@@ -155,6 +144,8 @@ async function main() {
 
     const first = Math.round((args.from ?? 0) * FPS);
     const last = Math.round((args.to ?? duration) * FPS); // exclusive
+    const sfx = await page.evaluate(() => window.SCENE.sfx || []);
+    fs.writeFileSync(args.out.replace(/\.mp4$/, '') + '.sfx.json', JSON.stringify(sfx, null, 2));
     const { ff, done } = startEncoder(args.out);
     const started = Date.now();
     for (let f = first; f < last; f++) {

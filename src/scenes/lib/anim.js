@@ -71,11 +71,21 @@ export function place(el, { x = 0, y = 0, s = 1, sx = s, sy = s, r = 0, o = 1 } 
   el.setAttribute('opacity', clamp(o).toFixed(4));
 }
 
-// Register the scene with the capture harness. In a normal browser tab it also
-// plays in real time (add ?t=3.2 to hold a single moment) so scenes can be previewed.
-export function mount({ duration, render }) {
-  window.SCENE = { duration, render };
-  window.SCENE_READY = document.fonts.ready.then(() => render(0));
+// The bundled fonts every scene draws with. A scene refuses to start without
+// them, so a render can never fall back to whatever font the machine has.
+const FONTS = ['400 30px Figtree', '700 30px Figtree', '500 30px "JetBrains Mono"'];
+
+// Register the scene with the capture harness. `sfx` lists the scene's sound
+// cues as [{ t, type, pitch?, dur?, gain? }] for the soundtrack mixer. In a
+// normal browser tab the scene also plays in real time (add ?t=3.2 to hold a
+// single moment) so it can be previewed.
+export function mount({ duration, render, sfx = [] }) {
+  window.SCENE = { duration, render, sfx };
+  window.SCENE_READY = Promise.all(FONTS.map((f) => document.fonts.load(f))).then((loaded) => {
+    const missing = FONTS.filter((_, i) => loaded[i].length === 0);
+    if (missing.length) throw new Error(`Fonts did not load: ${missing.join(', ')}`);
+    render(0);
+  });
 
   if (!navigator.webdriver) {
     const hold = new URLSearchParams(location.search).get('t');

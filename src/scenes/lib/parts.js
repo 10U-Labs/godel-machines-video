@@ -4,7 +4,7 @@ import { C } from './palette.js';
 
 export const W = 1920;
 export const H = 1080;
-export const MONO = "'Menlo', 'SF Mono', monospace";
+export const MONO = "'JetBrains Mono', monospace";
 
 // Narration timings for one scene, written by src/voice/make_voice.py.
 //   T.L(n) / T.E(n)   start / end of line n (1-based), in scene seconds
