@@ -197,11 +197,11 @@ export function person(parent, { color = C.sky, shade = C.skyDeep } = {}) {
 
 // A machine, drawn as a square chip with pins. `outline: true` draws only a
 // dashed outline, for a machine that has been described but not built.
-export function machine(parent, { size = 300, color = C.amber, outline = false } = {}) {
+export function machine(parent, { size = 300, color = C.amber, outline = false, line = C.mist } = {}) {
   const g = svg('g', {}, parent);
   const h = size / 2;
   const pin = size * 0.085;
-  const dash = { fill: 'none', stroke: C.mist, 'stroke-width': 5, 'stroke-dasharray': '18 14', 'stroke-linecap': 'round' };
+  const dash = { fill: 'none', stroke: line, 'stroke-width': 5, 'stroke-dasharray': '18 14', 'stroke-linecap': 'round' };
   if (!outline) {
     svg('rect', { x: -h + 12, y: -h + 18, width: size, height: size, rx: size * 0.16, fill: C.ink900, opacity: 0.45 }, g);
     for (let i = 0; i < 4; i++) {
@@ -291,4 +291,21 @@ export function proofCard(parent, { w = 300, h = 260, steps = 4, color = C.viole
   });
   const qed = svg('rect', { x: L + w - 58, y: T + h - 55, width: 26, height: 26, rx: 4, fill: color }, g);
   return { g, w, h, lines, qed };
+}
+
+// The three machines the film is about, each with the colour it keeps throughout.
+export const MACHINES = [
+  { name: 'Gödel Machine', year: '2003', color: C.violet },
+  { name: 'Darwin Gödel Machine', year: '2025', color: C.mint },
+  { name: 'Huxley-Gödel Machine', year: '2025', color: C.sky },
+];
+
+// One of the three machines with its name and year beneath it, centred on the machine.
+export function namedMachine(parent, i, { size = 240 } = {}) {
+  const { name, year, color } = MACHINES[i];
+  const g = svg('g', {}, parent);
+  const icon = machine(g, { size, color });
+  const nameEl = label(g, name, { y: size / 2 + 90, size: 44, weight: 700, anchor: 'middle' });
+  const yearEl = label(g, year, { y: size / 2 + 144, size: 32, weight: 500, fill: C.mist, anchor: 'middle' });
+  return { g, icon, nameEl, yearEl };
 }

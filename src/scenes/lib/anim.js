@@ -27,6 +27,12 @@ export function prog(t, start, dur, easing = ease.out) {
   return easing(clamp((t - start) / dur));
 }
 
+// How visible something is at time t if it fades in at `start` and has faded
+// out again by `end`.
+export function during(t, start, end, fade = 0.4) {
+  return prog(t, start, fade) * (1 - prog(t, end - fade, fade));
+}
+
 // Value at time t along keyframes [[time, value, easing?], ...] (numbers only).
 // The easing on a keyframe shapes the approach to that keyframe.
 export function kf(t, frames) {
