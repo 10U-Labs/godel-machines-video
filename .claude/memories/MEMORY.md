@@ -1,8 +1,11 @@
 - [Never quote the user verbatim](never-quote-the-user-verbatim.md) — restate what the user says in fresh words in memories, commits, comments, and summaries
-- [Video production decisions](video-production-decisions.md) — voice am_michael, synthesized music, no length limit, general-public audience
+- [Video production decisions](video-production-decisions.md) — voice reopened (am_michael judged off), synthesized music, no length limit, general-public audience
 - [No analogies in script](no-analogies-in-script.md) — general public, but explain real mechanisms plainly; no analogies
 - [Render in GitHub workflows](render-in-github-workflows.md) — no local renders; push and let Actions render, fetch artifacts with gh
 - [Oxford commas](oxford-commas.md) — asked for in the repo's About; apply to other repo prose too
 - [Long-running commands in the background](long-running-commands-in-the-background.md) — anything past about a minute is a background Bash call with a time limit; no foreground wait after it
 - [A wait runs in the background](a-wait-runs-in-the-background.md) — wait for a workflow run with background Bash or Monitor, never a foreground sleep or gh run watch; --interval 60
 - [Memory links are Markdown links](memory-links-are-markdown-links.md) — link memories as title plus file name, never with double brackets
+- [The film tells a story](the-film-tells-a-story.md) — hook, real people and stakes, feeling; scenes joined by but or therefore, never and then
+- [Free tools only](free-tools-only.md) — nothing paid, for voice or anything else; open-source models on free runners, licence checked
+- [Plain everyday words](plain-everyday-words.md) — only words a general viewer knows; restate hard source words, do not quote them
