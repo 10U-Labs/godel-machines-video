@@ -3,7 +3,7 @@
     python src/audio/mix.py
 
 Reads out/voice/timings.json and out/voice/<scene>.wav (from make_voice.py) and
-out/scenes/<scene>.sfx.json (written by capture.mjs). Every scene that has a
+out/scenes/<scene>.sfx.json (written by src/blender/render_scene.py). Every scene that has a
 rendered video in out/scenes/ is included, in script order. Writes
 out/audio/mix.wav and the three stems beside it.
 """

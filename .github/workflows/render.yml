@@ -2,11 +2,13 @@
 concurrency:
   cancel-in-progress: true
   group: ${{ github.workflow }}-${{ github.ref }}
+env:
+  BLENDER: blender-4.5.16-linux-x64
 jobs:
   film:
     needs:
       - narration
-      - scene
+      - scenes
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -28,9 +30,8 @@ jobs:
       - name: Download scenes
         uses: actions/download-artifact@v8
         with:
-          merge-multiple: "true"
+          name: scenes
           path: out/scenes
-          pattern: scene-*
       - name: Mix the soundtrack
         run: python src/audio/mix.py
       - name: Assemble the film
@@ -41,19 +42,60 @@ jobs:
           if-no-files-found: error
           name: film
           path: out/film.mp4
-  narration:
-    needs: yamllint
-    outputs:
-      scenes: ${{ steps.scenes.outputs.scenes }}
+  frames:
+    needs: narration
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
-      - id: scenes
-        name: List scenes
+        with:
+          lfs: "true"
+      - name: Install libraries Blender needs
+        run: sudo apt-get update && sudo apt-get install --yes libegl1 libgl1 libice6 libsm6 libxfixes3 libxi6 libxkbcommon0 libxrender1 libxxf86vm1
+      - name: Restore Blender
+        uses: actions/cache@v6
+        with:
+          key: ${{ env.BLENDER }}
+          path: tools/${{ env.BLENDER }}
+      - name: Download Blender
         run: |
-          ls src/scenes | sed -n 's/^\([0-9][0-9]-.*\)\.html$/\1/p' > scenes.txt
-          echo "scenes=$(jq -R . scenes.txt | jq -sc .)" >> "$GITHUB_OUTPUT"
+          mkdir -p tools
+          test -d "tools/$BLENDER" && exit 0
+          curl -fsSL "https://download.blender.org/release/Blender4.5/$BLENDER.tar.xz" | tar -xJ -C tools
+      - name: Download narration
+        uses: actions/download-artifact@v8
+        with:
+          name: narration
+          path: out/voice
+      - name: Render frames
+        run: |
+          scene="${{ matrix.chunk.scene }}"
+          start="${{ matrix.chunk.start }}"
+          sfx=""
+          if [ "$start" = "1" ]; then sfx="--sfx out/frames/$scene/sfx.json"; fi
+          # shellcheck disable=SC2086
+          "tools/$BLENDER/blender" -b --factory-startup --python-exit-code 1 -P src/blender/render_scene.py -- \
+            --scene "$scene" --timings out/voice/timings.json --out "out/frames/$scene" \
+            --start "$start" --end "${{ matrix.chunk.end }}" $sfx
+      - name: Upload frames
+        uses: actions/upload-artifact@v7
+        with:
+          if-no-files-found: error
+          name: frames-${{ matrix.chunk.scene }}-${{ matrix.chunk.start }}
+          path: out/frames
+          retention-days: 3
+    strategy:
+      fail-fast: true
+      matrix:
+        chunk: ${{ fromJSON(needs.narration.outputs.chunks) }}
+  narration:
+    needs: yamllint
+    outputs:
+      chunks: ${{ steps.plan.outputs.chunks }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
@@ -83,6 +125,9 @@ jobs:
           restore-keys: narration-
       - name: Generate narration
         run: python src/voice/make_voice.py script/script.md
+      - id: plan
+        name: Plan render chunks
+        run: echo "chunks=$(python src/blender/plan.py out/voice/timings.json --chunk 60)" >> "$GITHUB_OUTPUT"
       - name: Upload narration
         uses: actions/upload-artifact@v7
         with:
@@ -91,58 +136,43 @@ jobs:
           path: |
             out/voice/*.wav
             out/voice/timings.json
-  scene:
-    needs: narration
+  scenes:
+    needs: frames
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-        with:
-          lfs: "true"
-      - name: Set up Node
-        uses: actions/setup-node@v7
-        with:
-          cache: npm
-          node-version: "26"
-      - name: Install Node packages
-        run: npm ci
       - name: Install ffmpeg
         run: sudo apt-get update && sudo apt-get install --yes ffmpeg
-      - name: Download narration
+      - name: Download frames
         uses: actions/download-artifact@v8
         with:
-          name: narration
-          path: out/voice
-      - name: Render scene
-        run: >-
-          node src/render/capture.mjs
-          src/scenes/${{ matrix.scene }}.html
-          --out out/scenes/${{ matrix.scene }}.mp4
-      - name: Extract a still every two seconds
-        run: >-
-          mkdir -p out/stills &&
-          ffmpeg -hide_banner -loglevel error
-          -i out/scenes/${{ matrix.scene }}.mp4
-          -vf "select=not(mod(n\,60))" -fps_mode vfr -q:v 3
-          out/stills/%03d.jpg
-      - name: Upload scene
+          merge-multiple: "true"
+          path: out/frames
+          pattern: frames-*
+      - name: Encode scenes and pick stills
+        run: |
+          cd out
+          mkdir -p scenes stills
+          for dir in frames/*/; do
+            id=$(basename "$dir")
+            ffmpeg -v error -framerate 30 -i "frames/$id/frame_%04d.png" -c:v libx264 -pix_fmt yuv420p -crf 18 "scenes/$id.mp4"
+            cp "frames/$id/sfx.json" "scenes/$id.sfx.json"
+            for png in frames/"$id"/frame_*.png; do
+              n=$(basename "$png" .png | sed 's/^frame_0*//')
+              if [ $(( (n - 1) % 60 )) -eq 0 ]; then cp "$png" "stills/$id-$(basename "$png")"; fi
+            done
+          done
+      - name: Upload scenes
         uses: actions/upload-artifact@v7
         with:
           if-no-files-found: error
-          name: scene-${{ matrix.scene }}
-          path: |
-            out/scenes/${{ matrix.scene }}.mp4
-            out/scenes/${{ matrix.scene }}.sfx.json
+          name: scenes
+          path: out/scenes
       - name: Upload stills
         uses: actions/upload-artifact@v7
         with:
           if-no-files-found: error
-          name: stills-${{ matrix.scene }}
+          name: stills
           path: out/stills
-    strategy:
-      fail-fast: false
-      matrix:
-        scene: ${{ fromJSON(needs.narration.outputs.scenes) }}
   yamllint:
     runs-on: ubuntu-latest
     steps:
@@ -167,8 +197,6 @@ on:
       - main
     paths:
       - ".github/workflows/render.yml"
-      - "package-lock.json"
-      - "package.json"
       - "requirements.txt"
       - "script/**"
       - "src/**"
