@@ -1,0 +1,61 @@
+---
+env:
+  BLENDER: blender-4.5.16-linux-x64
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          lfs: "true"
+      - name: Install libraries Blender needs
+        run: sudo apt-get update && sudo apt-get install --yes libegl1 libegl-mesa0 libgl1 libgl1-mesa-dri libice6 libsm6 libxfixes3 libxi6 libxkbcommon0 libxrender1 libxxf86vm1
+      - name: Restore Blender
+        uses: actions/cache@v6
+        with:
+          key: ${{ env.BLENDER }}
+          path: tools/${{ env.BLENDER }}
+      - name: Download Blender
+        run: |
+          mkdir -p tools
+          test -d "tools/$BLENDER" && exit 0
+          curl -fsSL "https://download.blender.org/release/Blender4.5/$BLENDER.tar.xz" | tar -xJ -C tools
+      - name: Download narration timings
+        uses: actions/download-artifact@v8
+        with:
+          github-token: ${{ github.token }}
+          name: narration
+          path: out/voice
+          run-id: "43634350691"
+      - name: Render test frames
+        run: |
+          for start in 121 421 601; do
+            begin=$(date +%s)
+            "tools/$BLENDER/blender" -b --factory-startup --python-exit-code 1 -P src/blender/render_scene.py -- \
+              --scene 00-pip --timings out/voice/timings.json --out out/test \
+              --start "$start" --end $(( start + 2 )) --engine ${{ matrix.engine }} --samples ${{ matrix.samples }} > "out/log-$start.txt" 2>&1 || { tail -40 "out/log-$start.txt"; exit 1; }
+            echo "frames $start-$(( start + 2 )): $(( $(date +%s) - begin )) s"
+            grep -aE "Saved|EGL|GPU|OpenGL" "out/log-$start.txt" | head -5
+          done
+      - name: Upload test frames
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-${{ matrix.engine }}-${{ matrix.samples }}
+          path: out/test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - engine: eevee
+            samples: 16
+          - engine: cycles
+            samples: 4
+name: engine-test
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/engine-test.yml"
+  workflow_dispatch: {}

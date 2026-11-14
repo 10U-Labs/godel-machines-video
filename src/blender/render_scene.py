@@ -31,6 +31,7 @@ def args():
     ap.add_argument('--end', type=int, default=None)
     ap.add_argument('--sfx', type=Path, default=None)
     ap.add_argument('--samples', type=int, default=16)
+    ap.add_argument('--engine', choices=('cycles', 'eevee'), default='cycles')
     argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
     return ap.parse_args(argv)
 
@@ -57,7 +58,7 @@ def main():
     end = min(total, a.end or total)
     if a.start > end:
         return
-    kit.configure(bpy.context.scene, a.out, a.start, end, a.samples)
+    kit.configure(bpy.context.scene, a.out, a.start, end, a.samples, a.engine)
     bpy.ops.render.render(animation=True)
 
 

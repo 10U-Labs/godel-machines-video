@@ -114,8 +114,8 @@ def material(top, bottom=None, alpha=1.0, alpha_bottom=None, radial=False, power
     if radial:
         centred = n('ShaderNodeVectorMath')
         centred.operation = 'MULTIPLY_ADD'
-        centred.inputs[1].default_value = (2, 2, 2)
-        centred.inputs[2].default_value = (-1, -1, -1)
+        centred.inputs[1].default_value = (2, 2, 0)     # flat shapes: ignore depth
+        centred.inputs[2].default_value = (-1, -1, 0)
         nt.links.new(coords.outputs['Generated'], centred.inputs[0])
         grad = n('ShaderNodeTexGradient')
         grad.gradient_type = 'SPHERICAL'
@@ -157,6 +157,7 @@ def material(top, bottom=None, alpha=1.0, alpha_bottom=None, radial=False, power
         a.inputs[0].default_value = alpha
     nt.links.new(fade.outputs['Fac'], a.inputs[1])
     nt.links.new(a.outputs[0], mix.inputs['Fac'])
+    m.surface_render_method = 'BLENDED'                # Eevee: sort see-through shapes by depth
     _materials[key] = m
     return m
 
@@ -312,7 +313,7 @@ def span(t, t0, t1, ease=smooth):
     """Progress from 0 to 1 as time t (seconds) goes from t0 to t1."""
     if t1 <= t0:
         return 1.0 if t >= t1 else 0.0
-    return ease((t - t0) / (t1 - t0))
+    return ease(clamp((t - t0) / (t1 - t0)))
 
 
 def mix(a, b, p):
@@ -358,7 +359,7 @@ def pip(name, parent, loc=(0, 0), scale=1.0, body=MINT, body_deep=MINT_DEEP):
     """
     root = empty(name, parent, (loc[0], loc[1], next_z(parent)), scale)
     rig = empty(f'{name}-rig', root, (0, 0, 0))          # bobbing and squash live here
-    halo = shape(f'{name}-halo', circle_pts(2.0), glow_material(body, 0.22), rig, (0, 0.1))
+    halo = shape(f'{name}-halo', circle_pts(2.0), glow_material(body, 0.3, power=2.2), rig, (0, 0.1))
     arms = {}
     for side in (-1, 1):
         shoulder = empty(f'{name}-shoulder{side}', rig, (side * 0.8, -0.18, next_z(rig)))
@@ -444,6 +445,33 @@ def pip_eyes(p, t, sx, sy, dur=0.2):
 CODE = [MINT, VIOLET, SKY, AMBER, MIST]
 
 
+def badge(name, parent, loc=(0, 0), scale=1.0):
+    """Pip's face in miniature, marking something as Pip's own."""
+    icon = empty(name, parent, (loc[0], loc[1], next_z(parent)), scale)
+    shape(f'{name}-glow', circle_pts(0.7), glow_material(MINT, 0.6), icon)
+    shape(f'{name}-body', rrect_pts(0.42, 0.36, 0.14), material(MINT, MINT_DEEP), icon)
+    shape(f'{name}-screen', rrect_pts(0.3, 0.2, 0.08), material(INK900), icon, (0, 0.01))
+    for side in (-1, 1):
+        shape(f'{name}-eye{side}', circle_pts(0.03, ry=0.04), material('#d9fff5'), icon, (side * 0.06, 0.02))
+    return icon
+
+
+def file_icon(name, parent, loc=(0, 0), scale=1.0, mine=False, seed=0):
+    """A file: a page with a folded corner and a few lines of text on it."""
+    import random
+    rnd = random.Random(seed)
+    root = empty(name, parent, (loc[0], loc[1], next_z(parent)), scale)
+    glow = shape(f'{name}-glow', rrect_pts(1.9, 2.2, 0.8), glow_material(MINT if mine else SKY, 0.5, power=1.0), root)
+    alpha(glow, 1, 0.0)
+    shape(f'{name}-page', [(-0.5, 0.65), (0.22, 0.65), (0.5, 0.37), (0.5, -0.65), (-0.5, -0.65)], material(INK600, INK700), root)
+    shape(f'{name}-fold', [(0.22, 0.65), (0.22, 0.37), (0.5, 0.37)], material(INK500), root)
+    for r in range(5):
+        ln = 0.3 + rnd.random() * 0.4 if r else 0.35
+        shape(f'{name}-line{r}', bar_pts(ln, 0.07), material(MIST, alpha=0.8), root, (-0.34, 0.38 - r * 0.2 - (0.08 if r else 0)))
+    icon = badge(f'{name}-badge', root, (0.12, -0.42), 0.9) if mine else None
+    return {'root': root, 'glow': glow, 'badge': icon}
+
+
 def program(name, parent, loc=(0, 0), rows=8, w=3.6, h=4.2, seed=1, mistake=None, label=None, scale=1.0, tab_icon=False):
     """A program shown as a page of code: a window with a title bar and rows of coloured bars.
 
@@ -459,14 +487,7 @@ def program(name, parent, loc=(0, 0), rows=8, w=3.6, h=4.2, seed=1, mistake=None
     shape(f'{name}-bar-fill', [(x, y + h / 2 - 0.45) for x, y in rrect_pts(w, 0.3, 0)], material(INK600), root)
     for i, c in enumerate((CORAL, AMBER, MINT)):
         shape(f'{name}-dot{i}', circle_pts(0.08), material(c), root, (-w / 2 + 0.3 + i * 0.25, h / 2 - 0.3))
-    icon = None
-    if tab_icon:
-        icon = empty(f'{name}-icon', root, (w / 2 - 0.45, h / 2 - 0.3, next_z(root)))
-        shape(f'{name}-icon-glow', circle_pts(0.7), glow_material(MINT, 0.6), icon)
-        shape(f'{name}-icon-body', rrect_pts(0.42, 0.36, 0.14), material(MINT, MINT_DEEP), icon)
-        shape(f'{name}-icon-screen', rrect_pts(0.3, 0.2, 0.08), material(INK900), icon, (0, 0.01))
-        for side in (-1, 1):
-            shape(f'{name}-icon-eye{side}', circle_pts(0.03, ry=0.04), material('#d9fff5'), icon, (side * 0.06, 0.02))
+    icon = badge(f'{name}-icon', root, (w / 2 - 0.45, h / 2 - 0.3)) if tab_icon else None
     if label:
         text(f'{name}-label', label, 0.2, material(MIST), root, (0, h / 2 - 0.3), face='JetBrainsMono')
     bars, bad, good = [], None, None
@@ -567,8 +588,13 @@ def camera(path, focus_z=1.0, fstop=0.12, step=2):
     return cam
 
 
-def configure(scene, out, start, end, samples=16):
-    scene.render.engine = 'CYCLES'
+def configure(scene, out, start, end, samples=16, engine='cycles'):
+    if engine == 'eevee':
+        names = [e.identifier for e in bpy.types.RenderSettings.bl_rna.properties['engine'].enum_items]
+        scene.render.engine = 'BLENDER_EEVEE_NEXT' if 'BLENDER_EEVEE_NEXT' in names else 'BLENDER_EEVEE'
+        scene.eevee.taa_render_samples = samples
+    else:
+        scene.render.engine = 'CYCLES'
     scene.cycles.device = 'CPU'
     scene.cycles.samples = samples
     scene.cycles.use_adaptive_sampling = True
