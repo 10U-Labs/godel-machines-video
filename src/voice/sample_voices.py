@@ -6,7 +6,8 @@
 Writes one WAV per voice to out/voice-samples/, plus a text file that lists
 each voice and its licence. Every model and voice here is free to use in a
 published video; the Pocket TTS voices under a non-commercial licence are left
-out. Both models run on a plain CPU.
+out. Kokoro asks for no credit. Pocket TTS's weights are CC BY 4.0, so a film
+that uses one of its voices should credit Kyutai. Both models run on a plain CPU.
 """
 import argparse
 from pathlib import Path
@@ -35,7 +36,8 @@ KOKORO = [
     ("bf_emma", "en-gb", "British woman"),
 ]
 
-# (voice, licence of the recording the voice is built from). The model's code is MIT.
+# (voice, licence of the recording the voice is built from). The model's code is
+# MIT, but its weights are CC BY 4.0, so every voice here calls for a credit to Kyutai.
 POCKET = [
     ("marius", "CC0, Unmute voice donations"),
     ("javert", "CC0, Unmute voice donations"),
@@ -108,7 +110,7 @@ def pocket_samples(items, out, args):
             continue
         audio = assemble(items, lambda text: model.generate_audio(state, text).detach().cpu().numpy(), model.sample_rate)
         sf.write(out / f"pocket-{voice}.wav", audio, model.sample_rate, subtype="PCM_16")
-        notes.append(f"pocket-{voice}.wav: Pocket TTS, {licence}.")
+        notes.append(f"pocket-{voice}.wav: Pocket TTS (model CC BY 4.0, credit Kyutai); recording {licence}.")
         print(notes[-1], f"{len(audio) / model.sample_rate:.1f}s", flush=True)
     if not notes:
         raise SystemExit("No Pocket TTS voice could be loaded")
