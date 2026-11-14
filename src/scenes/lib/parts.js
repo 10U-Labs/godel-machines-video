@@ -6,7 +6,7 @@ export const W = 1920;
 export const H = 1080;
 export const MONO = "'Menlo', 'SF Mono', monospace";
 
-// Narration timings for one scene, written by voice/make_voice.py.
+// Narration timings for one scene, written by src/voice/make_voice.py.
 //   T.L(n) / T.E(n)   start / end of line n (1-based), in scene seconds
 //   T.word(n, 'phrase')  estimated moment the phrase is spoken in line n
 //   T.offset          where the scene starts in the whole film

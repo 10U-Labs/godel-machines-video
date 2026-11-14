@@ -1,6 +1,6 @@
 """Generate narration audio for every line of the script and record the timings.
 
-    .venv/bin/python voice/make_voice.py script/script.md
+    .venv/bin/python src/voice/make_voice.py script/script.md
 
 Script format (markdown):
 
@@ -27,7 +27,8 @@ import numpy as np
 import soundfile as sf
 from kokoro_onnx import Kokoro
 
-ROOT = Path(__file__).resolve().parent.parent
+HERE = Path(__file__).resolve().parent
+ROOT = HERE.parent.parent
 
 VOICE = "am_michael"
 LANG = "en-us"
@@ -95,7 +96,7 @@ def main():
     ap.add_argument("script", type=Path)
     ap.add_argument("--model", type=Path, default=ROOT / "models/kokoro/kokoro-v1.0.fp16.onnx")
     ap.add_argument("--voices", type=Path, default=ROOT / "models/kokoro/voices-v1.0.bin")
-    ap.add_argument("--pronunciations", type=Path, default=ROOT / "voice/pronunciations.json")
+    ap.add_argument("--pronunciations", type=Path, default=HERE / "pronunciations.json")
     ap.add_argument("--out", type=Path, default=ROOT / "out/voice")
     args = ap.parse_args()
 

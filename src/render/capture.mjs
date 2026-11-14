@@ -1,7 +1,7 @@
 // Films a scene page frame by frame in headless Chrome and encodes it with ffmpeg.
 //
-//   node render/capture.mjs <scene.html> --out out/scene.mp4 [--from 0 --to 12.5]
-//   node render/capture.mjs <scene.html> --still 3.2 --out out/still.png
+//   node src/render/capture.mjs <scene.html> --out out/scene.mp4 [--from 0 --to 12.5]
+//   node src/render/capture.mjs <scene.html> --still 3.2 --out out/still.png
 //
 // Scene contract: the page sets window.SCENE = { duration, render(t) } where
 // render(t) draws the frame for time t (seconds) as a pure function of t, and
@@ -19,7 +19,7 @@ export const WIDTH = 1920;
 export const HEIGHT = 1080;
 export const FPS = 30;
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
