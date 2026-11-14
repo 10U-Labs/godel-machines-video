@@ -23,7 +23,7 @@ MINT, MINT_DEEP, AMBER, AMBER_DEEP = '#4fe3c1', '#1fae93', '#ffc24b', '#f09a1f'
 CORAL, CORAL_DEEP, VIOLET, VIOLET_DEEP = '#ff6b6b', '#d9434f', '#a78bfa', '#7357e0'
 SKY, SKY_DEEP, PAPER, MIST, SLATE = '#5cc8ff', '#2b93e0', '#f4f1ff', '#b9c0ea', '#7c86c2'
 
-state = {'frames': 1}
+state = {'frames': 1, 'zstep': 0.002}
 
 
 def frames():
@@ -201,7 +201,7 @@ def next_z(parent, lift=0.0):
     while root.parent is not None:
         root = root.parent
     _order[root.name] = _order.get(root.name, 0) + 1
-    return lift + _order[root.name] * 0.002
+    return lift + _order[root.name] * state['zstep']
 
 
 def shape(name, pts, mat, parent, loc=(0, 0), smooth=False, lift=0.0, rot=0.0):
@@ -578,6 +578,7 @@ def camera(path, focus_z=1.0, fstop=0.3, step=2):
     data.sensor_fit = 'HORIZONTAL'
     data.sensor_width = 36
     data.lens = 36 * H0 / 16
+    data.clip_start = 1.0                     # finer depth steps between stacked shapes
     data.dof.use_dof = True
     data.dof.aperture_fstop = fstop
     data.dof.focus_object = empty('focus', loc=(0, 0, focus_z))   # depth is all that counts
@@ -619,3 +620,185 @@ def configure(scene, out, start, end, samples=24, engine='eevee'):
     scene.render.image_settings.file_format = 'PNG'
     scene.render.image_settings.color_mode = 'RGB'
     scene.render.filepath = str(Path(out).resolve() / 'frame_')
+
+
+# ---------------------------------------------------------------- people
+
+SKIN, SKIN_SHADE = '#f2c7a5', '#d9a07f'
+
+
+def person(name, parent, loc=(0, 0), scale=1.0, coat='#5566c2', coat_deep=INK500, hair='#3b2a26', facing=1):
+    """A simple standing figure, not anyone's likeness: coat, head, hair, eyes, and one working arm.
+
+    The origin is at the shoulders. facing=1 looks right, -1 looks left. The
+    working arm hangs at angle 0 and rotates about the shoulder toward where
+    the figure faces.
+    """
+    root = empty(name, parent, (loc[0], loc[1], next_z(parent)), scale)
+    body = empty(f'{name}-body', root, (0, 0, 0))
+    shape(f'{name}-legs', [(-0.55, -2.6), (0.55, -2.6), (0.5, -4.3), (0.12, -4.3), (0, -3.0), (-0.12, -4.3), (-0.5, -4.3)], material(INK900, INK800), body)
+    shape(f'{name}-coat', [(-0.75, -0.15), (-0.45, 0.08), (0, 0.13), (0.45, 0.08), (0.75, -0.15), (0.85, -1.4), (0.95, -2.8), (-0.95, -2.8), (-0.85, -1.4)],
+          material(coat, coat_deep), body, smooth=True)
+    shape(f'{name}-collar', [(-0.22, 0.08), (0.22, 0.08), (0, -0.5)], material(PAPER), body)
+    shape(f'{name}-neck', rrect_pts(0.28, 0.34, 0.12), material(SKIN_SHADE), body, (0, 0.16))
+    head = empty(f'{name}-head', body, (0.05 * facing, 0.68, next_z(body)))
+    shape(f'{name}-face', circle_pts(0.44), material(SKIN, SKIN_SHADE), head)
+    shape(f'{name}-ear', circle_pts(0.08), material(SKIN_SHADE), head, (-0.4 * facing, -0.02))
+    shape(f'{name}-hair', [(-0.47 * facing, 0.02), (-0.44 * facing, 0.32), (-0.12 * facing, 0.52), (0.28 * facing, 0.48), (0.46 * facing, 0.2), (0.3 * facing, 0.26), (-0.2 * facing, 0.22)],
+          material(hair), head, smooth=True)
+    for side in (-1, 1):
+        shape(f'{name}-eye{side}', circle_pts(0.045, ry=0.06), material(INK900), head, (0.1 * facing + side * 0.13, 0.0))
+    shape(f'{name}-smile', arc_pts(0.1, 0.035, 210, 330), material(INK900), head, (0.1 * facing, -0.14))
+    shoulder = empty(f'{name}-shoulder', body, (0.62 * facing, -0.25, next_z(body)))
+    shape(f'{name}-arm', capsule_pts(1.5, 0.3), material(coat, coat_deep), shoulder)
+    shape(f'{name}-hand', circle_pts(0.15), material(SKIN, SKIN_SHADE), shoulder, (0, -1.55))
+    shape(f'{name}-pen', [(x, y - 1.75) for x, y in rrect_pts(0.06, 0.42, 0.03)], material(INK900), shoulder)
+    return {'root': root, 'body': body, 'head': head, 'arm': shoulder, 'facing': facing}
+
+
+# ---------------------------------------------------------------- families of programs
+
+def pop(ob, t, s=1.0, dur=0.45, t_out=None, out_dur=0.3):
+    """Scale an object up from nothing at t, overshooting a little, and back to nothing at t_out."""
+    tiny = (0.001, 0.001, 0.001)
+    key(ob, 'scale', 1, tiny)
+    for f in every(1, fr(t), fr(t + dur)):
+        v = max(0.001, s * back_out((sec(f) - t) / dur))
+        key(ob, 'scale', f, (v, v, v))
+    if t_out is not None:
+        key(ob, 'scale', fr(t_out), (s, s, s))
+        key(ob, 'scale', fr(t_out + out_dur), tiny)
+
+
+def appear(ob, t_in=None, t_out=None, dur=0.3, a=1.0):
+    """Fade a shape in at t_in and out at t_out, keying only around those moments."""
+    alpha(ob, 1, 0.0 if t_in is not None else a)
+    if t_in is not None:
+        alpha(ob, fr(t_in), 0.0)
+        alpha(ob, fr(t_in + dur), a)
+    if t_out is not None:
+        alpha(ob, fr(t_out), a)
+        alpha(ob, fr(t_out + dur), 0.0)
+
+
+def branch(name, parent, a, b, colour=MIST, w=0.07, opacity=0.55):
+    """A straight line from point a to point b. It grows out of a when its x scale goes from 0 to 1."""
+    length = math.hypot(b[0] - a[0], b[1] - a[1])
+    return shape(name, bar_pts(length, w), material(colour, alpha=opacity), parent, a,
+                 rot=math.atan2(b[1] - a[1], b[0] - a[0]))
+
+
+def grow(ob, t, dur=0.35, t_out=None):
+    """Grow a branch out from its start at t (and pull it back in at t_out)."""
+    key(ob, 'scale', 1, (0.001, 1, 1))
+    key(ob, 'scale', fr(t), (0.001, 1, 1))
+    key(ob, 'scale', fr(t + dur), (1, 1, 1))
+    if t_out is not None:
+        key(ob, 'scale', fr(t_out), (1, 1, 1))
+        key(ob, 'scale', fr(t_out + dur), (0.001, 1, 1))
+
+
+def tag(name, parent, loc, label, colour=PAPER, size=0.26):
+    """A score: a number on a small dark pill. Pop its root in to show it."""
+    root = empty(name, parent, (loc[0], loc[1], next_z(parent)))
+    w = 0.3 + 0.62 * size * len(label)
+    pill = shape(f'{name}-pill', rrect_pts(w, size * 1.6, size * 0.8), material(INK900, alpha=0.8), root)
+    body = text(f'{name}-text', label, size, material(colour), root, (0, -size * 0.04), face='JetBrainsMono')
+    root.scale = (0.001, 0.001, 0.001)
+    return {'root': root, 'pill': pill, 'text': body}
+
+
+def ring(name, parent, loc, r=0.6, colour=AMBER, w=0.08, lift=0.0):
+    """A thin circle, hidden at first; light it with flash or appear."""
+    ob = shape(name, arc_pts(r, w, 0, 360, n=48), material(colour), parent, loc, lift=lift)
+    alpha(ob, 1, 0.0)
+    return ob
+
+
+def flash(ob, t, dur=0.9, grow_by=0.5):
+    """Light a ring at t: it swells a little and fades out over dur seconds."""
+    for f in every(1, fr(t), fr(t + dur)):
+        q = span(sec(f), t, t + dur, lambda v: v)
+        s = 1 + grow_by * q
+        key(ob, 'scale', f, (s, s, 1))
+        alpha(ob, f, math.sin(math.pi * q))
+
+
+SCORE_COLOURS = [(18, ('#5aa59b', '#3c7a73')), (24, (MINT, MINT_DEEP)), (32, ('#9af7d8', MINT)), (40, (AMBER, AMBER_DEEP))]
+
+
+def score_colour(score):
+    """Pip's colours for a program with a score: dull for low scores, warm for high ones."""
+    out = SCORE_COLOURS[0][1]
+    for floor, c in SCORE_COLOURS:
+        if score >= floor:
+            out = c
+    return out
+
+
+def family(name, stage, lines, nodes, size=0.45, line_colour=MIST, idle_step=3, known=None):
+    """A family of programs drawn as small Pips joined by branches.
+
+    nodes is a list of dicts with id, parent (an id, or None), at (x, y), t
+    (when it pops in), and optionally score, colour (body, deep), and
+    t_out. Branches go in the lines layer, which sits just behind the stage.
+    known maps ids of parents drawn elsewhere to their places.
+    Returns id -> {'pip', 'line', 'at', 'tag'}.
+    """
+    import random
+    rnd = random.Random(len(nodes))
+    out = {}
+    for n in nodes:
+        at = n['at']
+        body, deep = n.get('colour') or score_colour(n.get('score', 24))
+        line = None
+        if n.get('parent') is not None:
+            pa = out[n['parent']]['at'] if n['parent'] in out else known[n['parent']]
+            line = branch(f'{name}-{n["id"]}-line', lines, pa, at, line_colour)
+            grow(line, n['t'] - 0.3, 0.3, n.get('t_out'))
+        p = pip(f'{name}-{n["id"]}', stage, at, size, body=body, body_deep=deep)
+        alpha(p['halo'], 1, 0.35)
+        pop(p['root'], n['t'], size, t_out=n.get('t_out'))
+        pip_idle(p, phase=rnd.random() * 6, step=idle_step)
+        tg = None
+        if 'score' in n:
+            tg = tag(f'{name}-{n["id"]}-tag', stage, (at[0] + 0.8 * size / 0.45, at[1] + 0.3 * size / 0.45), str(n['score']),
+                     colour=AMBER if n['score'] >= 40 else PAPER)
+        out[n['id']] = {'pip': p, 'line': line, 'at': at, 'tag': tg}
+    return out
+
+
+def veil(t, dur=1.0, colour=INK900):
+    """A sheet in front of everything that fades in at t: the scene's fade to dark."""
+    front = layer('veil', 12.5)
+    ob = shape('veil-sheet', rrect_pts(30, 18, 0), material(colour), front)
+    appear(ob, t, None, dur)
+    return ob
+
+
+def machine_outline(step=0.16):
+    """Points along the lines of Pip's shape (body, screen, eyes, antenna, arms), for a blueprint drawing."""
+    def sample(pts, closed=True):
+        out = []
+        loop = pts + [pts[0]] if closed else pts
+        for (x0, y0), (x1, y1) in zip(loop, loop[1:]):
+            n = max(1, int(math.hypot(x1 - x0, y1 - y0) / step))
+            out += [(x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n) for i in range(n)]
+        return out
+    body = sample(rrect_pts(1.7, 1.5, 0.62))
+    screen = [(x, y + 0.06) for x, y in sample(rrect_pts(1.28, 0.86, 0.34))]
+    eyes = [(x + dx, y + 0.14) for dx in (-0.27, 0.27) for x, y in sample(circle_pts(0.14, ry=0.17, n=24))]
+    antenna = sample([(0, 0.75), (0, 1.1)], closed=False) + [(x, y + 1.13) for x, y in sample(circle_pts(0.11, n=16))]
+    arms = [(s * 0.85 + s * 0.15 * i / 6, -0.2 - 0.5 * i / 6) for s in (-1, 1) for i in range(7)]
+    return body + screen + eyes + antenna + arms
+
+
+def screen_stand(name, parent, loc, w=5.6, h=3.6):
+    """A large computer screen on a stand. Returns the root and the dark screen face."""
+    root = empty(name, parent, (loc[0], loc[1], next_z(parent)))
+    shape(f'{name}-foot', rrect_pts(2.4, 0.22, 0.11), material(INK600, INK700), root, (0, -h / 2 - 1.05))
+    shape(f'{name}-neck', [(-0.3, -h / 2 + 0.1), (0.3, -h / 2 + 0.1), (0.45, -h / 2 - 1.0), (-0.45, -h / 2 - 1.0)], material(INK600, INK700), root)
+    shape(f'{name}-shadow', rrect_pts(w + 0.6, h + 0.6, 0.5), glow_material(INK900, 0.7, power=0.8), root, (0.15, -0.2))
+    shape(f'{name}-frame', rrect_pts(w, h, 0.25), material(INK500, INK600), root)
+    face = shape(f'{name}-face', rrect_pts(w - 0.36, h - 0.36, 0.14), material('#16205a', INK900), root)
+    return {'root': root, 'face': face}
