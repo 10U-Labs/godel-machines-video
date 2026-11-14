@@ -30,7 +30,7 @@ def args():
     ap.add_argument('--start', type=int, default=1)
     ap.add_argument('--end', type=int, default=None)
     ap.add_argument('--sfx', type=Path, default=None)
-    ap.add_argument('--samples', type=int, default=16)
+    ap.add_argument('--samples', type=int, default=24)
     ap.add_argument('--engine', choices=('cycles', 'eevee'), default='eevee')
     argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
     return ap.parse_args(argv)

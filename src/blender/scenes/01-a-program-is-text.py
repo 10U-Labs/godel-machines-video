@@ -124,6 +124,12 @@ def build(T):
         alpha(ob, fr(t_change + 0.45), 1.0)
         alpha(ob, fr(t_change + 0.6), 0.0)
     cover = pg['new_cover']
+    alpha(cover, 1, 0.0)                      # the cover for the new line waits until the old line is gone
+    alpha(cover, fr(t_change + 0.55), 0.0)
+    alpha(cover, fr(t_change + 0.56) + 1, 1.0)
+    alpha(pg['new'], 1, 0.0)
+    alpha(pg['new'], fr(t_change + 0.55), 0.0)
+    alpha(pg['new'], fr(t_change + 0.56) + 1, 1.0)
     t_type = t_change + 0.6
     t_typed = min(end - 0.3, t_type + 0.9)
     cover.keyframe_insert('scale', frame=fr(t_type))

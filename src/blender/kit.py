@@ -157,7 +157,9 @@ def material(top, bottom=None, alpha=1.0, alpha_bottom=None, radial=False, power
         a.inputs[0].default_value = alpha
     nt.links.new(fade.outputs['Fac'], a.inputs[1])
     nt.links.new(a.outputs[0], mix.inputs['Fac'])
-    m.surface_render_method = 'BLENDED'                # Eevee: sort see-through shapes by depth
+    # Eevee: soft glows blend over what is behind them; everything else is dithered,
+    # which writes depth so that depth of field knows how far away each shape is.
+    m.surface_render_method = 'BLENDED' if radial else 'DITHERED'
     _materials[key] = m
     return m
 
@@ -586,7 +588,7 @@ def camera(path, focus_z=1.0, fstop=0.3, step=2):
     return cam
 
 
-def configure(scene, out, start, end, samples=16, engine='eevee'):
+def configure(scene, out, start, end, samples=24, engine='eevee'):
     if engine == 'eevee':
         names = [e.identifier for e in bpy.types.RenderSettings.bl_rna.properties['engine'].enum_items]
         scene.render.engine = 'BLENDER_EEVEE_NEXT' if 'BLENDER_EEVEE_NEXT' in names else 'BLENDER_EEVEE'
