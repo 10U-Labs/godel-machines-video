@@ -1,0 +1,17 @@
+/* Shared stage for every scene. Colours live in palette.js, the single source. */
+html,
+body {
+  margin: 0;
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  background: #0b1030;
+}
+
+svg#stage {
+  display: block;
+  width: 1920px;
+  height: 1080px;
+  font-family: 'Avenir Next', 'Avenir', 'Helvetica Neue', sans-serif;
+  text-rendering: geometricPrecision;
+}

@@ -1,0 +1,16 @@
+# Machine-specific Claude Code settings (absolute autoMemoryDirectory)
+.claude/settings.local.json
+
+# Installed dependencies and downloaded voice model files (re-creatable)
+.venv/
+node_modules/
+models/
+
+# Generated renders, stills and narration audio
+out/
+
+# Downloaded copies of the source papers (other people's copyright; the arXiv
+# IDs are in the source notes of script/script.md)
+research/sources/
+
+.DS_Store

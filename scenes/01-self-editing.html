@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>01 A program that edits itself</title>
+    <link rel="stylesheet" href="lib/style.css" />
+  </head>
+  <body>
+    <svg id="stage" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg"></svg>
+    <script type="module">
+      import { mount, svg, place, prog, kf, ease, lerp, clamp } from './lib/anim.js';
+      import { C } from './lib/palette.js';
+      import { MONO, loadTimings, backdrop, label, programWindow, meter, arrow, chip, docCard, person } from './lib/parts.js';
+
+      const T = await loadTimings('01-self-editing');
+      const stage = document.getElementById('stage');
+      const bg = backdrop(stage);
+      const defs = svg('defs', {}, stage);
+
+      // ---- Cues, taken from the narration timings --------------------------
+      const tList = T.word(1, 'It is a list');
+      const tFile = T.word(1, 'stored in a file');
+      const tPeople = T.L(2);
+      const tStay = T.word(2, 'and it stays');
+      const tChange = T.word(2, 'until a person');
+      const tRead = T.L(3);
+      const tWrite = T.word(3, 'And programs can write');
+      const tOpen = T.L(4);
+      const tOwn = T.word(4, 'its own instructions');
+      const tEdit = T.word(4, 'and change them');
+      const tSuppose = T.L(5);
+      const tBetter = T.word(5, 'better at its job');
+      const tJob = T.word(5, 'And suppose');
+      const tNew = T.L(6);
+      const tNext = T.word(6, 'Its next change');
+      const tAfter = T.word(6, 'And the version after');
+      const tName = T.L(7);
+      const tMeans = T.word(7, 'Recursive means');
+      const tResult = T.word(7, 'applied to its own');
+
+      // ---- The program ------------------------------------------------------
+      const CH = 18.06; // width of one Menlo character at 30px
+      const CODE = [
+        { indent: 0, bar: C.sky, parts: [['numbers = read(', C.paper], ['"data.txt"', C.mint], [')', C.paper]] },
+        { indent: 0, bar: C.mist, parts: [['total = 0', C.paper]] },
+        { indent: 0, bar: C.violet, parts: [['for', C.sky], [' n ', C.paper], ['in', C.sky], [' numbers:', C.paper]] },
+        { indent: 1, bar: C.mist, parts: [['total = total + n', C.paper]] },
+        { indent: 0, bar: C.mist, parts: [['print(', C.paper], ['"Total:"', C.mint], [', total)', C.paper]] },
+        { indent: 0, bar: C.sky, parts: [['save(total)', C.paper]] },
+      ];
+      const OLD_ROW5 = [['print(total)', C.paper]];
+      const chars = (parts) => parts.reduce((n, p) => n + p[0].length, 0);
+      const WIN = { w: 900, h: 560, header: 78, top: 56, rowGap: 62, barH: 24, pad: 110, indentW: 72 };
+      const barRows = CODE.map((r) => ({ indent: r.indent, w: chars(r.parts) * CH, color: r.bar }));
+
+      const rowG = svg('g', {}, stage); // holds every version of the program
+      const win = programWindow(rowG, { ...WIN, rows: barRows });
+
+      // Row highlights (behind the code), used when counting the instructions.
+      const rowLights = CODE.map((_, i) =>
+        svg('rect', { x: win.L + 24, y: win.rowY(i) - 19, width: WIN.w - 48, height: 58, rx: 14, fill: C.ink500, opacity: 0 }, win.g));
+      win.g.insertBefore(win.bars, null);
+
+      // The same code as readable text, which later gives way to the bars.
+      const codeText = svg('g', {}, win.g);
+      const gutter = CODE.map((_, i) =>
+        label(codeText, String(i + 1), { x: win.L + 78, y: win.rowY(i) + 22, size: 26, weight: 500, fill: C.slate, anchor: 'end', mono: true }));
+      function codeLine(parts, i, indent, clipId) {
+        const el = svg('text', {
+          x: win.rowX(indent), y: win.rowY(i) + 22, 'font-size': 30, 'font-family': MONO, 'font-weight': 500,
+          style: 'white-space: pre',
+        }, codeText);
+        for (const [str, fill] of parts) svg('tspan', { fill, text: str }, el);
+        if (clipId) el.setAttribute('clip-path', `url(#${clipId})`);
+        return el;
+      }
+      function typingClip(id, i, indent) {
+        const cp = svg('clipPath', { id }, defs);
+        return svg('rect', { x: win.rowX(indent) - 4, y: win.rowY(i) - 14, height: 54, width: 0 }, cp);
+      }
+      const clip6 = typingClip('clip-row6', 5, 0);
+      const clip5 = typingClip('clip-row5', 4, 0);
+      const lineEls = CODE.map((r, i) => {
+        if (i === 4) return codeLine(r.parts, i, r.indent, 'clip-row5');
+        if (i === 5) return codeLine(r.parts, i, r.indent, 'clip-row6');
+        return codeLine(r.parts, i, r.indent);
+      });
+      const oldRow5 = codeLine(OLD_ROW5, 4, 0);
+      const caret = svg('rect', { width: 5, height: 36, rx: 2.5, fill: C.amber }, codeText);
+
+      // File-name tab that lights up on "stored in a file".
+      const tab = svg('rect', { x: win.L + WIN.w - 232, y: win.T + 16, width: 208, height: 46, rx: 23, fill: C.amber, opacity: 0 }, win.g);
+      win.g.insertBefore(tab, win.titleEl);
+
+      // The rewrite of line 3, done by the program itself.
+      const SELF = 2;
+      const NEW_W = 520;
+      const focus = svg('rect', {
+        x: win.L + 40, y: win.rowY(SELF) - 17, width: WIN.w - 80, height: WIN.barH + 34, rx: 18,
+        fill: C.amber, 'fill-opacity': 0.14, stroke: C.amber, 'stroke-width': 3, opacity: 0,
+      }, win.g);
+      const newLine = svg('rect', { x: win.rowX(0), y: win.rowY(SELF), height: WIN.barH, rx: WIN.barH / 2, fill: C.amber, width: 0 }, win.g);
+      const selfArrow = arrow(win.g, 'M 462 30 C 660 30 680 -440 380 -440 C 230 -440 160 -400 150 -306', { color: C.amber, width: 9, head: 24 });
+      const job = meter(win.g, { w: WIN.w, h: 32, text: 'How well it does its job', size: 34 });
+
+      // ---- People, time and other files ------------------------------------
+      const author = person(stage);
+      const day = chip(stage, 'Day 365', { size: 34 });
+      const doc = docCard(stage, { rows: 8 });
+      for (let i = 5; i < 8; i++) doc.lines[i].el.setAttribute('fill', C.mintDeep);
+      const scan = svg('rect', { x: doc.L + 28, width: doc.w - 56, height: 42, rx: 12, fill: C.sky, opacity: 0 }, doc.g);
+      const readArrow = arrow(stage, 'M 1150 470 L 922 470', { color: C.sky });
+      const writeArrow = arrow(stage, 'M 922 612 L 1150 612', { color: C.mint });
+      const readChip = chip(stage, 'reads', { fill: C.skyDeep });
+      const writeChip = chip(stage, 'writes', { fill: C.mintDeep });
+
+      // Another program, which the first one changes as its job.
+      const OTHER_ROWS = [
+        { indent: 0, w: 300, color: C.violet }, { indent: 1, w: 420, color: C.mist }, { indent: 1, w: 260, color: C.sky },
+        { indent: 2, w: 380, color: C.mist }, { indent: 2, w: 300, color: C.mist }, { indent: 1, w: 340, color: C.violet },
+        { indent: 0, w: 220, color: C.mist },
+      ];
+      const other = programWindow(stage, { title: 'other.py', rows: OTHER_ROWS });
+      const otherNew = svg('rect', { x: other.rowX(2), y: other.rowY(3), height: other.barH, rx: other.barH / 2, fill: C.amber, width: 0 }, other.g);
+      const jobArrow = arrow(stage, 'M 1000 520 L 1196 520', { color: C.amber, width: 8 });
+      const jobChip = chip(stage, 'its job: changing programs', { size: 32 });
+
+      // ---- Later versions ---------------------------------------------------
+      const VX = [330, 750, 1170, 1590];
+      const VY = 430;
+      const VS = 0.36;
+      const LEVELS = [0.3, 0.45, 0.65, 0.95];
+      const AMBER_ROWS = [[2], [2, 4], [0, 2, 4], [0, 2, 3, 4]];
+      const AMBER_W = { 0: 600, 2: NEW_W, 3: 470, 4: 560 };
+      const versions = [1, 2, 3].map((k) => {
+        const rows = barRows.map((r, i) =>
+          AMBER_ROWS[k].includes(i) ? { indent: r.indent, w: AMBER_W[i], color: C.amber } : r);
+        const w = programWindow(rowG, { ...WIN, rows, title: `version ${k + 1}` });
+        const x0 = VX[k - 1];
+        const x1 = VX[k];
+        const arc = arrow(rowG, `M ${x0 + 70} 312 C ${x0 + 150} 205 ${x1 - 150} 205 ${x1 - 70} 312`, { color: C.amber, width: 6 + k * 2, head: 18 });
+        return { w, arc };
+      });
+      const vLabels = VX.map((x, k) => label(rowG, `version ${k + 1}`, { x, y: 592, size: 30, fill: C.mist, anchor: 'middle' }));
+      const vMeters = VX.map((x) => {
+        const m = meter(rowG, { w: 260, h: 22 });
+        m.g.setAttribute('transform', `translate(${x - 130} 624)`);
+        return m;
+      });
+
+      // ---- Name and definition ---------------------------------------------
+      const title = svg('text', { 'font-size': 104, 'font-weight': 700, 'text-anchor': 'middle' }, stage);
+      svg('tspan', { fill: C.paper, text: 'Recursive ' }, title);
+      svg('tspan', { fill: C.amber, text: 'self-improvement' }, title);
+
+      const LY = 800;
+      const loop = svg('g', {}, stage);
+      const lap = svg('path', { d: `M 540 ${LY} L 1370 ${LY} L 1370 ${LY + 46} C 1370 ${LY + 190} 540 ${LY + 190} 540 ${LY + 52} L 540 ${LY}`, fill: 'none', stroke: 'none' }, loop);
+      const lapLen = lap.getTotalLength();
+      const runner = svg('circle', { r: 13, fill: C.mint }, loop);
+      const arrowAB = arrow(loop, `M 648 ${LY} L 820 ${LY}`, { color: C.mist });
+      const arrowBC = arrow(loop, `M 1040 ${LY} L 1172 ${LY}`, { color: C.mist });
+      const arrowBack = arrow(loop, `M 1370 ${LY + 46} C 1370 ${LY + 190} 540 ${LY + 190} 540 ${LY + 52}`, { color: C.mint });
+      const chipA = chip(loop, 'program', { size: 34 });
+      const chipB = chip(loop, 'improve', { size: 34, fill: C.amber, color: C.ink900, weight: 700 });
+      const chipC = chip(loop, 'improved program', { size: 34 });
+      const backNote = label(loop, 'the result goes back in', { x: 955, y: LY + 214, size: 30, fill: C.mint, anchor: 'middle' });
+
+      const DURATION = T.duration;
+
+      function render(t) {
+        bg(T.offset + t);
+
+        // -- the program window: where it sits in each shot
+        const pop = prog(t, 0.15, 0.7, ease.outBack);
+        const wx = kf(t, [[tRead - 0.25, 960], [tRead + 0.65, 560], [tOpen - 0.25, 560], [tOpen + 0.65, 960], [tJob - 0.2, 960], [tJob + 0.8, 620], [tNew - 0.3, 620], [tNew + 0.8, VX[0]]]);
+        const wy = kf(t, [[tOpen - 0.25, 540], [tOpen + 0.65, 560], [tJob - 0.2, 560], [tJob + 0.8, 540], [tNew - 0.3, 540], [tNew + 0.8, VY]]);
+        const ws = kf(t, [[tRead - 0.25, 1], [tRead + 0.65, 0.72], [tOpen - 0.25, 0.72], [tOpen + 0.65, 0.9], [tJob - 0.2, 0.9], [tJob + 0.8, 0.8], [tNew - 0.3, 0.8], [tNew + 0.8, VS]]);
+        const beat = 1 + 0.025 * Math.sin(prog(t, tBetter, 0.5, ease.linear) * Math.PI);
+        place(win.g, { x: wx, y: wy + lerp(40, 0, pop), s: ws * pop * beat, o: prog(t, 0.15, 0.3) });
+
+        // -- readable code, typed in and later replaced by bars
+        const asText = 1 - prog(t, tRead - 0.1, 0.7, ease.inOut);
+        codeText.setAttribute('opacity', asText.toFixed(3));
+        win.bars.setAttribute('opacity', (1 - asText).toFixed(3));
+        CODE.forEach((_, i) => {
+          if (i < 5) {
+            const p = prog(t, 0.9 + i * 0.36, 0.45);
+            const el = i === 4 ? oldRow5 : lineEls[i];
+            el.setAttribute('opacity', p.toFixed(3));
+            gutter[i].setAttribute('opacity', p.toFixed(3));
+          }
+          // step through the lines on "a list of instructions"
+          const step = (tFile - tList) / 5;
+          const on = i < 5 ? kf(t, [[tList + i * step, 0], [tList + i * step + 0.12, 1, ease.out], [tList + (i + 1) * step - 0.05, 1], [tList + (i + 1) * step + 0.1, 0]]) : 0;
+          rowLights[i].setAttribute('opacity', (on * 0.9).toFixed(3));
+          gutter[i].setAttribute('fill', on > 0.5 ? C.amber : C.slate);
+        });
+        const tabOn = kf(t, [[tFile, 0], [tFile + 0.25, 1, ease.out], [tFile + 1.0, 1], [tFile + 1.5, 0]]) + kf(t, [[tOwn, 0], [tOwn + 0.25, 1, ease.out], [tOwn + 1.1, 1], [tOwn + 1.6, 0]]);
+        tab.setAttribute('opacity', clamp(tabOn).toFixed(3));
+        win.titleEl.setAttribute('fill', tabOn > 0.5 ? C.ink900 : C.mist);
+
+        // a person types line 6, time passes, then the person edits line 5
+        const n6 = Math.floor(chars(CODE[5].parts) * prog(t, tPeople + 0.7, 1.5, ease.linear));
+        clip6.setAttribute('width', (n6 ? n6 * CH + 6 : 0).toFixed(1));
+        gutter[5].setAttribute('opacity', prog(t, tPeople + 0.5, 0.3).toFixed(3));
+        const swap = prog(t, tChange + 0.45, 0.25);
+        oldRow5.setAttribute('opacity', (prog(t, 0.9 + 4 * 0.36, 0.45) * (1 - swap)).toFixed(3));
+        const n5 = Math.floor(chars(CODE[4].parts) * prog(t, tChange + 0.7, 1.1, ease.linear));
+        clip5.setAttribute('width', (n5 ? n5 * CH + 6 : 0).toFixed(1));
+        const typing6 = t > tPeople + 0.5 && t < tPeople + 2.6;
+        const typing5 = t > tChange + 0.3 && t < tChange + 2.2;
+        const caretX = typing5 ? win.rowX(0) + n5 * CH + 5 : win.rowX(0) + n6 * CH + 5;
+        caret.setAttribute('x', caretX.toFixed(1));
+        caret.setAttribute('y', (win.rowY(typing5 ? 4 : 5) - 6).toFixed(1));
+        caret.setAttribute('opacity', typing5 || typing6 ? (Math.sin(t * 10) > -0.3 ? 1 : 0.2) : 0);
+
+        const personOn = prog(t, tPeople, 0.5) * (1 - prog(t, tRead - 0.4, 0.4));
+        const nudge = 1 + 0.06 * Math.sin(prog(t, tChange, 0.5, ease.linear) * Math.PI);
+        place(author.g, { x: 270, y: 560 + lerp(50, 0, prog(t, tPeople, 0.6, ease.outBack)), s: 1.25 * nudge, o: personOn });
+        const dayOn = prog(t, tStay - 0.1, 0.4) * (1 - prog(t, tRead - 0.4, 0.4));
+        place(day.g, { x: 1290, y: 196 + lerp(20, 0, prog(t, tStay - 0.1, 0.5)), o: dayOn });
+        day.textEl.textContent = `Day ${Math.round(lerp(1, 365, prog(t, tStay + 0.1, tChange - tStay - 0.2, ease.inOut)))}`;
+
+        // -- programs read text, programs write text
+        const docOn = prog(t, tRead + 0.2, 0.5) * (1 - prog(t, tOpen - 0.35, 0.4));
+        place(doc.g, { x: 1380, y: 520 + lerp(50, 0, prog(t, tRead + 0.2, 0.6, ease.outBack)), s: 0.95, o: docOn });
+        doc.lines.forEach((ln, i) => ln.set(i < 5 ? 1 : prog(t, tWrite + 0.7 + (i - 5) * 0.35, 0.4)));
+        const sweep = prog(t, tRead + 0.8, 1.2, ease.inOut);
+        scan.setAttribute('y', lerp(doc.rowY(0) - 13, doc.rowY(4) - 13, sweep).toFixed(1));
+        scan.setAttribute('opacity', (0.3 * kf(t, [[tRead + 0.7, 0], [tRead + 0.9, 1], [tRead + 1.9, 1], [tRead + 2.2, 0]])).toFixed(3));
+        const linksOff = 1 - prog(t, tOpen - 0.35, 0.4);
+        readArrow.draw(prog(t, tRead + 0.8, 0.7, ease.inOut), linksOff);
+        writeArrow.draw(prog(t, tWrite + 0.1, 0.7, ease.inOut), linksOff);
+        place(readChip.g, { x: 1036, y: 418, s: prog(t, tRead + 0.7, 0.4, ease.outBack), o: prog(t, tRead + 0.7, 0.2) * linksOff });
+        place(writeChip.g, { x: 1036, y: 668, s: prog(t, tWrite, 0.4, ease.outBack), o: prog(t, tWrite, 0.2) * linksOff });
+
+        // -- the program opens its own file and changes it
+        selfArrow.draw(prog(t, tOpen + 0.6, 1.5, ease.inOut), 1 - prog(t, tJob - 0.4, 0.4));
+        const focusOn = kf(t, [[tEdit - 0.35, 0], [tEdit, 1], [tSuppose - 0.3, 1], [tSuppose + 0.2, 0]]) + kf(t, [[tBetter - 0.5, 0], [tBetter - 0.2, 1], [tBetter + 0.9, 1], [tBetter + 1.4, 0]]);
+        focus.setAttribute('opacity', clamp(focusOn).toFixed(3));
+        win.lines[SELF].set(1 - prog(t, tEdit + 0.1, 0.5, ease.inOut));
+        newLine.setAttribute('width', (NEW_W * prog(t, tEdit + 0.6, 0.8, ease.inOut)).toFixed(2));
+
+        // -- "better at its job", and what the job is
+        place(job.g, { x: -WIN.w / 2, y: WIN.h / 2 + 96, o: prog(t, tSuppose, 0.5) * (1 - prog(t, tNew - 0.5, 0.4)) });
+        job.set(kf(t, [[tSuppose + 0.2, 0], [tSuppose + 0.9, 0.4, ease.out], [tBetter - 0.1, 0.4], [tBetter + 0.8, 0.62, ease.outBack]]));
+
+        const otherOff = 1 - prog(t, tNew - 0.5, 0.4);
+        const otherPop = prog(t, tJob + 0.5, 0.6, ease.outBack);
+        place(other.g, { x: 1440, y: 500, s: 0.55 * otherPop, o: prog(t, tJob + 0.5, 0.25) * otherOff });
+        jobArrow.draw(prog(t, tJob + 1.5, 0.7, ease.inOut), otherOff);
+        other.lines[3].set(1 - prog(t, tJob + 2.2, 0.5, ease.inOut));
+        otherNew.setAttribute('width', (440 * prog(t, tJob + 2.7, 0.8, ease.inOut)).toFixed(2));
+        place(jobChip.g, { x: 1440, y: 716 + lerp(20, 0, prog(t, tJob + 0.9, 0.5)), o: prog(t, tJob + 0.9, 0.4) * otherOff });
+
+        // -- each version produces the next, and each step is bigger
+        const starts = [tNew + 1.3, tNext, tAfter];
+        versions.forEach((v, k) => {
+          const t0 = starts[k];
+          v.arc.draw(prog(t, t0, 0.7, ease.inOut));
+          const p = prog(t, t0 + 0.55, 0.6, ease.outBack);
+          place(v.w.g, { x: VX[k + 1], y: VY + lerp(24, 0, p), s: VS * p, o: prog(t, t0 + 0.55, 0.2) });
+        });
+        VX.forEach((_, k) => {
+          const t0 = k === 0 ? tNew + 0.7 : starts[k - 1] + 0.9;
+          vLabels[k].setAttribute('opacity', prog(t, t0, 0.4).toFixed(3));
+          vMeters[k].g.setAttribute('opacity', prog(t, t0, 0.4).toFixed(3));
+          vMeters[k].set(LEVELS[k] * prog(t, t0 + 0.15, 0.8, ease.out));
+        });
+
+        // -- the name, and what "recursive" means
+        const up = prog(t, tName - 0.3, 1.0, ease.inOut);
+        const k = lerp(1, 0.82, up);
+        place(rowG, { x: 960 * (1 - k), y: VY * (1 - k) - 175 * up, s: k });
+        place(title, { x: 960, y: 600 + lerp(40, 0, prog(t, tName + 0.15, 0.8, ease.outQuint)), o: prog(t, tName + 0.15, 0.5) });
+
+        place(chipA.g, { x: 540, y: LY, s: prog(t, tMeans, 0.45, ease.outBack), o: prog(t, tMeans, 0.2) });
+        arrowAB.draw(prog(t, tMeans + 0.3, 0.4, ease.inOut));
+        place(chipB.g, { x: 930, y: LY, s: prog(t, tMeans + 0.55, 0.45, ease.outBack), o: prog(t, tMeans + 0.55, 0.2) });
+        arrowBC.draw(prog(t, tMeans + 0.85, 0.4, ease.inOut));
+        place(chipC.g, { x: 1370, y: LY, s: prog(t, tMeans + 1.1, 0.45, ease.outBack), o: prog(t, tMeans + 1.1, 0.2) });
+        arrowBack.draw(prog(t, tResult, 1.0, ease.inOut));
+        backNote.setAttribute('opacity', prog(t, tResult + 0.6, 0.5).toFixed(3));
+        const lapStart = tResult + 1.0;
+        const at = lap.getPointAtLength(lapLen * ((((t - lapStart) / 1.5) % 1 + 1) % 1));
+        runner.setAttribute('cx', at.x.toFixed(2));
+        runner.setAttribute('cy', at.y.toFixed(2));
+        runner.setAttribute('opacity', prog(t, lapStart, 0.2).toFixed(3));
+      }
+
+      mount({ duration: DURATION, render });
+    </script>
+  </body>
+</html>

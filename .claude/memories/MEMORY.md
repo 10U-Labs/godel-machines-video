@@ -1,0 +1,2 @@
+- [Video production decisions](video-production-decisions.md) — voice am_michael, synthesized music, no length limit, general-public audience
+- [No analogies in script](no-analogies-in-script.md) — general public, but explain real mechanisms plainly; no analogies
