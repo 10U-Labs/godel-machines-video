@@ -116,7 +116,7 @@ export function meter(parent, { w = 760, h = 30, text = '', color = C.mint, size
   svg('rect', { x: 0, y: 0, width: w, height: h, rx: h / 2, fill: C.ink600 }, g);
   const fill = svg('rect', { x: 0, y: 0, height: h, rx: h / 2, fill: color }, g);
   return {
-    g, textEl,
+    g, textEl, fill,
     set(level) {
       fill.setAttribute('width', (w * clamp(level)).toFixed(2));
     },
@@ -193,4 +193,102 @@ export function person(parent, { color = C.sky, shade = C.skyDeep } = {}) {
   svg('circle', { cx: 0, cy: -34, r: 46, fill: C.paper }, g);
   svg('path', { d: 'M 0 -80 A 46 46 0 0 1 0 12 A 60 60 0 0 0 0 -80 Z', fill: C.mist, opacity: 0.7 }, g);
   return { g };
+}
+
+// A machine, drawn as a square chip with pins. `outline: true` draws only a
+// dashed outline, for a machine that has been described but not built.
+export function machine(parent, { size = 300, color = C.amber, outline = false } = {}) {
+  const g = svg('g', {}, parent);
+  const h = size / 2;
+  const pin = size * 0.085;
+  const dash = { fill: 'none', stroke: C.mist, 'stroke-width': 5, 'stroke-dasharray': '18 14', 'stroke-linecap': 'round' };
+  if (!outline) {
+    svg('rect', { x: -h + 12, y: -h + 18, width: size, height: size, rx: size * 0.16, fill: C.ink900, opacity: 0.45 }, g);
+    for (let i = 0; i < 4; i++) {
+      const at = -h + size * (0.2 + i * 0.2);
+      for (const side of [-1, 1]) {
+        const edge = side * (h + pin * 0.3);
+        svg('rect', { x: at - pin / 2, y: edge - pin * 0.8, width: pin, height: pin * 1.6, rx: pin * 0.35, fill: C.ink500 }, g);
+        svg('rect', { x: edge - pin * 0.8, y: at - pin / 2, width: pin * 1.6, height: pin, rx: pin * 0.35, fill: C.ink500 }, g);
+      }
+    }
+  }
+  const body = svg('rect', { x: -h, y: -h, width: size, height: size, rx: size * 0.16, ...(outline ? dash : { fill: C.ink600 }) }, g);
+  let core = null;
+  if (!outline) {
+    const c = size * 0.23;
+    core = svg('rect', { x: -c, y: -c, width: c * 2, height: c * 2, rx: size * 0.08, fill: color }, g);
+    svg('rect', { x: -c * 0.36, y: -c * 0.36, width: c * 0.72, height: c * 0.72, rx: size * 0.03, fill: C.ink900, opacity: 0.28 }, g);
+  }
+  return { g, size, body, core };
+}
+
+// The first page of a paper: its title, author and year, then lines of text.
+export function paperCard(parent, { w = 620, h = 760, title = [], byline = '', year = '', rows = 7, seed = 3 } = {}) {
+  const g = svg('g', {}, parent);
+  const L = -w / 2;
+  const T = -h / 2;
+  const fold = 64;
+  const page = `M ${L + 22} ${T} H ${L + w - fold} L ${L + w} ${T + fold} V ${T + h - 22} a 22 22 0 0 1 -22 22 H ${L + 22} a 22 22 0 0 1 -22 -22 V ${T + 22} a 22 22 0 0 1 22 -22 z`;
+  svg('path', { d: page, fill: C.ink900, opacity: 0.4, transform: 'translate(12 18)' }, g);
+  svg('path', { d: page, fill: C.paper }, g);
+  svg('path', { d: `M ${L + w - fold} ${T} V ${T + fold - 14} a 14 14 0 0 0 14 14 H ${L + w} z`, fill: C.mist }, g);
+  let y = T + 116;
+  for (const line of title) {
+    label(g, line, { x: L + 52, y, size: 44, weight: 700, fill: C.ink900 });
+    y += 56;
+  }
+  label(g, byline, { x: L + 52, y, size: 30, weight: 500, fill: C.ink500 });
+  label(g, year, { x: L + w - 52, y, size: 30, weight: 700, fill: C.ink500, anchor: 'end' });
+  y += 34;
+  svg('rect', { x: L + 52, y, width: w - 104, height: 4, rx: 2, fill: C.mist }, g);
+  y += 44;
+  const lines = Array.from({ length: rows }, (_, i) => {
+    const lw = (w - 104) * (i === rows - 1 ? 0.45 : 0.78 + 0.22 * rand(seed + i * 5));
+    return svg('rect', { x: L + 52, y: y + i * 38, height: 14, rx: 7, fill: C.slate, opacity: 0.6, width: lw }, g);
+  });
+  return { g, w, h, L, T, lines };
+}
+
+// A pass or fail mark: set(1) shows a tick, set(0) a cross.
+export function verdict(parent, { r = 26 } = {}) {
+  const g = svg('g', {}, parent);
+  const stroke = { fill: 'none', stroke: C.ink900, 'stroke-width': r * 0.22, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' };
+  const yes = svg('g', {}, g);
+  svg('circle', { r, fill: C.mint }, yes);
+  svg('path', { d: `M ${-r * 0.45} ${r * 0.02} L ${-r * 0.12} ${r * 0.36} L ${r * 0.48} ${-r * 0.32}`, ...stroke }, yes);
+  const no = svg('g', {}, g);
+  svg('circle', { r, fill: C.coral }, no);
+  svg('path', { d: `M ${-r * 0.36} ${-r * 0.36} L ${r * 0.36} ${r * 0.36} M ${r * 0.36} ${-r * 0.36} L ${-r * 0.36} ${r * 0.36}`, ...stroke }, no);
+  return {
+    g,
+    set(pass) {
+      yes.setAttribute('opacity', clamp(pass).toFixed(3));
+      no.setAttribute('opacity', clamp(1 - pass).toFixed(3));
+    },
+  };
+}
+
+// A mathematical proof: numbered steps on a page, closed by an end-of-proof mark.
+export function proofCard(parent, { w = 300, h = 260, steps = 4, color = C.violet } = {}) {
+  const g = svg('g', {}, parent);
+  const L = -w / 2;
+  const T = -h / 2;
+  svg('rect', { x: L + 10, y: T + 14, width: w, height: h, rx: 24, fill: C.ink900, opacity: 0.4 }, g);
+  svg('rect', { x: L, y: T, width: w, height: h, rx: 24, fill: C.paper }, g);
+  const gap = (h - 84) / (steps - 1);
+  const lines = Array.from({ length: steps }, (_, i) => {
+    const y = T + 42 + i * gap;
+    const dot = svg('circle', { cx: L + 42, cy: y, r: 11, fill: color }, g);
+    const full = (w - 140) * (i === steps - 1 ? 0.6 : 0.7 + 0.3 * rand(41 + i * 3));
+    const bar = svg('rect', { x: L + 68, y: y - 8, height: 16, rx: 8, fill: C.slate, width: full }, g);
+    return {
+      set(frac) {
+        dot.setAttribute('opacity', clamp(frac * 3).toFixed(3));
+        bar.setAttribute('width', Math.max(0, full * frac).toFixed(2));
+      },
+    };
+  });
+  const qed = svg('rect', { x: L + w - 58, y: T + h - 55, width: 26, height: 26, rx: 4, fill: color }, g);
+  return { g, w, h, lines, qed };
 }
