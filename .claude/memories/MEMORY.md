@@ -1,2 +1,5 @@
+- [Never quote the user verbatim](never-quote-the-user-verbatim.md) — restate what the user says in fresh words in memories, commits, comments, and summaries
 - [Video production decisions](video-production-decisions.md) — voice am_michael, synthesized music, no length limit, general-public audience
 - [No analogies in script](no-analogies-in-script.md) — general public, but explain real mechanisms plainly; no analogies
+- [Render in GitHub workflows](render-in-github-workflows.md) — no local renders; push and let Actions render, fetch artifacts with gh
+- [Oxford commas](oxford-commas.md) — asked for in the repo's About; apply to other repo prose too
