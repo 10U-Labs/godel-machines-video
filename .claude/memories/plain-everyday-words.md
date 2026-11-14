@@ -5,6 +5,8 @@ metadata:
   type: feedback
 ---
 
+# Plain everyday words
+
 The script must be in plain language that a person with no technical background understands, word by word. It must not come across as technical. The user said this on 2026-11-14 after reading script draft 3, and pointed at one word as an example of vocabulary a general viewer does not have: "docile", which draft 3 carried over from I. J. Good's 1965 sentence.
 
 **Why:** The audience is the general public (see [Video production decisions](video-production-decisions.md)). Claude's interpretation: a single unfamiliar word makes a viewer stop following, so a hard word is a fault even inside a quotation.

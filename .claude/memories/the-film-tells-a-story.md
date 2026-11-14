@@ -5,6 +5,8 @@ metadata:
   type: feedback
 ---
 
+# The film tells a story
+
 The video has to tell a story, hook the audience, and have what the user calls soul. On 2026-11-14 the user watched the first rendered scene, which followed script draft 2 (accurate, in textbook order, with no people or stakes in it), and judged it only passable for this reason.
 
 **Why:** The user gave no further reason. Claude's interpretation: a correct explanation does not hold a general audience by itself; viewers need a question to care about, people, tension, and a payoff.

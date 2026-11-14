@@ -5,6 +5,8 @@ metadata:
   type: project
 ---
 
+# Video production decisions
+
 The user settled these production choices for the video (2026-11-14):
 
 - Look: an animated explainer with the feel of Kurzgesagt videos. The look itself is original flat-vector artwork drawn in code; nothing of Kurzgesagt's (characters, logo, branding) is copied. The feel was the user's decision in the planning chat that preceded this repo; the original look was proposed there and has been followed since.

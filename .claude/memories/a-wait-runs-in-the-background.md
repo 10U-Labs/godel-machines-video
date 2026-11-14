@@ -5,6 +5,8 @@ metadata:
   type: feedback
 ---
 
+# A wait runs in the background
+
 Waiting for a workflow run, or for anything else that takes minutes, is done with `Bash` and `run_in_background: true`, which notifies once when the command exits, or with `Monitor`, which reports each event. It is never a foreground `sleep`, a foreground `gh run watch`, or a polling loop in the session's own shell.
 
 **Why:** The user holds this rule in the sibling 10U-Labs repos and in repos one level further up, and on 2026-11-14 asked for it to be adopted here. The reason those repos record: a foreground wait holds the session busy for the whole run, so the user cannot type and scheduled reminders cannot fire. The render workflow here runs for minutes, so the rule applies to every push that starts it.

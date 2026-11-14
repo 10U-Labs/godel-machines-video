@@ -5,6 +5,8 @@ metadata:
   type: feedback
 ---
 
+# No analogies in script
+
 The video is for the general public, and its script must not use analogies. The user set both together when asked who the video is for (2026-11-14), after Claude had proposed carrying the ideas by analogy for a general audience.
 
 **Why:** The user gave no reason. Claude's interpretation: they want the real mechanism of each machine explained in plain language, not replaced by a comparison to something else.

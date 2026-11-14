@@ -5,6 +5,8 @@ metadata:
   type: feedback
 ---
 
+# Long-running commands in the background
+
 Run every command that can take more than about a minute as a background Bash call (`run_in_background: true`), then end the turn and let its completion notification resume the work. In this repo that covers a `gh run download` of scene videos or the film, a sweep of `gh` calls over many runs or artifacts, `npm install`, `pip install`, a download of the voice model, and a long `grep` or `find` over a sibling repository, as well as the wait for a workflow run in [A wait runs in the background](a-wait-runs-in-the-background.md). Frame capture, encoding, and assembly are not among them, because per [Render in GitHub workflows](render-in-github-workflows.md) they are not run locally at all.
 
 **Why:** The user holds this rule in the sibling 10U-Labs repos and in repos one level further up, and on 2026-11-14 asked for it to be adopted here. The reason those repos record: a foreground command holds the turn for as long as it runs, so the user cannot type and any scheduled reminder due in that time waits behind it. A background command frees the turn as soon as it starts.

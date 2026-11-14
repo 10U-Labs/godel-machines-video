@@ -5,6 +5,8 @@ metadata:
   type: feedback
 ---
 
+# Script holds only narration
+
 The script holds the narration, and nothing the user did not ask for. On 2026-11-14 the user, reading script draft 4, asked why it carried source notes and pointed out that they had never requested them. Claude had added a block of notes under every scene (paper sections, exact quotations, numbers left out of the narration) so that each claim could be traced. Claude removed all of them in draft 5.
 
 **Why:** The user's stated point was that this was not requested. Claude's interpretation: material nobody asked for gets in the way of reading the script, and the same would hold for any other deliverable.

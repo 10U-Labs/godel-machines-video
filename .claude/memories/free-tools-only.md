@@ -5,6 +5,8 @@ metadata:
   type: feedback
 ---
 
+# Free tools only
+
 Everything used to make the video must be free. The user ruled out anything paid on 2026-11-14, when Claude listed a paid hosted voice among the alternatives to the Kokoro narration.
 
 **Why:** The user gave no reason.

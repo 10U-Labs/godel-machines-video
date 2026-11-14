@@ -5,6 +5,8 @@ metadata:
   type: feedback
 ---
 
+# Never quote the user verbatim
+
 Nothing the user writes is recorded word for word, anywhere: not in a memory, an issue, a commit message, a comment in code, a task, a feedback draft, a summary, or a compaction. Each of those carries the user's point restated in fresh words, with no quotation marks around the user's sentences and no unquoted copy of them either.
 
 **Why:** The user does not want their own wording kept on record. They hold this rule in the sibling 10U-Labs repos (as `never-quote-the-user-verbatim`) and in repos one level up (as `user-words-are-never-recorded-verbatim`), and on 2026-11-14 asked for it to be adopted here. A paraphrase keeps the rule and its reason; the exact wording adds nothing a later session needs.

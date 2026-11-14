@@ -5,6 +5,8 @@ metadata:
   type: feedback
 ---
 
+# Oxford commas
+
 The GitHub repo's About text uses Oxford commas. The user asked for this on 2026-11-14, after Claude had written the description with a three-item list and no comma before the final item.
 
 **Why:** The user gave no reason.
