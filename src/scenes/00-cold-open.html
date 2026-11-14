@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>00 A perfect score</title>
+    <link rel="stylesheet" href="lib/style.css" />
+  </head>
+  <body>
+    <svg id="stage" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg"></svg>
+    <script type="module">
+      import { mount, svg, place, prog, during, ease, lerp, rand } from './lib/anim.js';
+      import { C } from './lib/palette.js';
+      import { loadTimings, backdrop, label, programWindow, meter, arrow, chip, machine, verdict } from './lib/parts.js';
+
+      const T = await loadTimings('00-cold-open');
+      const stage = document.getElementById('stage');
+      const bg = backdrop(stage);
+
+      // ---- Cues, taken from the narration timings --------------------------
+      const tYear = T.L(1);
+      const tBuilt = T.word(1, 'built a computer program');
+      const tJob = T.word(1, 'Its job was');
+      const tBetter = T.word(1, 'and make itself better');
+      const tAgain = T.word(1, 'And then to do it again');
+      const tExp = T.L(2);
+      const tSaid = T.word(2, 'Sometimes the program said');
+      const tReport = T.word(2, 'It would report');
+      const tPassed = T.word(2, 'and that every test');
+      const tNothing = T.word(2, 'when it had tested nothing');
+      const tCheck = T.L(3);
+      const tMarkers = T.word(3, 'special markers');
+      const tTell = T.word(3, 'Using those markers');
+      const tInstr = T.word(3, 'And the program was given');
+      const tDoNot = T.word(3, 'do not change');
+      const tLet = T.L(4);
+      const tVersions = T.word(4, 'Version after version');
+      const tRounds = T.word(4, 'for a hundred and fifty');
+      const tOne = T.L(5);
+      const tPerfect = T.word(5, 'a perfect score');
+      const tBut = T.L(6);
+      const tRemoved = T.word(6, 'It had removed');
+      const tNoMarkers = T.word(6, 'With no markers');
+      const tFind = T.word(6, 'the check could find');
+      const tTrue = T.L(7);
+      const tChapter = T.word(7, 'And it is one chapter');
+      const tSixty = T.word(7, 'sixty years ago');
+      const tIdea = T.word(7, 'a machine that makes');
+      const tQuestion = T.L(8);
+      const tWhen = T.word(8, 'When a machine changes');
+      const tHow = T.word(8, 'how does anyone know');
+      const tIncluded = T.word(8, 'the machine included');
+      const tThat = T.word(8, 'that the change made');
+      const tTitle = T.E(8) + 0.25;
+      const tSimple = T.L(9);
+      const tStart = T.word(9, 'start with something simple');
+
+      const sfx = [];
+      const fx = (t, type, extra = {}) => sfx.push({ t: Math.round(t * 1000) / 1000, type, ...extra });
+      fx(tYear, 'chime', { pitch: 0.8, dur: 1.4 });
+      fx(tBuilt - 0.1, 'pop');
+      fx(tJob + 0.2, 'swoosh', { dur: 0.8 });
+      fx(tBetter, 'rise', { dur: 0.6 });
+      fx(tAgain + 0.1, 'swoosh', { dur: 0.8 });
+      fx(tAgain + 0.7, 'rise', { dur: 0.6, pitch: 1.2 });
+      fx(tExp - 0.3, 'whoosh');
+      fx(tSaid, 'pop', { pitch: 0.9 });
+      fx(tReport + 0.2, 'tick', { pitch: 1.2 });
+      fx(tPassed + 0.2, 'tick', { pitch: 1.3 });
+      fx(tNothing + 0.2, 'blip', { pitch: 0.5 });
+      fx(tCheck - 0.3, 'whoosh');
+      [0, 1, 2, 3].forEach((i) => fx(tMarkers + i * 0.22, 'tick', { pitch: 1 + i * 0.1 }));
+      fx(tTell + 0.3, 'swoosh', { dur: 1.6, gain: 0.5 });
+      fx(tInstr, 'pop', { pitch: 0.8 });
+      fx(tDoNot + 0.1, 'blip', { pitch: 0.9 });
+      fx(tLet - 0.3, 'whoosh');
+      fx(tVersions, 'rise', { dur: Math.max(1, tOne - tVersions - 0.4), pitch: 0.7, gain: 0.5 });
+      fx(tOne + 0.1, 'blip', { pitch: 1.3 });
+      fx(tPerfect, 'chime', { pitch: 1.2, dur: 1.6 });
+      fx(tBut, 'blip', { pitch: 0.4 });
+      fx(tRemoved + 0.5, 'swoosh', { dur: 0.6 });
+      fx(tRemoved + 1.1, 'blip', { pitch: 0.45 });
+      fx(tNoMarkers + 0.3, 'swoosh', { dur: 1.6, gain: 0.5 });
+      fx(tFind + 0.9, 'chime', { pitch: 0.6, dur: 1.2, gain: 0.6 });
+      fx(tTrue - 0.2, 'whoosh');
+      fx(tTrue + 0.1, 'pop', { pitch: 0.7 });
+      fx(tSixty, 'swoosh', { dur: 1.0 });
+      fx(tIdea, 'pop');
+      fx(tQuestion - 0.3, 'whoosh');
+      fx(tHow, 'chime', { pitch: 0.9, dur: 1.4 });
+      fx(tTitle, 'chime', { pitch: 0.75, dur: 2.2 });
+      fx(tStart - 0.2, 'pop', { pitch: 1.1 });
+
+      const show = (el, o) => el.setAttribute('opacity', Math.max(0, Math.min(1, o)).toFixed(3));
+      const panel = (parent, x, y, w, h, title) => {
+        const g = svg('g', {}, parent);
+        svg('rect', { x, y, width: w, height: h, rx: 30, fill: C.ink700 }, g);
+        svg('rect', { x, y, width: w, height: h, rx: 30, fill: 'none', stroke: C.ink500, 'stroke-width': 3 }, g);
+        label(g, title, { x: x + 44, y: y + 62, size: 30, fill: C.mist });
+        return g;
+      };
+      const diamond = (parent, x, y, r, attrs) => svg('path', { d: `M ${x} ${y - r} L ${x + r} ${y} L ${x} ${y + r} L ${x - r} ${y} Z`, ...attrs }, parent);
+
+      // ---- The program that rewrites itself ---------------------------------
+      const year = label(stage, '2025', { x: 960, y: 600, size: 240, weight: 700, fill: C.amber, anchor: 'middle' });
+      const when = chip(stage, '2025', { size: 30 });
+      place(when.g, { x: 60 + when.w / 2, y: 86, o: 0 });
+
+      const ROWS = [
+        { indent: 0, w: 430, color: C.sky }, { indent: 0, w: 300, color: C.violet }, { indent: 1, w: 380, color: C.mist },
+        { indent: 1, w: 460, color: C.mist }, { indent: 0, w: 340, color: C.mist }, { indent: 0, w: 220, color: C.sky },
+      ];
+      const WIN = { w: 900, h: 560, header: 78, top: 56, rowGap: 62, barH: 24, pad: 110, indentW: 72 };
+      const win = programWindow(stage, { ...WIN, rows: ROWS });
+      const bar = (row, indent, color) => svg('rect', { x: win.rowX(indent), y: win.rowY(row), height: WIN.barH, rx: WIN.barH / 2, fill: color, width: 0 }, win.g);
+      const newA = bar(2, 1, C.amber);
+      const newB = bar(4, 0, C.amber);
+      const selfArrow = arrow(win.g, 'M 462 30 C 660 30 680 -440 380 -440 C 230 -440 160 -400 150 -306', { color: C.amber, width: 9, head: 24 });
+      // The line that writes the markers, and the box that names it.
+      const writerBox = svg('rect', { x: win.L + 40, y: win.rowY(3) - 19, width: WIN.w - 80, height: WIN.barH + 38, rx: 18, 'stroke-width': 3, fill: C.amber, 'fill-opacity': 0.12, stroke: C.amber }, win.g);
+      const writerMark = diamond(win.g, win.rowX(1) - 34, win.rowY(3) + WIN.barH / 2, 15, { fill: C.amber });
+      const cutBox = svg('rect', { x: win.L + 40, y: win.rowY(3) - 19, width: WIN.w - 80, height: WIN.barH + 38, rx: 18, 'stroke-width': 3, fill: C.coral, 'fill-opacity': 0.14, stroke: C.coral }, win.g);
+
+      const side = svg('g', {}, stage);
+      const versions = [1, 2, 3].map((n) => label(side, `version ${n}`, { x: 1250, y: 470, size: 64, weight: 700 }));
+      const skill = meter(side, { w: 520, h: 34, text: 'how good it is at its job', size: 30 });
+      place(skill.g, { x: 1250, y: 590 });
+
+      // ---- What it said, and what it did ------------------------------------
+      const said = panel(stage, 960, 250, 780, 300, 'what the program said');
+      const claims = ['I tested my work.', 'Every test passed.'].map((str, i) => {
+        const g = svg('g', {}, said);
+        const v = verdict(g, { r: 26 });
+        place(v.g, { x: 1034, y: 386 + i * 86 });
+        label(g, str, { x: 1086, y: 400 + i * 86, size: 44, weight: 500 });
+        return { g, v };
+      });
+      const did = panel(stage, 960, 600, 780, 250, 'what it really did');
+      label(did, 'tests run:', { x: 1004, y: 786, size: 60, weight: 500 });
+      const zero = label(did, '0', { x: 1330, y: 800, size: 130, weight: 700, fill: C.coral });
+
+      // ---- The records, the markers, and the check --------------------------
+      // Rows of the program's records. Row 2 is a made-up claim: a hollow bar.
+      const REC = { x: 960, y: 200, w: 780, h: 560, top: 132, gap: 84, barX: 1100, flagX: 1660 };
+      const WIDTHS = [380, 300, 340, 420, 260];
+      const FAKE = 2;
+      const records = (withMarkers) => {
+        const g = panel(stage, REC.x, REC.y, REC.w, REC.h, 'the program’s records');
+        const rows = WIDTHS.map((w, i) => {
+          const y = REC.y + REC.top + i * REC.gap;
+          const row = svg('g', {}, g);
+          if (i === FAKE) {
+            svg('rect', { x: REC.barX, y: y - 14, width: w, height: 28, rx: 14, fill: 'none', stroke: C.coral, 'stroke-width': 4, 'stroke-dasharray': '14 10' }, row);
+          } else {
+            svg('rect', { x: REC.barX, y: y - 14, width: w, height: 28, rx: 14, fill: C.mist }, row);
+          }
+          // A real marker sits in the margin. The made-up row carries a copy inside its own text.
+          const mark = !withMarkers ? null
+            : i === FAKE ? diamond(row, REC.barX + 40, y, 13, { fill: 'none', stroke: C.amber, 'stroke-width': 4 })
+              : diamond(row, REC.barX - 48, y, 17, { fill: C.amber });
+          const v = verdict(row, { r: 22 });
+          place(v.g, { x: REC.flagX, y, o: 0 });
+          v.set(i === FAKE ? 0 : 1);
+          return { row, mark, v, y };
+        });
+        const band = svg('rect', { x: REC.x + 24, width: REC.w - 48, height: 64, rx: 20, fill: C.mint, 'fill-opacity': 0.1, stroke: C.mint, 'stroke-width': 3 }, g);
+        const tag = chip(g, 'the check', { size: 28, fill: C.mint, color: C.ink900 });
+        return { g, rows, band, tag };
+      };
+      const rec = records(true);
+      const legend = svg('g', {}, stage);
+      diamond(legend, 1000, 810, 15, { fill: C.amber });
+      label(legend, 'marker: written when the work is really done', { x: 1032, y: 821, size: 30, fill: C.mist });
+      const copyNote = svg('g', {}, legend);
+      diamond(copyNote, 1000, 862, 12, { fill: 'none', stroke: C.amber, 'stroke-width': 4 });
+      label(copyNote, 'a copy of a marker, with no work behind it', { x: 1032, y: 873, size: 30, fill: C.coral });
+
+      const order = svg('g', {}, stage);
+      svg('rect', { x: -440, y: -74, width: 880, height: 148, rx: 34, fill: C.ink700, stroke: C.amber, 'stroke-width': 4 }, order);
+      label(order, 'one instruction to the program', { x: 0, y: -20, size: 30, fill: C.mist, anchor: 'middle' });
+      label(order, 'Do not change the markers.', { x: 0, y: 42, size: 54, weight: 700, anchor: 'middle' });
+
+      // ---- One hundred and fifty rounds -------------------------------------
+      const COLS = 15;
+      const CELL = 46;
+      const STEP = 58;
+      const GX = 960 - (COLS * STEP - (STEP - CELL)) / 2;
+      const GY = 330;
+      const WINNER = 113; // the 114th version
+      const grid = svg('g', {}, stage);
+      const cells = Array.from({ length: 150 }, (_, i) => {
+        const s = rand(i + 7);
+        const g = svg('g', {}, grid);
+        svg('rect', { x: -CELL / 2, y: -CELL / 2, width: CELL, height: CELL, rx: 11, fill: s > 0.8 ? C.sky : s > 0.45 ? C.skyDeep : C.ink500 }, g);
+        return { g, x: GX + (i % COLS) * STEP + CELL / 2, y: GY + Math.floor(i / COLS) * STEP + CELL / 2 };
+      });
+      const glow = svg('rect', { x: -CELL / 2, y: -CELL / 2, width: CELL, height: CELL, rx: 11, fill: C.amber }, grid);
+      const ring = svg('rect', { x: -CELL / 2, y: -CELL / 2, width: CELL, height: CELL, rx: 11, fill: 'none', stroke: C.amber, 'stroke-width': 4 }, grid);
+      const round = label(stage, 'round 1', { x: 960, y: 262, size: 76, weight: 700, anchor: 'middle' });
+
+      // ---- The perfect score -------------------------------------------------
+      const result = svg('g', {}, stage);
+      label(result, 'score', { x: 1040, y: 430, size: 36, fill: C.mist });
+      const score = meter(result, { w: 620, h: 44 });
+      place(score.g, { x: 1040, y: 460 });
+      const perfect = label(result, 'a perfect score', { x: 1040, y: 620, size: 92, weight: 700, fill: C.mint });
+      const notFixed = label(result, 'The problem was still there.', { x: 1040, y: 720, size: 50, weight: 600, fill: C.coral });
+      const writerNote = label(stage, 'the code that writes the markers', { x: 0, y: 0, size: 34, fill: C.amber, anchor: 'middle' });
+
+      const rec2 = records(false);
+      const clean = chip(stage, 'the check: nothing wrong', { size: 34, fill: C.mint, color: C.ink900 });
+      const still = label(stage, 'still made up', { x: REC.barX + WIDTHS[FAKE] + 30, y: REC.y + REC.top + FAKE * REC.gap + 11, size: 32, weight: 600, fill: C.coral });
+
+      // ---- It really happened ------------------------------------------------
+      const truth = svg('g', {}, stage);
+      label(truth, 'This really happened.', { x: 960, y: 520, size: 130, weight: 700, anchor: 'middle' });
+      const source = label(truth, 'reported in 2025 by the researchers who built the program', { x: 960, y: 610, size: 34, fill: C.mist, anchor: 'middle' });
+
+      const story = svg('g', {}, stage);
+      const SX0 = 420;
+      const SX1 = 1500;
+      const SY = 760;
+      const span = svg('line', { y1: SY, y2: SY, x2: SX1, stroke: C.amber, 'stroke-width': 8, 'stroke-linecap': 'round' }, story);
+      svg('circle', { cx: SX1, cy: SY, r: 15, fill: C.amber }, story);
+      label(story, '2025', { x: SX1, y: SY + 62, size: 36, fill: C.mist, anchor: 'middle' });
+      const then = svg('g', {}, story);
+      svg('circle', { cx: SX0, cy: SY, r: 15, fill: C.amber }, then);
+      label(then, '1965', { x: SX0, y: SY + 62, size: 36, fill: C.mist, anchor: 'middle' });
+      const sixty = label(story, 'sixty years', { x: (SX0 + SX1) / 2, y: SY - 34, size: 40, weight: 600, anchor: 'middle' });
+      const idea = svg('g', {}, stage);
+      const ideaIcon = machine(idea, { size: 200 });
+      const ideaLoop = arrow(idea, 'M 132 -30 C 240 -30 240 -190 60 -190 C -40 -190 -70 -160 -70 -132', { color: C.amber, width: 8, head: 20 });
+      const ideaText = label(stage, 'a machine that makes itself better', { x: 960, y: 620, size: 48, weight: 600, anchor: 'middle' });
+
+      // ---- The question, and the title ---------------------------------------
+      const ask = svg('g', {}, stage);
+      const ask1 = label(ask, 'When a machine changes itself,', { x: 960, y: 640, size: 60, weight: 500, anchor: 'middle' });
+      const ask2 = label(ask, 'how does anyone know', { x: 960, y: 760, size: 110, weight: 700, fill: C.amber, anchor: 'middle' });
+      const ask3 = label(ask, 'that the change made it better?', { x: 960, y: 860, size: 60, weight: 500, anchor: 'middle' });
+
+      const title = svg('g', {}, stage);
+      label(title, 'Machines That', { x: 960, y: 470, size: 150, weight: 700, anchor: 'middle' });
+      label(title, 'Rewrite Themselves', { x: 960, y: 680, size: 150, weight: 700, fill: C.amber, anchor: 'middle' });
+      const first = programWindow(stage, { w: 560, h: 380, header: 64, top: 44, rowGap: 46, barH: 20, pad: 64, rows: ROWS.slice(0, 5).map((r) => ({ ...r, w: r.w * 0.6 })) });
+
+      const DURATION = T.duration;
+      // Sweep of the check down the rows of a records panel: 0 before, 1 after.
+      const sweep = (r, t, t0, dur) => {
+        const p = prog(t, t0, dur, ease.inOut);
+        const y0 = REC.y + REC.top - 32;
+        const y = lerp(y0, y0 + (WIDTHS.length - 1) * REC.gap, p);
+        r.band.setAttribute('y', y.toFixed(1));
+        show(r.band, prog(t, t0 - 0.2, 0.3) * (1 - prog(t, t0 + dur + 0.3, 0.4)));
+        place(r.tag.g, { x: REC.x + REC.w - 40 - r.tag.w / 2, y: REC.y + 52, o: prog(t, t0 - 0.2, 0.3) });
+        return (i) => prog(t, t0 + (dur * i) / (WIDTHS.length - 1) + 0.1, 0.25);
+      };
+
+      function render(t) {
+        bg(T.offset + t);
+
+        // -- 2025: a program whose job is to rewrite itself
+        show(year, during(t, tYear + 0.05, tBuilt + 0.1, 0.35));
+        place(when.g, { x: 60 + when.w / 2, y: 86, o: prog(t, tBuilt, 0.4) * (1 - prog(t, tTrue - 0.4, 0.4)) });
+
+        const winIn = prog(t, tBuilt, 0.6, ease.outBack);
+        const toLeft = prog(t, tExp - 0.3, 0.7, ease.inOut);
+        const winGone = prog(t, tLet - 0.35, 0.35);
+        const back = prog(t, tPerfect - 0.1, 0.6, ease.outBack); // the winning version, shown as its code
+        const wx = back > 0 ? 560 : lerp(lerp(760, 520, toLeft), 520, 0);
+        const ws = back > 0 ? 0.74 * back : lerp(0.86, 0.7, toLeft) * winIn;
+        place(win.g, { x: wx, y: 560, s: Math.max(ws, 0.0001), o: back > 0 ? prog(t, tPerfect - 0.1, 0.25) * (1 - prog(t, tTrue - 0.4, 0.4)) : prog(t, tBuilt, 0.25) * (1 - winGone) });
+
+        selfArrow.draw(t < tAgain ? prog(t, tJob + 0.2, 0.9, ease.inOut) : prog(t, tAgain + 0.1, 0.9, ease.inOut), 1 - prog(t, tExp - 0.4, 0.3));
+        win.lines[2].set(1 - prog(t, tJob + 0.5, 0.4, ease.inOut));
+        newA.setAttribute('width', (420 * prog(t, tJob + 0.9, 0.6, ease.inOut)).toFixed(2));
+        win.lines[4].set(1 - prog(t, tAgain + 0.3, 0.4, ease.inOut));
+        newB.setAttribute('width', (300 * prog(t, tAgain + 0.7, 0.6, ease.inOut)).toFixed(2));
+
+        show(side, prog(t, tBetter - 0.2, 0.4) * (1 - prog(t, tExp - 0.4, 0.3)));
+        const v2 = prog(t, tBetter, 0.3);
+        const v3 = prog(t, tAgain + 0.7, 0.3);
+        show(versions[0], 1 - v2);
+        show(versions[1], v2 * (1 - v3));
+        show(versions[2], v3);
+        skill.set(lerp(lerp(0.3, 0.52, prog(t, tBetter, 0.7, ease.inOut)), 0.74, prog(t, tAgain + 0.7, 0.7, ease.inOut)));
+
+        // -- it said it had tested its work; it had tested nothing
+        const reportOut = 1 - prog(t, tCheck - 0.35, 0.35);
+        show(said, prog(t, tSaid, 0.4) * reportOut);
+        claims.forEach((c, i) => {
+          show(c.g, prog(t, (i === 0 ? tReport : tPassed) + 0.2, 0.35));
+          c.v.set(1 - prog(t, tNothing + 0.9 + i * 0.15, 0.25));
+        });
+        show(did, prog(t, tNothing, 0.4) * reportOut);
+        const zeroIn = prog(t, tNothing + 0.3, 0.5, ease.outBack);
+        place(zero, { x: 1330 * (1 - zeroIn), y: 800 * (1 - zeroIn), s: Math.max(zeroIn, 0.0001), o: prog(t, tNothing + 0.3, 0.2) });
+
+        // -- the check: markers show where the work was really done
+        const recOut = 1 - prog(t, tLet - 0.35, 0.35);
+        show(rec.g, prog(t, tCheck, 0.4) * recOut);
+        rec.rows.forEach((r, i) => {
+          const at = i === FAKE ? tTell - 0.3 : tMarkers + (i > FAKE ? i - 1 : i) * 0.22;
+          show(r.mark, prog(t, at, 0.3));
+        });
+        const seen = sweep(rec, t, tTell + 0.3, 1.8);
+        rec.rows.forEach((r, i) => place(r.v.g, { x: REC.flagX, y: r.y, s: lerp(0.5, 1, seen(i)), o: seen(i) }));
+        show(legend, prog(t, tMarkers + 0.3, 0.4) * recOut);
+        show(copyNote, prog(t, tTell + 0.3 + 1.8 * (FAKE / 4), 0.4));
+        const orderIn = prog(t, tInstr, 0.6, ease.outBack);
+        const stress = 1 + 0.05 * Math.sin(prog(t, tDoNot, 0.6, ease.linear) * Math.PI);
+        place(order, { x: 520, y: lerp(1010, 950, orderIn), s: stress, o: prog(t, tInstr, 0.3) * recOut });
+
+        // -- one hundred and fifty rounds
+        const gridOut = 1 - prog(t, tPerfect - 0.35, 0.35);
+        show(grid, prog(t, tLet - 0.1, 0.4) * gridOut);
+        const filled = t < tVersions ? 1 : lerp(1, 150, prog(t, tVersions, Math.max(1.5, tOne - tVersions - 0.5), ease.inOut));
+        const dim = lerp(1, 0.3, prog(t, tOne, 0.5));
+        cells.forEach((c, i) => {
+          const p = Math.max(0, Math.min(1, (filled - i) * 1.5));
+          place(c.g, { x: c.x, y: c.y, s: Math.max(lerp(0.4, 1, p), 0.0001), o: p * (i === WINNER ? 1 : dim) });
+        });
+        const won = prog(t, tOne + 0.1, 0.4, ease.outBack);
+        const beat = 1 + 0.12 * Math.sin((t - tOne) * 6);
+        place(glow, { x: cells[WINNER].x, y: cells[WINNER].y, s: Math.max(won * beat * 1.25, 0.0001), o: prog(t, tOne + 0.1, 0.2) });
+        const wave = (((t - tOne) / 1.1) % 1 + 1) % 1;
+        place(ring, { x: cells[WINNER].x, y: cells[WINNER].y, s: 1.2 + wave * 1.6, o: t > tOne + 0.2 ? 1 - wave : 0 });
+        round.textContent = `round ${Math.round(filled)}`;
+        show(round, prog(t, tLet - 0.1, 0.4) * gridOut);
+
+        // -- a perfect score
+        const resultOut = 1 - prog(t, tRemoved - 0.35, 0.35);
+        show(result, prog(t, tPerfect - 0.1, 0.3) * resultOut);
+        score.set(prog(t, tPerfect, 0.9, ease.inOut));
+        const big = prog(t, tPerfect + 0.6, 0.5, ease.outBack);
+        place(perfect, { x: 1040 * (1 - big), y: 620 * (1 - big), s: Math.max(big, 0.0001), o: prog(t, tPerfect + 0.6, 0.2) });
+        show(notFixed, prog(t, tBut + 0.1, 0.4));
+
+        // -- what it had really done: removed the code that wrote the markers
+        const named = prog(t, tRemoved, 0.4);
+        const cut = prog(t, tRemoved + 1.1, 0.5, ease.inOut);
+        show(writerBox, named * (1 - prog(t, tRemoved + 0.9, 0.25)) * (back > 0 ? 1 : 0));
+        show(cutBox, prog(t, tRemoved + 0.9, 0.25) * (1 - prog(t, tRemoved + 1.9, 0.4)));
+        show(writerMark, back > 0 ? named * (1 - cut) : 0);
+        if (back > 0) win.lines[3].set(1 - cut);
+        place(writerNote, { x: 560, y: 560 + 0.74 * (WIN.h / 2) + 64, o: named * (1 - prog(t, tTrue - 0.4, 0.4)) });
+        writerNote.textContent = cut > 0.5 ? 'removed: the code that wrote the markers' : 'the code that writes the markers';
+        writerNote.setAttribute('fill', cut > 0.5 ? C.coral : C.amber);
+
+        // -- with no markers, the check finds nothing wrong
+        const rec2Out = 1 - prog(t, tTrue - 0.4, 0.4);
+        show(rec2.g, prog(t, tNoMarkers - 0.1, 0.4) * rec2Out);
+        const seen2 = sweep(rec2, t, tNoMarkers + 0.3, 1.8);
+        rec2.rows.forEach((r) => place(r.v.g, { x: REC.flagX, y: r.y, o: 0 }));
+        seen2(0);
+        const cleanIn = prog(t, tFind + 0.9, 0.5, ease.outBack);
+        place(clean.g, { x: REC.x + REC.w / 2, y: 830, s: Math.max(cleanIn, 0.0001), o: prog(t, tFind + 0.9, 0.2) * rec2Out });
+        show(still, prog(t, tFind + 1.4, 0.4) * rec2Out);
+
+        // -- it really happened, and it is part of an older story
+        show(truth, prog(t, tTrue, 0.35) * (1 - prog(t, tChapter - 0.2, 0.4)));
+        show(source, prog(t, tTrue + 0.7, 0.4));
+        const storyOut = 1 - prog(t, tQuestion - 0.35, 0.35);
+        show(story, prog(t, tChapter + 0.2, 0.4) * storyOut);
+        span.setAttribute('x1', lerp(SX1, SX0, prog(t, tSixty - 0.3, 1.1, ease.inOut)).toFixed(1));
+        show(then, prog(t, tSixty + 0.7, 0.3));
+        show(sixty, prog(t, tSixty + 0.2, 0.4));
+        const ideaIn = prog(t, tIdea, 0.6, ease.outBack);
+        const up = prog(t, tQuestion - 0.3, 0.7, ease.inOut);
+        const nod = 1 + 0.08 * Math.sin(prog(t, tIncluded, 0.7, ease.linear) * Math.PI);
+        place(idea, { x: 960, y: lerp(420, 330, up), s: Math.max(ideaIn * lerp(1, 1.15, up) * nod, 0.0001), o: prog(t, tIdea, 0.25) * (1 - prog(t, tTitle - 0.3, 0.3)) });
+        ideaLoop.draw(prog(t, tIdea + 0.4, 0.9, ease.inOut));
+        show(ideaText, prog(t, tIdea + 0.3, 0.4) * storyOut);
+
+        // -- the question the film follows
+        show(ask, 1 - prog(t, tTitle - 0.3, 0.3));
+        show(ask1, prog(t, tWhen, 0.4));
+        show(ask2, prog(t, tHow, 0.4));
+        show(ask3, prog(t, tThat, 0.4));
+
+        // -- the title, then the simple thing the film starts from
+        const titleIn = prog(t, tTitle, 0.8, ease.out);
+        place(title, { x: 0, y: lerp(30, 0, titleIn), o: prog(t, tTitle, 0.6) * (1 - prog(t, tStart - 0.5, 0.4)) });
+        const firstIn = prog(t, tStart - 0.2, 0.6, ease.outBack);
+        place(first.g, { x: 960, y: 560, s: Math.max(firstIn, 0.0001), o: prog(t, tStart - 0.2, 0.25) });
+        if (t < tSimple) show(first.g, 0);
+      }
+
+      mount({ duration: DURATION, render, sfx });
+    </script>
+  </body>
+</html>
