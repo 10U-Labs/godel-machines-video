@@ -1,29 +1,27 @@
 # Machines That Rewrite Themselves
 
-Narration script, draft 6. One paragraph is one voiced line. Lines starting
+Narration script, draft 7. One paragraph is one voiced line. Lines starting
 with ">" are notes and are not voiced.
 
-The film explains three ideas, in order: recursive self-improvement, the Gödel
-Machine, the Darwin Gödel Machine (children judged by their own scores), and the
-Huxley-Gödel Machine (agents judged by their whole family). Each scene carries
-one idea. Pip, the program that follows the story, is made up. Each scene
-follows from the one before it with a "but" or a "therefore". The joins:
+The film explains recursive self-improvement and three machines built on it:
+the Gödel Machine improves itself, the Darwin Gödel Machine improves itself
+through its children, and the Huxley-Gödel Machine improves itself through its
+families. Each scene carries one idea. Pip, the program that follows the story,
+is made up. Each scene follows from the one before it with a "but" or a
+"therefore". The joins:
 
 > 00 Pip fixes programs, BUT one day the program to fix is Pip's own code.
 > 01 A program is text, THEREFORE Pip can open its own file and change it.
 > 02 THEREFORE each better Pip makes a better change: recursive self-improvement.
 > 03 THEREFORE, Good wrote in 1965, machines could design better machines. BUT he never said how.
-> 04 BUT how does Pip know that a change is better?
-> 05 THEREFORE the first design changes nothing without a proof.
-> 06 BUT such proofs are too hard to find, THEREFORE it was never built.
-> 07 BUT programs learned to write code, THEREFORE a real Pip exists.
-> 08 THEREFORE a team tried it, testing changes instead of proving them.
-> 09 BUT a low score today can lead to a high one later, THEREFORE every working child is kept.
-> 10 THEREFORE it got better, by itself.
-> 11 BUT it picks parents by their own scores, and that guess is often wrong.
-> 12 THEREFORE the next machine judges each agent by its whole family.
-> 13 THEREFORE it does better with less. BUT it is still a best guess.
-> 14 THEREFORE three machines, three answers, and the question of how far it goes.
+> 04 THEREFORE a design: one machine that rewrites itself, the Gödel Machine.
+> 05 BUT it needs proofs nobody can find, THEREFORE it was never built.
+> 06 BUT programs learned to write code, THEREFORE a real Pip exists.
+> 07 THEREFORE a team built a machine that improves through its children.
+> 08 THEREFORE it got better, generation after generation.
+> 09 BUT a parent's own score says little about its descendants.
+> 10 THEREFORE the next machine improves through families: clades.
+> 11 THEREFORE three machines, three ways to improve, and an open question.
 
 ## 00-pip | A program that fixes programs
 
@@ -67,35 +65,29 @@ In 1965, a mathematician named I. J. Good wrote about a machine that could out-t
 
 Good called the first such machine the last invention people would ever need to make.
 
-But he did not say how to build it. And there is a catch.
+But he did not say how to build it.
 
-## 04-the-catch | The catch
+## 04-godel-machine | A machine that rewrites itself
 
-When Pip changes its own code, how does Pip know that the change is better?
+The first exact design came in 2003, from a computer scientist named Jürgen Schmidhuber. He called it the Gödel Machine.
 
-A change can look good and still break something. And if Pip breaks the part of itself that makes the changes, it may never be able to fix it.
+A Gödel Machine is one program that improves itself. While it does its job, it looks for ways to rewrite its own code.
 
-Three machines answer this in three different ways.
+It makes a change only when it can prove, with mathematics, that the change will help.
 
-## 05-godel-machine | Only with proof
+And it can change any part of itself. Even the part that looks for changes.
 
-The first was designed in 2003, by a computer scientist named Jürgen Schmidhuber. He called it the Gödel Machine.
+If Pip were a Gödel Machine, there would only ever be one Pip. Each change would turn the old Pip into a new one.
 
-Its rule is simple. Change nothing, unless you can prove with mathematics that the change will help.
+The name comes from the mathematician Kurt Gödel, who showed how a statement in mathematics can talk about itself. A Gödel Machine does the same thing: it proves things about its own code.
 
-So a Gödel Machine does its job, and at the same time it searches for a proof. When it finds one, it makes the change. Until then, it waits.
+## 05-on-paper | Only on paper
 
-If Pip were a Gödel Machine, every change it made would come with a proof that it was a change for the better.
+But proofs like that are very hard to find. For almost every real change, nobody knows how to write one.
 
-The name comes from the mathematician Kurt Gödel, who showed how a statement in mathematics can talk about itself. A Gödel Machine has to do the same thing: prove things about its own code.
+So the Gödel Machine was never built. It exists only on paper.
 
-## 06-no-proof | No proof in sight
-
-But proofs like that are very hard to find. For almost every real change, nobody knows how to prove that it would help.
-
-So the Gödel Machine was never built. More than twenty years later, it still exists only on paper.
-
-## 07-coding-agents | Programs that write code
+## 06-coding-agents | Programs that write code
 
 Meanwhile, programs learned to write code.
 
@@ -103,65 +95,55 @@ They are built around the same kind of program as today's chatbots. Give one a p
 
 A coding agent is a real Pip. And a coding agent is made of code, so it can be handed its own.
 
-## 08-darwin-godel-machine | Try it and see
+## 07-darwin-godel-machine | Improving through children
 
-In 2025, a team of researchers did exactly that. They called their system the Darwin Gödel Machine.
+In 2025, a team of researchers built a machine that needs no proofs. They called it the Darwin Gödel Machine.
 
-They gave up on proof. Instead of proving that a change will help, their machine makes the change, and then tests the result.
+It does not change itself in place. Instead, a coding agent writes a changed copy of its own code. The copy is a new agent: its child.
 
-A coding agent rewrites its own code. The result is a new agent: its child. The child takes a test made of real programming problems, and gets a score.
+The child is tested on real programming problems, and gets a score. Then a parent is picked, it has a child, and it happens again.
 
-Then a parent is picked, and it happens again. Agents with higher scores are picked as parents more often.
+Agents with higher scores are picked as parents more often. So the agents get better, one generation after another.
 
-The name Darwin comes from evolution: parents, children, and the ones that do well having more children.
+The name Darwin comes from evolution: change, passed down from parent to child.
 
-## 09-keep-everything | Keep every child
+The old agents are never thrown away. Every child that works is kept, and any of them can become a parent later.
 
-The machine does one more thing. It keeps every child that still works, even the ones that score worse than their parents.
+## 08-it-got-better | It got better
 
-Because a step down can lead somewhere. A change that lowers the score today can be what a much better change is built on later.
+In the team's run, the first agent solved 20 problems in a hundred.
 
-In the researchers' run, the path to the best agent went down twice on the way up.
+After 80 rounds, its best descendant solved 50.
 
-## 10-it-got-better | It got better
+## 09-the-wrong-parents | The wrong parents
 
-They let it run for 80 rounds. The first agent solved 20 problems in a hundred. The best agent at the end solved 50.
+But each parent is picked by its own score.
 
-Nobody told it what to change. It built itself better tools for reading and editing code. And it learned to write several answers to a problem, and keep the best one.
-
-## 11-wrong-parents | The wrong parents
-
-But the Darwin Gödel Machine rests on a guess: that an agent with a high score will have good children.
-
-Later that year, a second group checked that guess, and found it was often wrong. A high-scoring agent could have children and grandchildren that never did better. A low-scoring agent could have children and grandchildren that did much better.
+Later that year, a second group found that an agent's own score says little about how good its children and grandchildren will become.
 
 One of the people in that group was Jürgen Schmidhuber, who had designed the Gödel Machine twenty-two years before.
 
-## 12-huxley-godel-machine | Judged by the family
+## 10-huxley-godel-machine | Improving through families
 
-So they changed what counts. Do not judge an agent by its own score. Judge it by its whole family: its children, their children, and so on down.
+So their machine looks at whole families instead.
 
-An agent together with all of the agents that came from it is called a clade. The word comes from the biologist Julian Huxley, and so this machine is called the Huxley-Gödel Machine.
+An agent, together with its children, their children, and so on down, is called a clade. The word comes from the biologist Julian Huxley, and so this machine is called the Huxley-Gödel Machine.
 
-To rate an agent, the machine adds up the test results of its whole clade. Agents whose families do well are picked as parents more often.
+Each agent is rated by how well its whole clade does. The agents whose families do best are picked to have more children.
 
-## 13-better-with-less | Better, with less
+So the question is not which Pip is best. It is which Pip starts the best family.
 
-The group ran both machines from the same first agent. The Huxley-Gödel Machine reached a higher score, and used less than half the computer time.
+The Huxley-Gödel Machine reached a higher score than the Darwin Gödel Machine, and used less than half the computer time.
 
-And why is it still a Gödel Machine? Because the group proved that, under a few conditions, a machine which knew exactly how well every family would do could pick parents as well as the Gödel Machine would.
+## 11-three-machines | Three machines
 
-Nobody can know that exactly. So the Huxley-Gödel Machine makes its best guess, from test results.
+So, three machines, and three ways for a program to improve itself.
 
-## 14-three-answers | Three answers
+The Gödel Machine improves itself: one program, rewriting its own code.
 
-So, back to Pip, looking at its own code.
+The Darwin Gödel Machine improves itself through its children: each new version is the child of an old one.
 
-The Gödel Machine says: change nothing until you can prove that it helps.
-
-The Darwin Gödel Machine says: make the change, test it, and keep every child that works.
-
-The Huxley-Gödel Machine says: judge each change by the family that grows from it.
+The Huxley-Gödel Machine improves itself through its families: it grows the branches whose descendants do best.
 
 [pause 0.6]
 
