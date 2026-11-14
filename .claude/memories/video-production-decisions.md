@@ -1,17 +1,18 @@
 ---
 name: video-production-decisions
-description: The settled answers to the open questions in BRIEF.md for the Gödel Machines video (voice, music, length, audience)
+description: The settled production choices for the Gödel Machines video (look, voice, music, length, audience)
 metadata:
   type: project
 ---
 
-The user settled the four items that BRIEF.md lists as still open (2026-11-14):
+The user settled these production choices for the video (2026-11-14):
 
+- Look: an animated explainer with the feel of Kurzgesagt videos. The look itself is original flat-vector artwork drawn in code; nothing of Kurzgesagt's (characters, logo, branding) is copied. The feel was the user's decision in the planning chat that preceded this repo; the original look was proposed there and has been followed since.
 - Narration voice: Kokoro `af_heart` (American woman, `en-us`, speed 0.95), set in `src/voice/make_voice.py`. The user chose it by ear on 2026-11-14 from seventeen free samples reading the film's opening. Before that, `am_michael` was judged off after the first render, and a Pocket TTS voice (`alba`) was picked and then dropped once the user learned it needs credits. Kokoro is Apache 2.0, so the film owes no credit for the voice.
 - Music: a synthesized bed with basic sound effects that Claude generates; no licensed track.
 - Length: no limit. The content decides how long the video runs.
 - Audience: the general public, with the constraint in [No analogies in script](no-analogies-in-script.md).
 
-**Why:** BRIEF.md says to ask about these rather than assume, and it still shows them as open.
+**Why:** These were open questions in the handoff brief from the planning chat (`BRIEF.md`, which the user had Claude delete on 2026-11-14 once everything in it was settled or out of date).
 
 **How to apply:** Treat these as decided; don't ask again. Don't cut the script to reach a target length.
