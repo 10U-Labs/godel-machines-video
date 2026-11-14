@@ -61,7 +61,9 @@ def main():
     # Lower the music while the narrator is speaking, and let it rise in the gaps.
     level = np.abs(narration).max(axis=1)
     speaking = np.clip(synth.lowpass((level > 0.02).astype(float), 1.5) * 1.4, 0, 1)
-    music = synth.music(total) * MUSIC_LEVEL * (1 - MUSIC_DUCK * speaking)[:, None]
+    music = synth.music(total)
+    music = np.pad(music, ((0, max(0, n - len(music))), (0, 0)))[:n]  # the bed can be a sample out
+    music = music * MUSIC_LEVEL * (1 - MUSIC_DUCK * speaking)[:, None]
 
     mix = narration + music + effects
     peak = np.abs(mix).max()
