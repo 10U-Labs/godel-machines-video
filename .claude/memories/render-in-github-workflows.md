@@ -9,4 +9,4 @@ Renderings for this video run in GitHub workflows, not on the local machine. The
 
 **Why:** The user gave no reason. Claude's interpretation: it matches the practice in the sibling 10U-Labs repos, where work runs in CI and not on the developer's machine.
 
-**How to apply:** Do not run frame capture, encoding, or final assembly locally. Push to `main` and let the workflow in `.github/workflows/` render; fetch results with `gh run download`. Claude's interpretation, still to be confirmed by the user: this also covers still frames used to check layout, so get those from workflow artifacts too. Related: [[video-production-decisions]].
+**How to apply:** Do not run frame capture, encoding, or final assembly locally. Push to `main` and let the workflow in `.github/workflows/` render; fetch results with `gh run download`. Claude's interpretation, still to be confirmed by the user: this also covers still frames used to check layout, so get those from workflow artifacts too. Related: [Video production decisions](video-production-decisions.md).

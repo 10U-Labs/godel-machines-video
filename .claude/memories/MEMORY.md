@@ -3,3 +3,6 @@
 - [No analogies in script](no-analogies-in-script.md) — general public, but explain real mechanisms plainly; no analogies
 - [Render in GitHub workflows](render-in-github-workflows.md) — no local renders; push and let Actions render, fetch artifacts with gh
 - [Oxford commas](oxford-commas.md) — asked for in the repo's About; apply to other repo prose too
+- [Long-running commands in the background](long-running-commands-in-the-background.md) — anything past about a minute is a background Bash call with a time limit; no foreground wait after it
+- [A wait runs in the background](a-wait-runs-in-the-background.md) — wait for a workflow run with background Bash or Monitor, never a foreground sleep or gh run watch; --interval 60
+- [Memory links are Markdown links](memory-links-are-markdown-links.md) — link memories as title plus file name, never with double brackets
