@@ -75,6 +75,12 @@ jobs:
             test -f "$file" && continue
             curl -fsSL -o "$file" "$base/model-files-v1.0/$file"
           done
+      - name: Restore narration clips
+        uses: actions/cache@v6
+        with:
+          key: narration-${{ hashFiles('script/script.md', 'src/voice/**') }}
+          path: out/voice/lines
+          restore-keys: narration-
       - name: Generate narration
         run: python src/voice/make_voice.py script/script.md
       - name: Upload narration
