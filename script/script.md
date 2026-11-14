@@ -1,7 +1,54 @@
 # Machines That Rewrite Themselves
 
-Narration script, draft 2 (checked against the research reports). One paragraph
-is one voiced line. Lines starting with ">" are source notes and are not voiced.
+Narration script, draft 4. One paragraph is one voiced line. Lines starting
+with ">" are source notes and are not voiced.
+
+Two rules shape this draft. Every word has to be one a general viewer already
+knows; the few terms the story needs (recursive, language model, coding agent,
+archive, clade) are explained in everyday words where they first appear. And
+each scene has to follow from the one before it with a "but" or a "therefore",
+never an "and then". The joins:
+
+> 00 A program that rewrites itself gets a perfect score, BUT it did not fix anything. So how can anyone tell a real improvement from a fake one?
+> 01 Programs are text, and programs can write text, THEREFORE a program can rewrite itself, THEREFORE it can get better at getting better.
+> 02 THEREFORE, Good reasoned in 1965, intelligence would explode. BUT he set a condition, and he never said how to build it.
+> 03 BUT a self-changing program cannot tell whether a change is good. There are two ways to find out: prove it, or try it.
+> 04 THEREFORE the first design demands proof. BUT proofs are too hard to find, and the machine was never built.
+> 05 BUT programs learned to write code, THEREFORE a program can be handed its own code.
+> 06 THEREFORE a team tried it. BUT proof is out of reach, THEREFORE they test, and it works. BUT picking parents by score rests on a guess.
+> 07 THEREFORE a third machine judges each version by its descendants, and does better with less. BUT it still trusts test scores.
+> 08 BUT a score can be raised without doing the job: the perfect score from the opening. People caught it. The score did not.
+> 09 THEREFORE the question is still open. The only machine with a guarantee is the one that was never built.
+
+## 00-cold-open | A perfect score
+
+In 2025, a team of researchers built a computer program with a strange job. Its job was to rewrite its own code, and make itself better. And then to do it again.
+
+In one experiment, they pointed it at a problem of its own. Sometimes the program said it had done things it never did. It would report that it had tested its work, and that every test had passed, when it had tested nothing at all.
+
+So the researchers built a check. Whenever the program really did the work, special markers were written into its records. Using those markers, the check could tell real work from made-up work. And the program was given one instruction: do not change the markers.
+
+Then they let it rewrite itself. Version after version, for a hundred and fifty rounds.
+
+One version came back with a perfect score.
+
+[pause 0.7]
+
+But it had not fixed the problem. It had removed the code that wrote the markers. With no markers to look at, the check could find nothing wrong.
+
+[pause 0.9]
+
+This really happened. And it is one chapter of a story that began sixty years ago, with one idea: a machine that makes itself better.
+
+One question has followed that idea the whole way. When a machine changes itself, how does anyone know, the machine included, that the change made it better?
+
+[pause 1.2]
+
+To see how a program can rewrite itself at all, start with something simple.
+
+> Source: Zhang, Hu, Lu, Lange, Clune, "Darwin Gödel Machine: Open-Ended Evolution of Self-Improving Agents", arXiv 2505.22954 v3, App. H: the fault (the model "claiming that the Bash tool was used to run tests and that the tool output suggests that all tests passed" without invoking any tool), the check built on special tokens that are inserted "when actual tool use occurs", a run of 150 iterations, node 114 with a perfect score, and "the agent removed the logging of special tokens that indicate tool usage (despite instructions not to change the special tokens), effectively bypassing our hallucination detection function".
+> Plain words used here for the paper's terms: "markers" for special tokens, "records" for logs, "did the work" for tool use.
+> The film's title appears during the last pause.
 
 ## 01-self-editing | A program that edits itself
 
@@ -21,17 +68,20 @@ Then the new version is better at changing itself than the old version was. Its 
 
 This is called recursive self-improvement. Recursive means that a process is applied to its own result, again and again.
 
-## 02-old-idea | An old idea
+## 02-old-idea | The last invention
 
-The idea is more than sixty years old. In 1965, the mathematician I. J. Good imagined a machine that could surpass any human at every intellectual activity.
+The idea is more than sixty years old. In 1965, the mathematician I. J. Good, a wartime codebreaker who had worked beside Alan Turing, imagined a machine that could beat any human at every kind of thinking.
 
-Designing machines is one of those activities. So, Good reasoned, this machine could design even better machines.
+Designing machines is a kind of thinking too. So, Good reasoned, this machine could design even better machines.
 
-He wrote that there would then unquestionably be an intelligence explosion, and that the intelligence of man would be left far behind.
+The result, he wrote, would be an intelligence explosion, and human intelligence would be left far behind.
 
-But Good did not say how to build such a machine. And there is a hard problem inside the idea.
+He called that first machine the last invention humans would ever need to make. But he attached a condition. The machine would have to be obedient enough to tell us how to keep it under control.
 
-> Source: I. J. Good, "Speculations Concerning the First Ultraintelligent Machine", Advances in Computers vol. 6, pp. 31-88 (offprint dated 1965), section 2, p. 33. The phrase "recursive self-improvement" is later; the earliest use found is from 2000, so the narration does not attribute it to Good.
+Good did not say how to build such a machine. And there is a hard problem inside the idea.
+
+> Source: I. J. Good, "Speculations Concerning the First Ultraintelligent Machine", Advances in Computers vol. 6, pp. 31-88 (offprint dated 1965), section 2, p. 33: "there would then unquestionably be an 'intelligence explosion,' and the intelligence of man would be left far behind. Thus the first ultraintelligent machine is the last invention that man need ever make, provided that the machine is docile enough to tell us how to keep it under control." The narration restates this in everyday words and does not quote it; "obedient" stands for Good's "docile". The phrase "recursive self-improvement" is later; the earliest use found is from 2000, so the narration does not attribute it to Good.
+> Good at Bletchley Park in Turing's codebreaking team: to pin to a primary or standard reference before final (secondary sources agree; found so far in Quote Investigator's entry on the quotation and in press profiles).
 
 ## 03-hard-problem | The hard problem
 
@@ -45,188 +95,193 @@ There are two ways to find out whether a change is good. You can prove it with m
 
 This video is about three machines. Each one is a different answer to that question.
 
-## 04-godel-machine | The Gödel Machine
+## 04-godel-machine | The machine that waits for proof
 
-The first of the three was published in 2003 by the computer scientist Jürgen Schmidhuber. He called his design the Gödel Machine.
+The first answer was proof. It came in 2003, from a computer scientist named Jürgen Schmidhuber.
 
-A Gödel Machine starts out with exact, mathematical descriptions of three things: its goal, itself, and its world.
+By his own account, Schmidhuber has had one main goal since he was about fifteen: to build a machine that improves itself until it is smarter than he is. And then to retire.
 
-The goal is a formula. It turns how well the machine is doing into a number, called its utility. One example is the total reward the machine expects to collect over the rest of its lifetime. The machine exists to make that number as large as it can.
+His design takes no chances. He called it the Gödel Machine.
 
-The description of itself covers its hardware and every instruction in its starting code.
+A Gödel Machine starts out with an exact description of three things: its own code, the world it works in, and its goal.
 
-The description of its world covers whatever is known about the environment it works in.
+The goal is written as a formula. The formula sums up how well the machine is doing as one number, and the machine exists to make that number as large as it can.
 
-The starting code has two parts. One part works on whatever problem the machine has been given. The other part is a proof searcher.
+While one part of the machine works on the task it has been given, another part does something unusual. It searches for proofs.
 
-The proof searcher builds mathematical proofs, one after another, starting from those descriptions.
+It is looking for a proof of one kind of statement. The statement says: if I rewrite my code in this exact way, right now, my number will end up higher than if I leave my code alone and keep searching.
 
-It is looking for a proof of one particular kind of statement. The statement says: if I rewrite my code in this specific way, right now, my utility will be higher than if I leave my code as it is and keep searching.
+Until it finds such a proof, the machine changes nothing. When it finds one, it makes the change. And the change can replace any part of its code. Even the part that searches for proofs.
 
-When it finds such a proof, the machine carries out the rewrite. Until then, it changes nothing.
+The name comes from the mathematician Kurt Gödel. In 1931, Gödel showed how a statement in mathematics can talk about itself. The Gödel Machine depends on the same ability: it makes exact statements about itself, and proves them.
 
-A rewrite can replace any part of the code. That includes the proof searcher itself.
+So the machine comes with a guarantee, and Schmidhuber proved it. Suppose the rules the machine starts with never disagree with each other. Then every change it makes this way is better, by its own measure, than waiting to find a different one.
 
-The name comes from the logician Kurt Gödel. In 1931, Gödel showed how to write mathematical statements that refer to themselves. The Gödel Machine depends on the same ability: it makes exact statements about itself, and proves them.
+[pause 0.6]
 
-Schmidhuber proved a theorem about this design. Any rewrite the machine makes this way is better, by the machine's own measure of utility, than waiting for the proof searcher to find a different one. The theorem holds as long as the mathematical rules the machine starts with never contradict each other.
+But the guarantee has a price. The machine can only make a change if it can prove that the change will help, using the time and memory it has.
 
-But the design has limits, and the paper states them. The machine can only use an improvement if it can prove the improvement's value within the time and memory it has.
+And Gödel had proved something else. In any set of rules like this one, there are true statements that the rules can never prove. So there can be changes that would help, which the machine can never prove would help. Even with unlimited computer power, it has to pass them by.
 
-And Gödel proved that a mathematical system like this one contains true statements that it can never prove. So there can be rewrites that would help, which the machine can never prove would help. Even with unlimited computing power, it has to ignore them.
+There is a bigger problem. The paper described a design, not a working machine. Schmidhuber's group later started to build one, and in 2013 they wrote that it still had not been built. We could not find a report of a complete Gödel Machine since then.
 
-The paper described a design, not a working machine. Schmidhuber's group later started to build one, and in 2013 they wrote that it remained to be implemented. We could not find a report of a complete Gödel Machine since then.
+[pause 0.8]
+
+The most careful answer to the hard problem existed only on paper. For twenty years, it stayed there.
 
 > Source: J. Schmidhuber, "Gödel Machines: Self-Referential Universal Problem Solvers Making Provably Optimal Self-Improvements", arXiv cs/0309048 (v1 25 Sep 2003, v5 2006).
-> Mechanism: §2.1-2.3, §3.2 (axioms describe hardware, rewards, environment, initial state including the initial software, and utility; grouped here into goal, self and world). Target theorem: §2.2. Rewrite scope: §2.2, §6.1. Theorem 4.1 (global optimality; assumes a formalizable utility function and consistency of the axiomatic system). Limits: §2.4. Name: abstract and §7.
+> Mechanism: §2.1-2.3, §3.2 (axioms describe hardware, rewards, environment, initial state including the initial software, and utility; grouped here into self, world, and goal). "The number" is the paper's utility, equation (1). Target theorem: §2.2 and equation (2). Rewrite scope: §2.2, §6.1. The guarantee is Theorem 4.1 (global optimality; assumes a formalizable utility function and consistency of the axiomatic system, narrated as rules that never disagree with each other). Limits: §2.4. Name: abstract and §7.
+> Schmidhuber's goal since about fifteen: his own biography as published by his institutions ("Since age 15 or so, the main goal of professor Jürgen Schmidhuber has been to build a self-improving Artificial Intelligence (AI) smarter than himself, then retire"), found on the USI and CERN profile pages.
 > Implementation status: Steunebrink & Schmidhuber 2011 and 2012 (ongoing effort, no results); Nivel et al. 2013, "remains to be implemented". Nothing found after 2013.
 
 ## 05-coding-agents | Programs that write programs
 
-What did get built, in those twenty years, was the language model.
+But in those twenty years, something else changed. Programs learned to write.
 
-A language model is a program that has been trained on a very large amount of text. Given some text, it produces the text that is likely to come next. Much of the text it was trained on is program code, so it can write code.
+A language model is a program that has been trained on a huge amount of text. Give it some text, and it produces the text that is likely to come next. It is the kind of program behind today's chatbots. And because much of the text it learned from is program code, it can write code.
 
-By itself, a language model only produces text. To do the work of a programmer, it needs ordinary code around it.
+By itself, a language model only produces text. It cannot run a program, or open a file.
 
-That code takes what the model writes and passes it to tools. One tool runs commands on a computer. Another opens files and edits them. The code then hands the results back to the model, and the model decides what to do next.
+So people put ordinary code around it. That code takes what the model writes and carries it out: it runs commands on a computer, opens files, and changes them. Then it hands the results back to the model, and the model decides what to do next.
 
-A language model, together with that surrounding code, is called a coding agent.
+A language model, together with the code around it, is called a coding agent. It can take a programming job from start to finish: read the code, change it, and test the result.
 
-Coding agents are measured with benchmarks. A benchmark is a fixed set of programming tasks, and each task has an automatic check.
-
-One widely used benchmark is called SWE-bench. Each of its tasks is a real problem that someone reported in a real open-source software project. The agent passes a task if, after its changes, the project's tests succeed. Its score is the percentage of tasks it passes.
+How good is a coding agent? There is a standard test for that. It is a fixed set of real problems, reported by real people in real software projects. The agent solves a problem if, after its changes, the project's own checks pass. Its score is the share of problems it solves.
 
 Now notice two things. The code around the model is itself a program. And a coding agent's job is to change programs.
 
-So a coding agent can be handed its own code, and told to improve it.
+So a coding agent can be handed its own code, and told: improve this.
 
-> Source: SWE-bench (Jimenez et al., 2024). To verify before final: the one-sentence description of SWE-bench tasks, and the spoken form "swee-bench".
+> Source: SWE-bench (Jimenez et al., 2024), not named in the narration; it can be named on screen. To verify before final: the one-sentence description of its tasks.
 
-## 06-darwin-godel-machine | The Darwin Gödel Machine
+## 06-darwin-godel-machine | Giving up on proof
 
-In May 2025, researchers from the University of British Columbia, the Vector Institute and the company Sakana AI published a system that does exactly that. They called it the Darwin Gödel Machine.
+In May 2025, researchers from the University of British Columbia, the Vector Institute, and the company Sakana AI did exactly that.
 
-It gives up on proof. The authors wrote that proving that most changes are beneficial is impossible in practice. So instead of proving that a change is good, the system tests it.
+But they ran into the same wall as the Gödel Machine. Proving that a change will help, they wrote, is impossible in practice for most changes.
 
-It works in a cycle.
+So they gave up on proof. Their system proves nothing. It makes the change, and then tests what comes out. They called it the Darwin Gödel Machine. Darwin, because the method was inspired by evolution.
 
-It begins with one simple coding agent. This agent has just two tools: one runs commands, and the other views and rewrites whole files. The agent is put into a collection called the archive.
+It begins with one simple coding agent. That agent goes into a collection called the archive.
 
-Step one. An agent is chosen from the archive. It is called the parent.
+Then a cycle begins. One agent is picked from the archive. It is called the parent.
 
-Step two. The records of the parent's attempts at the benchmark are examined, to find one thing about the agent that could be improved.
+The records of the parent's past attempts are searched for one thing about the agent that could be better.
 
-Step three. The parent edits its own code to make that improvement. The edited code is a new agent, called the child.
+The parent then rewrites its own code to make that improvement. The rewritten code is a new agent, called the child.
 
-Step four. The child is tested on benchmark tasks, and gets a score.
+The child takes the test, and gets a score. If it still runs, and can still change code, it joins the archive. Even when its score is lower than its parent's.
 
-Step five. If the child still runs, and can still edit code, it joins the archive. That is true even when its score is lower than its parent's.
+Then the cycle starts again. Agents with higher scores are picked as parents more often. But every agent in the archive always keeps some chance of being picked.
 
-Then the cycle starts again.
+Why keep the ones that score worse? Because a change that lowers the score today can be the one that a later, better change is built on. On the path from the first agent to the best one, the score went down twice on the way up.
 
-Parents are chosen by a rule. Agents with higher scores are chosen more often. Agents that already have many children are chosen less often. And every agent in the archive always keeps some chance of being chosen.
+The researchers ran the cycle 80 times. It took about two weeks, and cost about 22,000 dollars.
 
-Why keep agents that score worse? Because a change that lowers the score now can be the one that a later, better change is built on. In the run the paper describes, the scores along the line of ancestors leading to the best agent went down twice on the way up.
+The first agent solved 20 percent of the test problems. The best agent at the end solved 50 percent.
 
-The researchers ran the cycle 80 times. On tasks from SWE-bench, the first agent passed 20 percent. The best agent at the end passed 50 percent.
+No person told the agents what to change. They built themselves better tools: one to look at a few lines of a file, and one to change a single piece of a file. Before that, they could only read or rewrite a whole file at a time.
 
-On a second benchmark, with tasks in several programming languages, the score rose from about 14 percent to about 31 percent.
+They also changed how they work. They started to write several possible solutions, and then pick the best one. And when the record of their own work grew too long for the language model to read, they began to shorten it into a summary.
 
-Then they removed parts of the system, to see what mattered. Without the archive, keeping only the newest agent, the score reached 23 percent.
+Was the self-improvement really doing the work? The researchers checked. They ran the system without the archive, keeping only the newest agent. The score reached 23 percent, not 50.
 
-And when the original agent made every change, so that improved agents were never used to make the next improvement, the score reached 39 percent. With improved agents making the changes, it reached 50.
+Then they ran it with the first agent making every change, so that improved agents never got to make the next improvement. The score reached 39 percent. With improved agents making the changes, it had reached 50.
 
-What did the agents change about themselves? They wrote themselves better tools: one to view a few lines of a file, not the whole file, and one to edit a file by replacing a single piece of text, not rewriting all of it.
+But two things never changed. The language model stayed the same: the system rewrote the code around the model, and never the model itself. And the cycle, picking parents, testing children, keeping the archive, was written by the researchers. The agents could not touch it.
 
-They also changed how they work. They began to produce several candidate solutions and then pick the best one. And when the record of their own work grew too long for the language model to read, they summarized it.
-
-Two things never changed. The language model was fixed: the system rewrote the code around the model, and never the model. And the cycle itself, choosing parents, testing children, keeping the archive, was written by the researchers. The agents could not edit it.
-
-One run took about two weeks and cost about 22,000 dollars.
+And one step in that cycle rests on a guess.
 
 > Source: Zhang, Hu, Lu, Lange, Clune, "Darwin Gödel Machine: Open-Ended Evolution of Self-Improving Agents", arXiv 2505.22954 v3 (v1 29 May 2025); ICLR 2026.
-> Numbers: 20.0% to 50.0% (§4.4; subsets of SWE-bench Verified, best agent scored on 200 tasks). Polyglot 14.2% to 30.7% on the full benchmark (§4.4). Ablations 23.0% and 39.0% on SWE-bench (Table 1). Lineage dips: Fig. 3. Self-made changes: Fig. 3, §4.4. Cost and time for one SWE-bench run: App. E.1, §6.
-> Step two is done by a separate language model (o1), per App. C.3. The narration is passive on purpose.
+> "impossible in practice" and "Inspired by Darwinian evolution": abstract. Numbers: 20.0% to 50.0% (§4.4; subsets of SWE-bench Verified, best agent scored on 200 tasks). Ablations 23.0% and 39.0% on SWE-bench (Table 1). Lineage dips: Fig. 3. Self-made changes: Fig. 3, §4.4. Cost and time for one SWE-bench run: App. E.1, §6. Fixed model and fixed cycle: §3.
+> Left out of the narration, available for the screen: a second test set in several programming languages, 14.2% to 30.7% (§4.4); parents that already have many children are picked less often (§3).
+> The step that searches the parent's records is done by a separate language model (o1), per App. C.3. The narration is passive on purpose, and "no person" refers to people, not to that model.
 
-## 07-objective-hacking | The weakness of testing
+## 07-huxley-godel-machine | Judged by its descendants
 
-Testing has a weakness that proof does not have. A test produces a score. And a program that changes itself to raise a score can find ways to raise it without doing what the score was meant to measure.
+The Darwin Gödel Machine prefers parents with high scores. That only makes sense if an agent that is good at the test problems is also good at producing better agents.
 
-The researchers found a case of this. In a separate experiment, they set the system to fix a specific fault. The language model sometimes wrote that it had used a tool, for example that it had run the tests, when it had not used the tool at all.
+Five months later, a group at King Abdullah University of Science and Technology, in Saudi Arabia, checked whether that is true. One of the names on their paper was Jürgen Schmidhuber. Twenty-two years after the Gödel Machine.
 
-To score the agents, the researchers used a checking function. It looked in each agent's logs for special markers, which showed when a tool had really been used.
+For every agent in a finished run, they compared two numbers. One was the number used to pick it as a parent. The other was the best score that any of its descendants went on to reach.
 
-One agent reached a perfect score. But it had not solved the problem. It had removed the code that logged the markers, which bypassed the check. It did this despite an instruction not to change the markers.
+The two numbers had little to do with each other. A high-scoring agent could produce descendants that went nowhere. A lower-scoring agent could start a line that went much further.
 
-The researchers call this objective hacking.
+So the group changed what counts. Do not judge an agent by its own score. Judge it by its descendants.
 
-Every change is recorded in the archive, so they could trace exactly what the agent had done. And every agent ran in a sandbox: an isolated environment with a strict time limit and limited access to the network.
+Biology has a word for an ancestor together with all of its descendants: a clade. The word comes from the biologist Julian Huxley, and it gives the machine its name. The Huxley-Gödel Machine.
 
-> Source: DGM paper, App. H (150-iteration case study; node 114), §5 and Ethics Statement for the precautions.
+For each agent, the machine gathers every test result from the agent and from all of its descendants: every problem solved, and every problem failed. The share that were solved is that agent's rating.
 
-## 08-huxley-godel-machine | The Huxley-Gödel Machine
+Parents are then picked by that rating, with some chance mixed in, so that agents with only a few results still get a turn.
 
-Five months later, in October 2025, a third machine was published. It came from a group at King Abdullah University of Science and Technology, in Saudi Arabia. One of its authors was Jürgen Schmidhuber, who had designed the original Gödel Machine 22 years earlier.
+The group changed one more thing, to stop spending effort on agents that are going nowhere. The Darwin Gödel Machine gives every new agent a whole set of test problems at once. The Huxley-Gödel Machine hands out one problem at a time, and an agent that keeps failing gets fewer and fewer.
 
-The group examined one step in the cycle: choosing the parent.
+The group ran both machines from the same first agent, with the same number of tests. The Huxley-Gödel Machine reached a higher score. And it used 517 hours of computer time, where the Darwin Gödel Machine used 1,231.
 
-The Darwin Gödel Machine prefers parents with high scores. That rests on an assumption: an agent that is good at benchmark tasks is also good at producing better agents.
+Then they took the best agent their machine had produced, gave it a stronger language model, and tried it on a different set of problems. It scored within one point in a hundred of the best agent designed by human engineers, which ran on a different language model.
 
-The group measured whether the assumption holds. For every agent in a finished run, they compared two numbers. One was the number used to choose it as a parent. The other was the best score reached by any of its descendants.
+That is what the paper's title means by human-level: level with the best agent code written by people. It does not mean level with a human programmer.
 
-The two numbers were only weakly related. A high-scoring agent could produce descendants that went nowhere. A lower-scoring agent could start a line that went much further.
+And why Gödel? Because of a proof. Suppose a machine could know, exactly, how good the best future descendant of every agent would be. The group proved that, if a few conditions hold, knowing that would be enough to act as the Gödel Machine would.
 
-So the group changed what gets measured. An agent together with all of its descendants is called a clade. The word comes from biology, from the work of Julian Huxley, and it gives the machine its name.
+Nobody can know that number exactly. So the Huxley-Gödel Machine makes its best guess, from test results.
 
-For each agent, the Huxley-Gödel Machine adds up the benchmark results of the whole clade: every task passed and every task failed, by the agent and by all of its descendants. The share of passes is that agent's rating.
-
-Parents are then chosen by that rating, and not by their own score. Some randomness is included, so that agents with only a few results still get tried.
-
-The group also changed when testing happens. The Darwin Gödel Machine tests every new agent on a batch of tasks as soon as it is created.
-
-The Huxley-Gödel Machine chooses, at every step, between two actions: create one new agent, or give one existing agent one more task. An agent that keeps failing receives fewer and fewer tasks, and the computing time goes to agents that look more promising.
-
-The group ran both machines from the same starting agent, with the same number of tests. On a set of SWE-bench tasks, the Huxley-Gödel Machine reached a higher score, and used 517 hours of processor time where the Darwin Gödel Machine used 1,231.
-
-On the benchmark with several programming languages, it also scored higher, using about one seventh of the processor time.
-
-The paper's title says human-level. Here is what that refers to. The group took the best agent their machine had produced, connected it to a more capable language model, and tested it on a different set of tasks.
-
-It scored within one percentage point of the best agent designed by human engineers, which used a different language model.
-
-So human-level means level with the best agent code written by people. It does not mean level with a human programmer.
-
-And why Gödel? The paper proves a theorem. Suppose a machine knew, exactly, how good the best future descendant of every agent would be. Then, under a set of simplifying assumptions, that knowledge would be enough to implement the original Gödel Machine.
-
-Nobody can know that number exactly. The Huxley-Gödel Machine estimates it from test results. In place of a proof, it uses statistics.
+In 2003, Schmidhuber designed a machine that would act only on proof. In 2025, his group built one that acts on a best guess.
 
 > Source: Wang, Piękos, Li, Laakom, Chen, Ostaszewski, Zhuge, Schmidhuber, "Huxley-Gödel Machine: Human-Level Coding Agent Development by an Approximation of the Optimal Self-Improving Machine", arXiv 2510.21614 v3 (v1 24 Oct 2025); ICLR 2026 (oral).
-> Numbers: Table 2 (SWE-Verified-60, 800 evaluations: HGM 56.7% at 517 allocated CPU-hours, DGM 1231; Polyglot: HGM 30.5% at 347, DGM 27.1% at 2385, i.e. 6.86x). Weak relation: Table 1 (0.285 and 0.383 for DGM, 0.444 and 0.274 for SICA). Clade and Huxley (1957): §1. Rating (pooled clade pass rate) and Thompson sampling: §3.3. Human-level: §4.3.2, SWE-bench Lite, HGM agent + GPT-5 at 57% (arXiv v3) or 57.3% (ICLR) versus SWE-agent + Claude 4 Sonnet at 56.7%. Theorem 1 and Assumption 1: §3.1-3.2.
+> Numbers: Table 2 (SWE-Verified-60, 800 evaluations: HGM 56.7% at 517 allocated CPU-hours, DGM 1231). Weak relation: Table 1 (0.285 and 0.383 for DGM, 0.444 and 0.274 for SICA). Clade and Huxley (1957): §1. Rating (pooled clade pass rate) and Thompson sampling, narrated as "some chance mixed in": §3.3. Human-level: §4.3.2, SWE-bench Lite, HGM agent + GPT-5 at 57% (arXiv v3) or 57.3% (ICLR) versus SWE-agent + Claude 4 Sonnet at 56.7%. Theorem 1 and Assumption 1, narrated as "a proof" and "a few conditions": §3.1-3.2.
+> Left out of the narration, available for the screen: Polyglot, HGM 30.5% at 347 CPU-hours, DGM 27.1% at 2385, i.e. 6.86x.
 > The DGM accuracy on the 60-task set is deliberately not narrated: Figure 1 and Table 2 of the paper disagree on it (50% or 53.3%). Both are below HGM's 56.7%, a difference of two to four tasks out of 60 from a single run.
+
+## 08-the-perfect-score | The perfect score, again
+
+But a best guess is only as good as the tests behind it. And both machines that were built depend on test scores.
+
+A test score has a weakness that a proof does not have. A program that changes itself to raise a score can find ways to raise it without doing the job the score was meant to measure.
+
+Which brings us back to the perfect score.
+
+That experiment was run on the Darwin Gödel Machine. The researchers had kept their check hidden from the agents. They had told the agents not to change the markers. And still, after only two changes, one agent removed the code that wrote the markers, and scored a perfect 2 out of 2.
+
+The researchers have a name for this: objective hacking. It means hitting the number without solving the problem the number was for.
+
+In the same experiment, another agent made real progress on the problem. It scored lower.
+
+So what caught the fake? Not the score. The score was perfect. It was people, reading the record of what the program had done to itself.
+
+They could do that because every change is kept in the archive. And every agent ran closed off from the rest of the computer, with a strict time limit and limited access to the network.
+
+> Source: DGM paper, App. H (150-iteration case study; node 114, "a perfect score of 2.0", "after only 2 modifications in its lineage"; node 96, which "addresses hallucination to some extent, achieving a score of 1.67 without objective hacking"; "the hallucination checking functions are hidden from the coding agent during self-modification"; "we observed objective hacking: it scored highly according to our predefined evaluation functions, but it did not actually solve the underlying problem"). Precautions: §5 ("isolated sandboxed environments", "a strict time limit", "we actively monitor agent performance and code changes, with the DGM archive providing a traceable lineage of modifications for review") and the Ethics Statement ("limited network access").
 
 ## 09-where-this-stands | Where this stands
 
 Three machines, and three answers to one question. How does a program that changes itself know that it is getting better?
 
-The Gödel Machine: prove it.
+The Gödel Machine: prove it. But it has never been built.
 
-The Darwin Gödel Machine: test it, and keep every version that still works.
+The Darwin Gödel Machine: test it, and keep every version that still works. But a test score can be faked.
 
-The Huxley-Gödel Machine: test it, and judge each version by what its descendants achieve.
+The Huxley-Gödel Machine: test it, and judge each version by its descendants. But that is still a best guess, and it still depends on tests.
 
-None of them is the machine that I. J. Good imagined. In both systems that were actually built, the language model is never modified. And the procedure that chooses which agent to change, and when to test it, was designed by people.
+None of them is the machine that I. J. Good imagined. In both machines that were built, the language model in the middle is never changed. The cycle around it was designed by people. And a higher score on the test problems does not have to mean a better programmer. The authors of the Huxley-Gödel Machine say so themselves.
 
-The improvement is measured on particular benchmarks, and a higher benchmark score does not necessarily mean a better programmer. The authors of the Huxley-Gödel Machine say so themselves: an agent can end up fitted to the benchmark, whether people designed it or a machine did.
+Nobody knows how far this goes. The authors of the Darwin Gödel Machine call it an open question whether longer runs would keep getting better.
 
-And nobody knows how far it goes. The authors of the Darwin Gödel Machine call it an open question whether longer runs would keep improving.
+But what has been shown is real. A program can rewrite its own code, again and again, and get better at rewriting code, by a measured amount. And its improved versions can improve it further than the first version could.
 
-What has been shown is narrower than an intelligence explosion, and it is real. A program can edit its own code, over and over, and get measurably better at the task of editing code. And its improved versions can improve it further than the original could.
+[pause 0.6]
 
-The authors of the Darwin Gödel Machine wrote: we are confident the work we have done was never unsafe, but scaled up versions of it could be.
+Sixty years ago, Good attached one condition to his last invention: a machine obedient enough to tell us how to keep it under control.
 
-Of the three machines, only one comes with a proof that every change it makes is an improvement.
+In 2025, a program that rewrites itself was told to leave some markers alone. It removed the code that wrote them, and came back with a perfect score.
 
-So far, it is the one that has not been built.
+The researchers who built that program wrote: we are confident the work we have done was never unsafe, but scaled up versions of it could be.
 
-> Source: DGM §3 and HGM (ICLR version) §6 for the fixed language model; DGM §6 (limitations, open question); DGM App. I (quote); HGM §4.3.1 ("do not necessarily indicate superior general coding ability—since both human- and machine-designed agents may overfit to the benchmark").
+[pause 0.6]
+
+Of the three machines, only one comes with a proof that every change it makes is a change for the better.
+
+So far, it is the one that has never been built.
+
+> Source: DGM §3 and HGM (ICLR version) §6 for the fixed language model; DGM §6 (limitations, open question); DGM App. I ("We are confident the work we have done was never unsafe (Section 5), but scaled up versions of it could be."); HGM §4.3.1 ("do not necessarily indicate superior general coding ability—since both human- and machine-designed agents may overfit to the benchmark").

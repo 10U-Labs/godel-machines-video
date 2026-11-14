@@ -21,16 +21,16 @@
       const tYear = T.word(1, 'In 1965');
       const tGood = T.word(1, 'the mathematician');
       const tImagined = T.word(1, 'imagined a machine');
-      const tSurpass = T.word(1, 'that could surpass');
-      const tEvery = T.word(1, 'at every intellectual');
+      const tSurpass = T.word(1, 'that could beat');
+      const tEvery = T.word(1, 'at every kind');
       const tDesigning = T.L(2);
       const tSo = T.word(2, 'So, Good reasoned');
       const tBetter = T.word(2, 'design even better');
       const tWrote = T.L(3);
       const tExplosion = T.word(3, 'an intelligence explosion');
-      const tBehind = T.word(3, 'and that the intelligence');
-      const tBut = T.L(4);
-      const tHard = T.word(4, 'And there is a hard problem');
+      const tBehind = T.word(3, 'and human intelligence');
+      const tBut = T.L(5); // line 4, on the last invention, has no picture of its own yet
+      const tHard = T.word(5, 'And there is a hard problem');
 
       const ACTS = ['mathematics', 'science', 'writing', 'medicine', 'designing machines'];
       const stepA = (tEvery - tSurpass + 0.8) / ACTS.length; // gap between the machine passing each activity
@@ -134,7 +134,7 @@
       });
       const machines = MX.map(() => machine(rowG, { size: 320 }));
       const meters = MX.map((x, k) => {
-        const m = meter(rowG, { w: 220, h: 20, text: k === 0 ? 'intellectual ability' : '', size: 28 });
+        const m = meter(rowG, { w: 220, h: 20, text: k === 0 ? 'thinking ability' : '', size: 28 });
         m.g.setAttribute('transform', `translate(${x - 110} 760)`);
         return m;
       });
