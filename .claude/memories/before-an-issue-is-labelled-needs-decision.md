@@ -1,0 +1,16 @@
+---
+name: before-an-issue-is-labelled-needs-decision
+description: Before the autopilot labels an issue needs decision it checks the memories and the code to see whether the issue truly needs a person, and writes what the person has to decide into the issue's body
+metadata:
+  type: feedback
+---
+
+# Before an issue is labelled needs decision
+
+Two things are done before the autopilot (`.claude/skills/autopilot/SKILL.md`) labels an issue `needs decision`. The issue is checked against the memories in `.claude/memories/` and the code, to find out whether it truly needs a person. Then what the person has to decide is written into its body.
+
+**Why:** The label takes the issue out of the autopilot's listing until a person acts. The open issues here are chained, per [Blocked-by edges set the order](blocked-by-edges-set-the-order.md), so a label on one stops every issue behind it. An issue labelled where a memory or the code already answers the question stalls the chain for nothing, and one labelled without the question written down leaves the person to work out what is being asked. The user holds this rule in the sibling repo `cladenc`. It was carried over on 2026-11-15, when the user asked for an autopilot skill in this repo; the user has not reviewed it for this repo.
+
+**How to apply:** Read the memories for a rule that settles the question, and the code and the other issues for a fact that does. Only when neither does, rewrite the body so that it says what is to be decided, what the choices are, and what the work needs from the answer, with a guarded edit such as `[ -s body.md ] && gh issue edit <number> --body-file body.md`. Then add the label with `gh issue edit <number> --add-label 'needs decision'`.
+
+Claude's interpretation of what is a person's to decide in this repo: the look, voice, music, length, and audience of a new production, per [The repo is a media factory](the-repo-is-a-media-factory.md); anything that might cost money, per [Free tools only](free-tools-only.md); and anything that publishes a production, such as a public GitHub release.

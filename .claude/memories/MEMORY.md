@@ -18,6 +18,15 @@
 - [Show people, not panels](show-people-not-panels.md) — illustrated scenes with people and places; no slide-deck panels or captions that repeat the voice
 - [One idea at a time](one-idea-at-a-time.md) — each scene carries one idea; cut true but extra details
 
+## The autopilot
+
+- [The work in hand can be several issues](the-work-in-hand-can-be-several-issues.md) — the lowest-numbered unblocked issue, alone or with others chosen; a blocked issue joins only with all its open blockers
+- [Blocked-by edges set the order](blocked-by-edges-set-the-order.md) — issues 1 to 8 chained in number order at the user's request; three edges state order alone, leave them; gh api commands for edges
+- [An issue is brought up to date before work](an-issue-is-brought-up-to-date-before-work.md) — fix a stale title and body first, without widening; one problem and one commit per issue, split otherwise
+- [Before an issue is labelled needs decision](before-an-issue-is-labelled-needs-decision.md) — check the memories and the code first, then write what is to be decided into the body
+- [A commit closes at least one issue](a-commit-closes-at-least-one-issue.md) — a Closes #N line for each issue; after the push, check that each one closed
+- [Every run is watched](every-run-is-watched.md) — after a push the work goes on; each run gets a background watch; a failed run is fixed in the next push
+
 ## The Gödel machines film
 
 - [Video production decisions](video-production-decisions.md) — original look with a Kurzgesagt feel, voice Kokoro af_heart (no credit owed), synthesized music, no length limit, general-public audience
