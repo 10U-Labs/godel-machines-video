@@ -2,7 +2,7 @@
 
 ## The factory: every production
 
-- [The repo is a media factory](the-repo-is-a-media-factory.md) — many productions, the Gödel film is the first; keep one production's material out of shared code; which memories hold for every production
+- [The repo is a media factory](the-repo-is-a-media-factory.md) — many productions, the Gödel film is the first; keep one production's material out of shared code; the README repeats the code's settings and names, so it changes with them; which memories hold for every production
 - [Never quote the user verbatim](never-quote-the-user-verbatim.md) — restate what the user says in fresh words in memories, commits, comments, and summaries
 - [Render in GitHub workflows](render-in-github-workflows.md) — no local renders; push and let Actions render, fetch artifacts with gh; a manual run with release=true publishes a production
 - [Free tools only](free-tools-only.md) — nothing paid, for voice or anything else; open-source models on free runners, licence checked
