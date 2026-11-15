@@ -1,13 +1,13 @@
 ---
 name: free-tools-only
-description: Nothing used to make this video may cost money; no paid services, subscriptions, or metered APIs, for voice or anything else
+description: Nothing used to make a production in this repo may cost money; no paid services, subscriptions, or metered APIs, for voice or anything else
 metadata:
   type: feedback
 ---
 
 # Free tools only
 
-Everything used to make the video must be free. The user ruled out anything paid on 2026-11-14, when Claude listed a paid hosted voice among the alternatives to the Kokoro narration.
+Everything used to make a production in this repo must be free. The user ruled out anything paid on 2026-11-14, when Claude listed a paid hosted voice among the alternatives to the Kokoro narration.
 
 **Why:** The user gave no reason.
 
