@@ -13,7 +13,7 @@ from pathlib import Path
 
 import bpy
 
-FPS = 30
+FPS = None          # frames a second; render_scene.py sets it from the production's settings
 H0 = 20.0
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -589,8 +589,10 @@ def camera(path, focus_z=1.0, fstop=0.3, step=2):
     return cam
 
 
-def configure(scene, out, start, end, samples=24, engine='eevee'):
-    if engine == 'eevee':
+def configure(scene, out, start, end, picture):
+    """Set a scene up to render frames start..end with a production's [picture] settings."""
+    samples = picture['samples']
+    if picture['engine'] == 'eevee':
         names = [e.identifier for e in bpy.types.RenderSettings.bl_rna.properties['engine'].enum_items]
         scene.render.engine = 'BLENDER_EEVEE_NEXT' if 'BLENDER_EEVEE_NEXT' in names else 'BLENDER_EEVEE'
         scene.eevee.taa_render_samples = samples
@@ -613,9 +615,9 @@ def configure(scene, out, start, end, samples=24, engine='eevee'):
     scene.view_settings.look = 'None'
     scene.world = bpy.data.worlds.new('world')
     scene.world.color = lin(INK900)[:3]
-    scene.render.resolution_x, scene.render.resolution_y = 1920, 1080
+    scene.render.resolution_x, scene.render.resolution_y = picture['width'], picture['height']
     scene.render.resolution_percentage = 100
-    scene.render.fps = FPS
+    scene.render.fps = picture['fps']
     scene.frame_start, scene.frame_end = start, end
     scene.render.image_settings.file_format = 'PNG'
     scene.render.image_settings.color_mode = 'RGB'

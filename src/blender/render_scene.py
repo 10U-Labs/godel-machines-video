@@ -8,7 +8,9 @@ build(timing), which builds the scene for the length of its narration and
 returns its sound effect cues as a list of {"t": seconds, "type": ...}. The
 narration timings are read from out/<name>/voice/timings.json. Frames
 start..end are rendered as PNG into out/<name>/frames/<scene id>/; --sfx also
-writes the cues there, as sfx.json.
+writes the cues there, as sfx.json. The frame size, the frame rate, the render
+engine, and the sample count are the production's [picture] settings (see
+src/production.py).
 """
 import argparse
 import importlib.util
@@ -31,8 +33,6 @@ def args():
     ap.add_argument('--start', type=int, default=1)
     ap.add_argument('--end', type=int, default=None)
     ap.add_argument('--sfx', action='store_true')
-    ap.add_argument('--samples', type=int, default=24)
-    ap.add_argument('--engine', choices=('cycles', 'eevee'), default='eevee')
     argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
     return ap.parse_args(argv)
 
@@ -45,6 +45,8 @@ def main():
     entry = next((s for s in timings['scenes'] if s['id'] == a.scene), None)
     if entry is None:
         raise SystemExit(f'No timings for scene {a.scene}')
+    picture = production.settings(a.production)['picture']
+    kit.FPS = picture['fps']
     total = int(round(entry['duration'] * kit.FPS))
     kit.state['frames'] = total
 
@@ -61,7 +63,7 @@ def main():
     end = min(total, a.end or total)
     if a.start > end:
         return
-    kit.configure(bpy.context.scene, frames, a.start, end, a.samples, a.engine)
+    kit.configure(bpy.context.scene, frames, a.start, end, picture)
     bpy.ops.render.render(animation=True)
 
 

@@ -6,7 +6,7 @@ Works under out/<name>/. Reads voice/timings.json and voice/<scene>.wav (from
 make_voice.py) and scenes/<scene>.sfx.json (written by
 src/blender/render_scene.py). Every scene that has a rendered video in scenes/
 is included, in script order. Writes audio/mix.wav and the three stems beside
-it.
+it. The levels are the production's [sound] settings (see src/production.py).
 """
 import argparse
 import json
@@ -24,11 +24,6 @@ import production  # noqa: E402
 
 SR = synth.SR
 
-VOICE_PEAK = 0.6        # narration peaks sit near -4 dBFS
-MUSIC_LEVEL = 0.36      # music level between lines
-MUSIC_DUCK = 0.65       # share of the music removed while the narrator speaks
-EFFECTS_LEVEL = 0.6
-
 
 def main():
     ap = argparse.ArgumentParser()
@@ -36,6 +31,7 @@ def main():
     args = ap.parse_args()
     out = production.out(args.production)
     voice_dir, scenes_dir, audio_dir = out / "voice", out / "scenes", out / "audio"
+    sound = production.settings(args.production)["sound"]
 
     timings = json.loads((voice_dir / "timings.json").read_text(encoding="utf-8"))
     scenes = [s for s in timings["scenes"] if (scenes_dir / f"{s['id']}.mp4").exists()]
@@ -59,15 +55,15 @@ def main():
             synth.place(effects, clip * cue.get("gain", 1.0), offset + cue["t"])
         offset += scene["duration"]
 
-    narration *= VOICE_PEAK / np.percentile(np.abs(narration), 99.95)
-    effects *= EFFECTS_LEVEL
+    narration *= sound["voice_peak"] / np.percentile(np.abs(narration), 99.95)
+    effects *= sound["effects_level"]
 
     # Lower the music while the narrator is speaking, and let it rise in the gaps.
     level = np.abs(narration).max(axis=1)
     speaking = np.clip(synth.lowpass((level > 0.02).astype(float), 1.5) * 1.4, 0, 1)
     music = synth.music(total)
     music = np.pad(music, ((0, max(0, n - len(music))), (0, 0)))[:n]  # the bed can be a sample out
-    music = music * MUSIC_LEVEL * (1 - MUSIC_DUCK * speaking)[:, None]
+    music = music * sound["music_level"] * (1 - sound["music_duck"] * speaking)[:, None]
 
     mix = narration + music + effects
     peak = np.abs(mix).max()

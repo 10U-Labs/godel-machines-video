@@ -21,8 +21,6 @@ sys.path.insert(0, str(ROOT / "src"))
 import production  # noqa: E402
 
 LINES = 6           # how many voiced lines of the first scene each voice reads
-LINE_GAP = 0.38     # silence between consecutive lines, as in make_voice.py
-SPEED = 0.95        # Kokoro only; Pocket TTS has no speed setting
 PEAK = 0.7          # every sample is brought to the same peak, for a fair comparison
 
 # (voice, language code, description). Kokoro's model and voices are Apache 2.0.
@@ -68,7 +66,7 @@ def opening(script):
     return items
 
 
-def assemble(items, speak, sample_rate):
+def assemble(items, speak, sample_rate, line_gap):
     """Join the spoken lines, with a short gap between lines or the script's own pause."""
     parts, previous_was_line = [], False
     for kind, value in items:
@@ -77,42 +75,47 @@ def assemble(items, speak, sample_rate):
             previous_was_line = False
             continue
         if previous_was_line:
-            parts.append(np.zeros(int(LINE_GAP * sample_rate), dtype="float32"))
+            parts.append(np.zeros(int(line_gap * sample_rate), dtype="float32"))
         parts.append(np.asarray(speak(value), dtype="float32").reshape(-1))
         previous_was_line = True
     audio = np.concatenate(parts)
     return audio * (PEAK / max(float(np.abs(audio).max()), 1e-9))
 
 
-def kokoro_samples(items, out, args):
+def kokoro_samples(items, out, args, voice):
+    """Every Kokoro voice at the production's speed, which Kokoro alone can set."""
     from kokoro_onnx import Kokoro
 
     kokoro = Kokoro(str(args.model), str(args.voices))
     notes = []
-    for voice, lang, who in KOKORO:
-        audio = assemble(items, lambda text: kokoro.create(text, voice=voice, speed=SPEED, lang=lang)[0], 24000)
-        sf.write(out / f"kokoro-{voice}.wav", audio, 24000, subtype="PCM_16")
-        notes.append(f"kokoro-{voice}.wav: Kokoro, {who}. Apache 2.0.")
+    for name, lang, who in KOKORO:
+        audio = assemble(
+            items, lambda text: kokoro.create(text, voice=name, speed=voice["speed"], lang=lang)[0],
+            24000, voice["line_gap"])
+        sf.write(out / f"kokoro-{name}.wav", audio, 24000, subtype="PCM_16")
+        notes.append(f"kokoro-{name}.wav: Kokoro, {who}. Apache 2.0.")
         print(notes[-1], f"{len(audio) / 24000:.1f}s", flush=True)
     return notes
 
 
-def pocket_samples(items, out, args):
+def pocket_samples(items, out, args, voice):
     import torch
     from pocket_tts import TTSModel
 
     model = TTSModel.load_model()
     notes = []
-    for voice, licence in POCKET:
+    for name, licence in POCKET:
         torch.manual_seed(0)  # the model samples at random; fix it so a rerun sounds the same
         try:
-            state = model.get_state_for_audio_prompt(voice)
+            state = model.get_state_for_audio_prompt(name)
         except Exception as error:  # one missing voice should not cost the others
-            print(f"pocket-{voice}: skipped, {type(error).__name__}: {error}", flush=True)
+            print(f"pocket-{name}: skipped, {type(error).__name__}: {error}", flush=True)
             continue
-        audio = assemble(items, lambda text: model.generate_audio(state, text).detach().cpu().numpy(), model.sample_rate)
-        sf.write(out / f"pocket-{voice}.wav", audio, model.sample_rate, subtype="PCM_16")
-        notes.append(f"pocket-{voice}.wav: Pocket TTS (model CC BY 4.0, credit Kyutai); recording {licence}.")
+        audio = assemble(
+            items, lambda text: model.generate_audio(state, text).detach().cpu().numpy(),
+            model.sample_rate, voice["line_gap"])
+        sf.write(out / f"pocket-{name}.wav", audio, model.sample_rate, subtype="PCM_16")
+        notes.append(f"pocket-{name}.wav: Pocket TTS (model CC BY 4.0, credit Kyutai); recording {licence}.")
         print(notes[-1], f"{len(audio) / model.sample_rate:.1f}s", flush=True)
     if not notes:
         raise SystemExit("No Pocket TTS voice could be loaded")
@@ -130,7 +133,8 @@ def main():
     items = opening(production.folder(args.production) / "script.md")
     out = production.out(args.production) / "voice-samples"
     out.mkdir(parents=True, exist_ok=True)
-    notes = (kokoro_samples if args.engine == "kokoro" else pocket_samples)(items, out, args)
+    voice = production.settings(args.production)["voice"]
+    notes = (kokoro_samples if args.engine == "kokoro" else pocket_samples)(items, out, args, voice)
     text = "\n\n".join(value for kind, value in items if kind == "line")
     (out / f"{args.engine}-voices.txt").write_text(
         "\n".join(notes) + "\n\nEach voice reads:\n\n" + text + "\n", encoding="utf-8")

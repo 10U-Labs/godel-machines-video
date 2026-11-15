@@ -70,8 +70,9 @@ def main():
         raise SystemExit(f'--adopt takes the id of a workflow run, not {a.adopt!r}')
 
     out = production.out(a.production)
+    picture = production.settings(a.production)['picture']
     timings = json.loads((out / 'voice/timings.json').read_text(encoding='utf-8'))
-    names = clips.names(production.folder(a.production) / 'scenes', timings, a.blender)
+    names = clips.names(production.folder(a.production) / 'scenes', timings, picture, a.blender)
     (out / 'clips.json').write_text(json.dumps(names, indent=1), encoding='utf-8')
 
     missing = [scene for scene, clip in names.items() if clips.find(clip) is None]
@@ -88,7 +89,7 @@ def main():
             adopt.append({'scene': scene, 'clip': names[scene], 'run': run, 'artifact': artifact})
             print(f'{scene:<28} adopted from {artifact} of run {run}', file=sys.stderr)
         else:
-            total = int(round(s['duration'] * clips.FPS))
+            total = int(round(s['duration'] * picture['fps']))
             chunks = [{'start': start, 'end': min(total, start + a.chunk - 1)} for start in range(1, total + 1, a.chunk)]
             if len(chunks) > MATRIX:
                 raise SystemExit(f'{scene}: {len(chunks)} chunks is more than a job matrix allows; raise --chunk')

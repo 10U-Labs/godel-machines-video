@@ -3,7 +3,9 @@
     .venv/bin/python src/voice/make_voice.py godel-machines
 
 Reads productions/<name>/script.md, and productions/<name>/pronunciations.json
-where the production has one. Script format (markdown):
+where the production has one. The voice, its speed, and the silences around
+the lines are the production's [voice] settings (see src/production.py).
+Script format (markdown):
 
     ## 01-opening | Any title for the scene
     One paragraph is one voiced line. Keep each to a single beat so that
@@ -32,14 +34,6 @@ from kokoro_onnx import Kokoro
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 import production  # noqa: E402
-
-VOICE = "af_heart"
-LANG = "en-us"
-SPEED = 0.95
-
-LEAD_IN = 0.6      # silence before a scene's first line
-LINE_GAP = 0.38    # silence between consecutive lines
-TAIL = 0.7         # silence after a scene's last line
 
 SCENE_RE = re.compile(r"^##\s+(\S+)\s*\|\s*(.+?)\s*$")
 PAUSE_RE = re.compile(r"^\[pause\s+([0-9.]+)\]$")
@@ -78,13 +72,13 @@ def load_pronunciations(path):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def phonemize(kokoro, text, pronunciations):
+def phonemize(kokoro, text, lang, pronunciations):
     """Phonemize a line, swapping in hand-written phonemes for listed words."""
-    phonemes = kokoro.tokenizer.phonemize(text, lang=LANG)
+    phonemes = kokoro.tokenizer.phonemize(text, lang=lang)
     for entry in pronunciations:
         if not re.search(rf"\b{re.escape(entry['word'])}\b", text):
             continue
-        default = kokoro.tokenizer.phonemize(entry["word"], lang=LANG)
+        default = kokoro.tokenizer.phonemize(entry["word"], lang=lang)
         if default not in phonemes:
             raise SystemExit(
                 f"Could not apply the pronunciation for {entry['word']!r} in: {text!r}\n"
@@ -103,6 +97,7 @@ def main():
 
     folder = production.folder(args.production)
     out = production.out(args.production) / "voice"
+    voice = production.settings(args.production)["voice"]
     scenes = parse_script((folder / "script.md").read_text(encoding="utf-8"))
     if not scenes:
         raise SystemExit("No scenes found. Scene headings look like: ## 01-opening | Title")
@@ -112,11 +107,11 @@ def main():
     lines_dir.mkdir(parents=True, exist_ok=True)
     kokoro = Kokoro(str(args.model), str(args.voices))
 
-    timings = {"voice": VOICE, "speed": SPEED, "scenes": []}
+    timings = {"voice": voice["name"], "speed": voice["speed"], "scenes": []}
     total = 0.0
     generated = 0
     for scene in scenes:
-        cursor = LEAD_IN
+        cursor = voice["lead_in"]
         placed = []          # (start_seconds, samples)
         entries = []
         sample_rate = 24000
@@ -128,17 +123,17 @@ def main():
                 previous_was_line = False
                 continue
             if previous_was_line:
-                cursor += LINE_GAP
+                cursor += voice["line_gap"]
             n += 1
             line_id = f"{scene['id']}-{n:02d}"
-            phonemes = phonemize(kokoro, value, pronunciations)
-            key = hashlib.sha256(f"{VOICE}|{SPEED}|{phonemes}".encode()).hexdigest()[:16]
+            phonemes = phonemize(kokoro, value, voice["lang"], pronunciations)
+            key = hashlib.sha256(f"{voice['name']}|{voice['speed']}|{phonemes}".encode()).hexdigest()[:16]
             wav = lines_dir / f"{line_id}.wav"
             stamp = lines_dir / f"{line_id}.key"
             if wav.exists() and stamp.exists() and stamp.read_text() == key:
                 audio, sample_rate = sf.read(wav, dtype="float32")
             else:
-                audio, sample_rate = kokoro.create(phonemes, voice=VOICE, speed=SPEED, is_phonemes=True)
+                audio, sample_rate = kokoro.create(phonemes, voice=voice["name"], speed=voice["speed"], is_phonemes=True)
                 sf.write(wav, audio, sample_rate)
                 stamp.write_text(key)
                 generated += 1
@@ -153,7 +148,7 @@ def main():
             cursor += dur
             previous_was_line = True
 
-        duration = round(cursor + TAIL, 3)
+        duration = round(cursor + voice["tail"], 3)
         track = np.zeros(int(round(duration * sample_rate)), dtype="float32")
         for start, audio in placed:
             i = int(round(start * sample_rate))

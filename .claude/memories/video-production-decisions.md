@@ -10,7 +10,7 @@ metadata:
 These production choices are settled for the Gödel machines film:
 
 - Look: an animated explainer with the feel of Kurzgesagt videos. The look itself is original flat-vector artwork drawn in code; nothing of Kurzgesagt's (characters, logo, branding) is copied. The feel is the user's decision; the original look is Claude's proposal, which the film follows.
-- Narration voice: Kokoro `af_heart` (American woman, `en-us`, speed 0.95), set in `src/voice/make_voice.py`. The voice is the user's choice. Kokoro is Apache 2.0, so the film owes no credit for the voice.
+- Narration voice: Kokoro `af_heart` (American woman, `en-us`, speed 0.95), set in `productions/godel-machines/production.toml`. The voice is the user's choice. Kokoro is Apache 2.0, so the film owes no credit for the voice.
 - Music: a synthesized bed with basic sound effects that Claude generates; no licensed track.
 - Length: no limit. The content decides how long the video runs.
 - Audience: the general public, with the constraint in [No analogies in script](no-analogies-in-script.md).

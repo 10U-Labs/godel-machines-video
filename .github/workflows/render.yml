@@ -114,7 +114,7 @@ jobs:
       - name: Restore narration clips
         uses: actions/cache@v6
         with:
-          key: narration-${{ hashFiles(format('productions/{0}/script.md', env.PRODUCTION), format('productions/{0}/pronunciations.json', env.PRODUCTION), 'src/voice/**') }}
+          key: narration-${{ hashFiles(format('productions/{0}/production.toml', env.PRODUCTION), format('productions/{0}/script.md', env.PRODUCTION), format('productions/{0}/pronunciations.json', env.PRODUCTION), 'src/voice/**') }}
           path: out/${{ env.PRODUCTION }}/voice/lines
           restore-keys: narration-
       - name: Generate narration

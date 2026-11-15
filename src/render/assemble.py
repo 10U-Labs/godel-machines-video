@@ -4,7 +4,8 @@
 
 Works under out/<name>/. Takes every scene video in scenes/ that the narration
 timings list, in script order, joins them without re-encoding, and adds
-audio/mix.wav. Writes <name>.mp4.
+audio/mix.wav, brought to the loudness in the production's [sound] settings
+(see src/production.py). Writes <name>.mp4.
 """
 import argparse
 import json
@@ -29,6 +30,8 @@ def main():
     args = ap.parse_args()
     out = production.out(args.production)
     video = out / f"{args.production}.mp4"
+    sound = production.settings(args.production)["sound"]
+    loudness = f"loudnorm=I={sound['loudness']:g}:TP={sound['true_peak']:g}:LRA={sound['loudness_range']:g}"
 
     timings = json.loads((out / "voice/timings.json").read_text(encoding="utf-8"))
     videos = [out / "scenes" / f"{s['id']}.mp4" for s in timings["scenes"]]
@@ -44,7 +47,7 @@ def main():
         run(
             *FFMPEG, "-i", silent, "-i", out / "audio/mix.wav",
             "-c:v", "copy",
-            "-af", "loudnorm=I=-14:TP=-1.5:LRA=11", "-ar", "48000",
+            "-af", loudness, "-ar", "48000",
             "-c:a", "aac", "-b:a", "192k",
             "-shortest", "-movflags", "+faststart",
             video,

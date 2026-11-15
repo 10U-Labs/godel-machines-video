@@ -9,9 +9,10 @@ artifact named scene-<scene>-<hash>. The hash covers everything that decides
 the clip's pixels:
 
     the scene's file in productions/<name>/scenes/
-    kit.py and render_scene.py, which also set the render engine, the sample
-        count, the resolution, and the frame rate
+    kit.py and render_scene.py
     the fonts in src/fonts/
+    the production's [picture] settings: the frame size, the frame rate, the
+        render engine, and the sample count
     the numbers in the scene's narration timings: its length, and the start
         and end of each line, but not the lines' text, which no scene reads
     the Blender version
@@ -39,7 +40,6 @@ import production  # noqa: E402
 
 FONTS = HERE.parent / 'fonts'
 
-FPS = 30            # the same as kit.FPS; kit itself can only be imported inside Blender
 ENCODE = ['-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18']
 STILL_EVERY = 60    # one frame in this many is kept as a still for review
 
@@ -55,7 +55,7 @@ def digest(path):
     return hashlib.sha256(data).hexdigest()
 
 
-def name(scenes, entry, blender):
+def name(scenes, entry, picture, blender):
     """The artifact name of one scene's clip, from the scene's entry in the narration timings."""
     scene = entry['id']
     inputs = {
@@ -63,16 +63,20 @@ def name(scenes, entry, blender):
         'kit': digest(HERE / 'kit.py'),
         'render_scene': digest(HERE / 'render_scene.py'),
         'fonts': {p.name: digest(p) for p in FONTS.iterdir() if not p.name.startswith('.')},
+        'picture': picture,
         'timings': [entry['duration'], [[ln['start'], ln['end']] for ln in entry['lines']]],
         'blender': blender,
-        'encode': [FPS, ENCODE],
+        'encode': ENCODE,
     }
     return f"scene-{scene}-{hashlib.sha256(json.dumps(inputs, sort_keys=True).encode()).hexdigest()[:16]}"
 
 
-def names(scenes, timings, blender):
+def names(scenes, timings, picture, blender):
     """{scene: clip name} for every scene in the timings that has a file in scenes/, in script order."""
-    return {s['id']: name(scenes, s, blender) for s in timings['scenes'] if (scenes / f"{s['id']}.py").exists()}
+    return {
+        s['id']: name(scenes, s, picture, blender)
+        for s in timings['scenes'] if (scenes / f"{s['id']}.py").exists()
+    }
 
 
 def gh(*args):
@@ -93,12 +97,12 @@ def download(run, artifact, out):
     gh('run', 'download', str(run), '--name', artifact, '--dir', str(out))
 
 
-def encode(scene, frames, scenes, stills):
+def encode(scene, frames, scenes, stills, fps):
     """Turn a scene's frames into its clip, and keep its cues and some of its frames beside it."""
     scenes.mkdir(parents=True, exist_ok=True)
     stills.mkdir(parents=True, exist_ok=True)
     subprocess.run(
-        ['ffmpeg', '-v', 'error', '-framerate', str(FPS), '-i', str(frames / 'frame_%04d.png'),
+        ['ffmpeg', '-v', 'error', '-framerate', str(fps), '-i', str(frames / 'frame_%04d.png'),
          *ENCODE, str(scenes / f'{scene}.mp4')],
         check=True,
     )
@@ -129,7 +133,8 @@ def main():
     a = ap.parse_args()
     out = production.out(a.production)
     if a.command == 'encode':
-        encode(a.scene, out / 'frames' / a.scene, out / 'scenes', out / 'stills')
+        fps = production.settings(a.production)['picture']['fps']
+        encode(a.scene, out / 'frames' / a.scene, out / 'scenes', out / 'stills', fps)
     else:
         fetch(out / 'clips.json', out / 'scenes')
 
