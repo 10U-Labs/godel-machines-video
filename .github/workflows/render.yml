@@ -1,10 +1,10 @@
 ---
 concurrency:
   cancel-in-progress: true
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: render-${{ inputs.production }}-${{ github.ref }}
 env:
   BLENDER: blender-4.5.16-linux-x64
-  PRODUCTION: godel-machines
+  PRODUCTION: ${{ inputs.production }}
 jobs:
   adopt:
     if: needs.narration.outputs.adopt != '[]'
@@ -54,12 +54,12 @@ jobs:
       - name: Download narration
         uses: actions/download-artifact@v8
         with:
-          name: narration
+          name: ${{ env.PRODUCTION }}-narration
           path: out/${{ env.PRODUCTION }}/voice
       - name: Download the clip names
         uses: actions/download-artifact@v8
         with:
-          name: clips
+          name: ${{ env.PRODUCTION }}-clips
           path: out/${{ env.PRODUCTION }}
       - env:
           GH_TOKEN: ${{ github.token }}
@@ -75,16 +75,14 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           if-no-files-found: error
-          name: film
+          name: ${{ env.PRODUCTION }}-film
           path: |
             out/${{ env.PRODUCTION }}/${{ env.PRODUCTION }}.mp4
             out/${{ env.PRODUCTION }}/${{ env.PRODUCTION }}.srt
   narration:
-    needs: yamllint
     outputs:
       adopt: ${{ steps.plan.outputs.adopt }}
       blender: ${{ env.BLENDER }}
-      production: ${{ env.PRODUCTION }}
       render: ${{ steps.plan.outputs.render }}
       scenes: ${{ steps.plan.outputs.scenes }}
     runs-on: ubuntu-latest
@@ -115,9 +113,9 @@ jobs:
       - name: Restore narration clips
         uses: actions/cache@v6
         with:
-          key: narration-${{ hashFiles(format('productions/{0}/production.toml', env.PRODUCTION), format('productions/{0}/script.md', env.PRODUCTION), format('productions/{0}/pronunciations.json', env.PRODUCTION), 'src/voice/**') }}
+          key: narration-${{ env.PRODUCTION }}-${{ hashFiles(format('productions/{0}/production.toml', env.PRODUCTION), format('productions/{0}/script.md', env.PRODUCTION), format('productions/{0}/pronunciations.json', env.PRODUCTION), 'src/voice/**') }}
           path: out/${{ env.PRODUCTION }}/voice/lines
-          restore-keys: narration-
+          restore-keys: narration-${{ env.PRODUCTION }}-
       - name: Generate narration
         run: python src/voice/make_voice.py "$PRODUCTION"
       - env:
@@ -130,7 +128,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           if-no-files-found: error
-          name: narration
+          name: ${{ env.PRODUCTION }}-narration
           path: |
             out/${{ env.PRODUCTION }}/voice/*.wav
             out/${{ env.PRODUCTION }}/voice/timings.json
@@ -138,7 +136,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           if-no-files-found: error
-          name: clips
+          name: ${{ env.PRODUCTION }}-clips
           path: out/${{ env.PRODUCTION }}/clips.json
   scenes:
     if: needs.narration.outputs.scenes != '[]'
@@ -152,41 +150,19 @@ jobs:
       blender: ${{ needs.narration.outputs.blender }}
       chunks: ${{ toJSON(fromJSON(needs.narration.outputs.render)[matrix.scene].chunks) }}
       clip: ${{ fromJSON(needs.narration.outputs.render)[matrix.scene].clip }}
-      production: ${{ needs.narration.outputs.production }}
+      production: ${{ inputs.production }}
       scene: ${{ matrix.scene }}
-  yamllint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-      - name: Lint YAML
-        uses: ibiqlik/action-yamllint@v3
-        with:
-          config_data: >-
-            {extends: default, rules: {
-            empty-lines: {max: 0, max-start: 0, max-end: 1},
-            key-ordering: enable,
-            line-length: disable,
-            new-line-at-end-of-file: enable,
-            truthy: {allowed-values: ["true", "false", "on"]}}}
-          file_or_dir: .github/workflows/render.yml .github/workflows/scene.yml
-          strict: "true"
 name: render
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - ".github/workflows/render.yml"
-      - ".github/workflows/scene.yml"
-      - "productions/**"
-      - "requirements.txt"
-      - "src/**"
-  workflow_dispatch:
+  workflow_call:
     inputs:
       adopt:
         description: The id of an earlier run whose scene clips to take, in place of rendering, for the scenes that have none
         required: false
+        type: string
+      production:
+        description: The name of the production to render, a folder in productions/
+        required: true
         type: string
 permissions:
   actions: read

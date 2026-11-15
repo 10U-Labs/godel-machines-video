@@ -1,9 +1,9 @@
 ---
 concurrency:
   cancel-in-progress: true
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ inputs.production }}-${{ github.ref }}
 env:
-  PRODUCTION: godel-machines
+  PRODUCTION: ${{ inputs.production }}
 jobs:
   samples:
     needs: yamllint
@@ -73,11 +73,9 @@ jobs:
           strict: "true"
 name: voices
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - ".github/workflows/voices.yml"
-      - "requirements-voices.txt"
-      - "src/voice/sample_voices.py"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      production:
+        description: The name of the production whose opening to read, a folder in productions/
+        required: true
+        type: string

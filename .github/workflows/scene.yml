@@ -16,11 +16,11 @@ jobs:
         with:
           merge-multiple: "true"
           path: out/${{ env.PRODUCTION }}/frames
-          pattern: frames-${{ inputs.scene }}-*
+          pattern: ${{ inputs.production }}-frames-${{ inputs.scene }}-*
       - name: Download narration
         uses: actions/download-artifact@v8
         with:
-          name: narration
+          name: ${{ inputs.production }}-narration
           path: out/${{ env.PRODUCTION }}/voice
       - name: Encode the clip and pick stills
         run: python3 src/blender/clips.py encode "$PRODUCTION" "${{ inputs.scene }}"
@@ -34,7 +34,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           if-no-files-found: error
-          name: stills-${{ inputs.scene }}
+          name: ${{ inputs.production }}-stills-${{ inputs.scene }}
           path: out/${{ env.PRODUCTION }}/stills
   frames:
     runs-on: ubuntu-latest
@@ -58,7 +58,7 @@ jobs:
       - name: Download narration
         uses: actions/download-artifact@v8
         with:
-          name: narration
+          name: ${{ inputs.production }}-narration
           path: out/${{ env.PRODUCTION }}/voice
       - name: Render frames
         run: |
@@ -73,7 +73,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           if-no-files-found: error
-          name: frames-${{ inputs.scene }}-${{ matrix.chunk.start }}
+          name: ${{ inputs.production }}-frames-${{ inputs.scene }}-${{ matrix.chunk.start }}
           path: out/${{ env.PRODUCTION }}/frames
           retention-days: 3
     strategy:

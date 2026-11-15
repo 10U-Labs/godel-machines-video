@@ -1,0 +1,85 @@
+---
+jobs:
+  productions:
+    needs: yamllint
+    outputs:
+      names: ${{ steps.find.outputs.names }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - env:
+          BEFORE: ${{ github.event.before }}
+          NAMED: ${{ inputs.production }}
+        id: find
+        name: Find the productions to render
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            changed=$(git diff --name-only "$BEFORE" "$GITHUB_SHA" -- productions | cut -d/ -f2 | sort -u)
+          else
+            changed="$NAMED"
+          fi
+          names=$(echo "$changed" | while read -r name; do
+            if [ -f "productions/$name/production.toml" ]; then echo "$name"; fi
+          done | jq -Rnc '[inputs]')
+          if [ "$GITHUB_EVENT_NAME" != "push" ] && [ "$names" = "[]" ]; then
+            echo "::error::No production named $NAMED: productions/$NAMED/production.toml does not exist"
+            exit 1
+          fi
+          echo "To render: $names"
+          echo "names=$names" >> "$GITHUB_OUTPUT"
+        shell: bash
+  render:
+    if: needs.productions.outputs.names != '[]'
+    needs: productions
+    strategy:
+      fail-fast: false
+      matrix:
+        production: ${{ fromJSON(needs.productions.outputs.names) }}
+    uses: ./.github/workflows/render.yml
+    with:
+      adopt: ${{ inputs.adopt }}
+      production: ${{ matrix.production }}
+  yamllint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+      - name: Lint YAML
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          config_data: >-
+            {extends: default, rules: {
+            empty-lines: {max: 0, max-start: 0, max-end: 1},
+            key-ordering: enable,
+            line-length: disable,
+            new-line-at-end-of-file: enable,
+            truthy: {allowed-values: ["true", "false", "on"]}}}
+          file_or_dir: .github/workflows/productions.yml .github/workflows/render.yml .github/workflows/scene.yml .github/workflows/voices.yml
+          strict: "true"
+name: productions
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/productions.yml"
+      - ".github/workflows/render.yml"
+      - ".github/workflows/scene.yml"
+      - ".github/workflows/voices.yml"
+      - "productions/**"
+  workflow_dispatch:
+    inputs:
+      adopt:
+        description: The id of an earlier run whose scene clips to take, in place of rendering, for the scenes that have none
+        required: false
+        type: string
+      production:
+        description: The name of the production to render, a folder in productions/
+        required: true
+        type: string
+permissions:
+  actions: read
+  contents: read

@@ -1,13 +1,14 @@
 """Name each scene's clip by what decides its pictures, and reuse the clips that exist.
 
     python3 src/blender/clips.py encode godel-machines 00-pip
-    python3 src/blender/clips.py adopt godel-machines 00-pip --run 43739981974 \
-        --artifact scene-00-pip-ed65a4ec9311f957 --narration 43739981974
+    python3 src/blender/clips.py adopt godel-machines 00-pip --run 43741576538 \
+        --artifact scene-00-pip-f2b80fbdaa2b5e32 --narration 43741576538
     python3 src/blender/clips.py fetch godel-machines
 
 A scene's clip is its rendered video, out/<name>/scenes/<scene>.mp4. The
-render workflow keeps each clip as an artifact named scene-<scene>-<hash>.
-The hash covers everything that decides the clip's pixels:
+render workflow keeps each clip as an artifact named
+scene-<name>-<scene>-<hash>. The hash covers everything that decides the
+clip's pixels:
 
     the scene's file in productions/<name>/scenes/
     the production's own modules, the Python files directly in
@@ -85,7 +86,8 @@ def name(scenes, entry, picture, blender):
         'blender': blender,
         'encode': ENCODE,
     }
-    return f"scene-{scene}-{hashlib.sha256(json.dumps(inputs, sort_keys=True).encode()).hexdigest()[:16]}"
+    made_from = hashlib.sha256(json.dumps(inputs, sort_keys=True).encode()).hexdigest()[:16]
+    return f'scene-{scenes.parent.name}-{scene}-{made_from}'
 
 
 def names(scenes, timings, picture, blender):

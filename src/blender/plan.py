@@ -39,20 +39,23 @@ import production  # noqa: E402
 MATRIX = 256        # the most jobs one job matrix allows
 
 
-def offered(run, scenes):
+def offered(run, scenes, name):
     """Where an earlier run keeps its clip of each of these scenes: {scene: (run, artifact)}.
 
-    A run lists the clip it used for each scene in its artifact 'clips', and
-    the clip itself may sit in a run before it. A run from before clips had
-    names keeps them all in one artifact, 'scenes'.
+    A run lists the clip it used for each scene of the production in its
+    artifact '<name>-clips', and the clip itself may sit in a run before it. A
+    run from before artifacts carried the production's name calls the list
+    'clips', and one from before clips had names keeps them all in one
+    artifact, 'scenes'.
     """
     held = clips.gh(
         'api', '--paginate', f'repos/{{owner}}/{{repo}}/actions/runs/{run}/artifacts?per_page=100',
         '--jq', '.artifacts[] | select(.expired | not) | .name',
     ).split()
-    if 'clips' in held:
+    listing = next((kept for kept in (f'{name}-clips', 'clips') if kept in held), None)
+    if listing:
         with tempfile.TemporaryDirectory() as tmp:
-            clips.download(run, 'clips', Path(tmp))
+            clips.download(run, listing, Path(tmp))
             used = json.loads((Path(tmp) / 'clips.json').read_text(encoding='utf-8'))
         found = {scene: (clips.find(used[scene]), used[scene]) for scene in scenes if scene in used}
         return {scene: where for scene, where in found.items() if where[0] is not None}
@@ -78,7 +81,7 @@ def main():
     (out / 'clips.json').write_text(json.dumps(names, indent=1), encoding='utf-8')
 
     missing = [scene for scene, clip in names.items() if clips.find(clip) is None]
-    offer = offered(int(a.adopt), missing) if a.adopt and missing else {}
+    offer = offered(int(a.adopt), missing, a.production) if a.adopt and missing else {}
     render, adopt = {}, []
     for s in timings['scenes']:
         scene = s['id']
