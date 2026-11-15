@@ -26,7 +26,7 @@
 - [An issue is brought up to date before work](an-issue-is-brought-up-to-date-before-work.md) — fix a stale title and body first, without widening; one problem and one commit per issue, split otherwise
 - [Before an issue is labelled needs decision](before-an-issue-is-labelled-needs-decision.md) — check the memories and the code first, then write what is to be decided into the body
 - [A commit closes at least one issue](a-commit-closes-at-least-one-issue.md) — a Closes #N line for each issue; after the push, check that each one closed
-- [Every run is watched](every-run-is-watched.md) — after a push the work goes on; each run gets a background watch; a failed run is fixed in the next push
+- [Every run is watched](every-run-is-watched.md) — after a push the work goes on; each run gets a background watch; a failed run is fixed in the next push; a push that renames clips and alters no picture adopts them
 
 ## The Gödel machines film
 

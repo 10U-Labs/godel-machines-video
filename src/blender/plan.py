@@ -1,34 +1,101 @@
-"""Split the film's Blender scenes into chunks of frames for parallel render jobs.
+"""Plan which of the film's Blender scenes a workflow run renders, and in which chunks of frames.
 
-    python src/blender/plan.py out/voice/timings.json --chunk 60
+    python src/blender/plan.py out/voice/timings.json --blender blender-4.5.16-linux-x64 \
+        --chunk 90 --clips out/clips.json [--adopt 43653948688] >> "$GITHUB_OUTPUT"
 
-Prints a JSON list of {"scene", "start", "end"} for every scene in the timings
-that has a file in src/blender/scenes/, in script order.
+Takes every scene in the timings that has a file in src/blender/scenes/, in
+script order. A scene whose clip is still kept as an artifact (see clips.py)
+needs nothing. The others are rendered, each split into chunks of frames for
+parallel jobs.
+
+--adopt names an earlier workflow run. A scene that has no clip under its
+name takes that run's clip of the scene, which is uploaded again under the
+scene's name and not rendered. That is for clips rendered before a change that
+gives them new names and is known to alter no picture.
+
+Writes {scene: clip name} for every scene to --clips, and prints three lines:
+
+    scenes=[scene, ...]
+    render={scene: {"clip", "chunks": [{"start", "end"}, ...]}, ...}
+    adopt=[{"scene", "clip", "run", "artifact"}, ...]
+
+scenes lists the scenes to render, and render gives each one's clip name and
+chunks. In adopt, run and artifact say which artifact of which run holds the
+clip to take.
 """
 import argparse
 import json
+import sys
+import tempfile
 from pathlib import Path
 
-FPS = 30
-SCENES = Path(__file__).resolve().parent / 'scenes'
+import clips
+
+MATRIX = 256        # the most jobs one job matrix allows
+
+
+def offered(run, scenes):
+    """Where an earlier run keeps its clip of each of these scenes: {scene: (run, artifact)}.
+
+    A run lists the clip it used for each scene in its artifact 'clips', and
+    the clip itself may sit in a run before it. A run from before clips had
+    names keeps them all in one artifact, 'scenes'.
+    """
+    held = clips.gh(
+        'api', '--paginate', f'repos/{{owner}}/{{repo}}/actions/runs/{run}/artifacts?per_page=100',
+        '--jq', '.artifacts[] | select(.expired | not) | .name',
+    ).split()
+    if 'clips' in held:
+        with tempfile.TemporaryDirectory() as tmp:
+            clips.download(run, 'clips', Path(tmp))
+            used = json.loads((Path(tmp) / 'clips.json').read_text(encoding='utf-8'))
+        found = {scene: (clips.find(used[scene]), used[scene]) for scene in scenes if scene in used}
+        return {scene: where for scene, where in found.items() if where[0] is not None}
+    if 'scenes' in held:
+        return {scene: (run, 'scenes') for scene in scenes}
+    raise SystemExit(f'Run {run} keeps no scene clips to adopt')
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('timings', type=Path)
+    ap.add_argument('--blender', required=True)
     ap.add_argument('--chunk', type=int, default=60)
+    ap.add_argument('--clips', type=Path, required=True)
+    ap.add_argument('--adopt', default='')
     a = ap.parse_args()
+    if a.adopt and not a.adopt.isdigit():
+        raise SystemExit(f'--adopt takes the id of a workflow run, not {a.adopt!r}')
+
     timings = json.loads(a.timings.read_text(encoding='utf-8'))
-    chunks = []
+    names = clips.names(timings, a.blender)
+    a.clips.parent.mkdir(parents=True, exist_ok=True)
+    a.clips.write_text(json.dumps(names, indent=1), encoding='utf-8')
+
+    missing = [scene for scene, clip in names.items() if clips.find(clip) is None]
+    offer = offered(int(a.adopt), missing) if a.adopt and missing else {}
+    render, adopt = {}, []
     for s in timings['scenes']:
-        if not (SCENES / f"{s['id']}.py").exists():
+        scene = s['id']
+        if scene not in names:
             continue
-        total = int(round(s['duration'] * FPS))
-        for start in range(1, total + 1, a.chunk):
-            chunks.append({'scene': s['id'], 'start': start, 'end': min(total, start + a.chunk - 1)})
-    if len(chunks) > 256:
-        raise SystemExit(f'{len(chunks)} chunks is more than a job matrix allows; raise --chunk')
-    print(json.dumps(chunks, separators=(',', ':')))
+        if scene not in missing:
+            print(f'{scene:<28} reused', file=sys.stderr)
+        elif scene in offer:
+            run, artifact = offer[scene]
+            adopt.append({'scene': scene, 'clip': names[scene], 'run': run, 'artifact': artifact})
+            print(f'{scene:<28} adopted from {artifact} of run {run}', file=sys.stderr)
+        else:
+            total = int(round(s['duration'] * clips.FPS))
+            chunks = [{'start': start, 'end': min(total, start + a.chunk - 1)} for start in range(1, total + 1, a.chunk)]
+            if len(chunks) > MATRIX:
+                raise SystemExit(f'{scene}: {len(chunks)} chunks is more than a job matrix allows; raise --chunk')
+            render[scene] = {'clip': names[scene], 'chunks': chunks}
+            print(f'{scene:<28} rendered in {len(chunks)} chunks', file=sys.stderr)
+    if max(len(render), len(adopt)) > MATRIX:
+        raise SystemExit('More scenes than a job matrix allows')
+    for output, value in (('scenes', list(render)), ('render', render), ('adopt', adopt)):
+        print(f"{output}={json.dumps(value, separators=(',', ':'))}")
 
 
 if __name__ == '__main__':

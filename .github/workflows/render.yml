@@ -5,8 +5,35 @@ concurrency:
 env:
   BLENDER: blender-4.5.16-linux-x64
 jobs:
+  adopt:
+    if: needs.narration.outputs.adopt != '[]'
+    needs: narration
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        name: Download the clip
+        run: |
+          scene="${{ matrix.clip.scene }}"
+          gh run download "${{ matrix.clip.run }}" --name "${{ matrix.clip.artifact }}" --dir out/adopt
+          test -f "out/adopt/$scene.mp4"
+          test -f "out/adopt/$scene.sfx.json"
+      - name: Upload the clip under its name
+        uses: actions/upload-artifact@v7
+        with:
+          if-no-files-found: error
+          name: ${{ matrix.clip.clip }}
+          path: |
+            out/adopt/${{ matrix.clip.scene }}.mp4
+            out/adopt/${{ matrix.clip.scene }}.sfx.json
+    strategy:
+      matrix:
+        clip: ${{ fromJSON(needs.narration.outputs.adopt) }}
   film:
+    if: ${{ !cancelled() && !failure() && needs.narration.result == 'success' }}
     needs:
+      - adopt
       - narration
       - scenes
     runs-on: ubuntu-latest
@@ -27,11 +54,15 @@ jobs:
         with:
           name: narration
           path: out/voice
-      - name: Download scenes
+      - name: Download the clip names
         uses: actions/download-artifact@v8
         with:
-          name: scenes
-          path: out/scenes
+          name: clips
+          path: out
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        name: Download every scene's clip
+        run: python src/blender/clips.py fetch out/clips.json
       - name: Mix the soundtrack
         run: python src/audio/mix.py
       - name: Assemble the film
@@ -46,56 +77,13 @@ jobs:
           path: |
             out/film.mp4
             out/film.srt
-  frames:
-    needs: narration
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-        with:
-          lfs: "true"
-      - name: Install libraries Blender needs
-        run: sudo apt-get update && sudo apt-get install --yes libegl1 libegl-mesa0 libgl1 libgl1-mesa-dri libice6 libsm6 libxfixes3 libxi6 libxkbcommon0 libxrender1 libxxf86vm1
-      - name: Restore Blender
-        uses: actions/cache@v6
-        with:
-          key: ${{ env.BLENDER }}
-          path: tools/${{ env.BLENDER }}
-      - name: Download Blender
-        run: |
-          mkdir -p tools
-          test -d "tools/$BLENDER" && exit 0
-          curl -fsSL "https://download.blender.org/release/Blender4.5/$BLENDER.tar.xz" | tar -xJ -C tools
-      - name: Download narration
-        uses: actions/download-artifact@v8
-        with:
-          name: narration
-          path: out/voice
-      - name: Render frames
-        run: |
-          scene="${{ matrix.chunk.scene }}"
-          start="${{ matrix.chunk.start }}"
-          sfx=""
-          if [ "$start" = "1" ]; then sfx="--sfx out/frames/$scene/sfx.json"; fi
-          # shellcheck disable=SC2086
-          "tools/$BLENDER/blender" -b --factory-startup --python-exit-code 1 -P src/blender/render_scene.py -- \
-            --scene "$scene" --timings out/voice/timings.json --out "out/frames/$scene" \
-            --start "$start" --end "${{ matrix.chunk.end }}" $sfx
-      - name: Upload frames
-        uses: actions/upload-artifact@v7
-        with:
-          if-no-files-found: error
-          name: frames-${{ matrix.chunk.scene }}-${{ matrix.chunk.start }}
-          path: out/frames
-          retention-days: 3
-    strategy:
-      fail-fast: true
-      matrix:
-        chunk: ${{ fromJSON(needs.narration.outputs.chunks) }}
   narration:
     needs: yamllint
     outputs:
-      chunks: ${{ steps.plan.outputs.chunks }}
+      adopt: ${{ steps.plan.outputs.adopt }}
+      blender: ${{ env.BLENDER }}
+      render: ${{ steps.plan.outputs.render }}
+      scenes: ${{ steps.plan.outputs.scenes }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -129,9 +117,12 @@ jobs:
           restore-keys: narration-
       - name: Generate narration
         run: python src/voice/make_voice.py script/script.md
-      - id: plan
-        name: Plan render chunks
-        run: echo "chunks=$(python src/blender/plan.py out/voice/timings.json --chunk 90)" >> "$GITHUB_OUTPUT"
+      - env:
+          ADOPT: ${{ inputs.adopt }}
+          GH_TOKEN: ${{ github.token }}
+        id: plan
+        name: Plan which scenes to render
+        run: python src/blender/plan.py out/voice/timings.json --blender "$BLENDER" --chunk 90 --clips out/clips.json --adopt "$ADOPT" >> "$GITHUB_OUTPUT"
       - name: Upload narration
         uses: actions/upload-artifact@v7
         with:
@@ -140,43 +131,25 @@ jobs:
           path: |
             out/voice/*.wav
             out/voice/timings.json
+      - name: Upload the clip names
+        uses: actions/upload-artifact@v7
+        with:
+          if-no-files-found: error
+          name: clips
+          path: out/clips.json
   scenes:
-    needs: frames
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install ffmpeg
-        run: sudo apt-get update && sudo apt-get install --yes ffmpeg
-      - name: Download frames
-        uses: actions/download-artifact@v8
-        with:
-          merge-multiple: "true"
-          path: out/frames
-          pattern: frames-*
-      - name: Encode scenes and pick stills
-        run: |
-          cd out
-          mkdir -p scenes stills
-          for dir in frames/*/; do
-            id=$(basename "$dir")
-            ffmpeg -v error -framerate 30 -i "frames/$id/frame_%04d.png" -c:v libx264 -pix_fmt yuv420p -crf 18 "scenes/$id.mp4"
-            cp "frames/$id/sfx.json" "scenes/$id.sfx.json"
-            for png in frames/"$id"/frame_*.png; do
-              n=$(basename "$png" .png | sed 's/^frame_0*//')
-              if [ $(( (n - 1) % 60 )) -eq 0 ]; then cp "$png" "stills/$id-$(basename "$png")"; fi
-            done
-          done
-      - name: Upload scenes
-        uses: actions/upload-artifact@v7
-        with:
-          if-no-files-found: error
-          name: scenes
-          path: out/scenes
-      - name: Upload stills
-        uses: actions/upload-artifact@v7
-        with:
-          if-no-files-found: error
-          name: stills
-          path: out/stills
+    if: needs.narration.outputs.scenes != '[]'
+    needs: narration
+    strategy:
+      fail-fast: false
+      matrix:
+        scene: ${{ fromJSON(needs.narration.outputs.scenes) }}
+    uses: ./.github/workflows/scene.yml
+    with:
+      blender: ${{ needs.narration.outputs.blender }}
+      chunks: ${{ toJSON(fromJSON(needs.narration.outputs.render)[matrix.scene].chunks) }}
+      clip: ${{ fromJSON(needs.narration.outputs.render)[matrix.scene].clip }}
+      scene: ${{ matrix.scene }}
   yamllint:
     runs-on: ubuntu-latest
     steps:
@@ -192,7 +165,7 @@ jobs:
             line-length: disable,
             new-line-at-end-of-file: enable,
             truthy: {allowed-values: ["true", "false", "on"]}}}
-          file_or_dir: .github/workflows/render.yml
+          file_or_dir: .github/workflows/render.yml .github/workflows/scene.yml
           strict: "true"
 name: render
 on:
@@ -201,7 +174,16 @@ on:
       - main
     paths:
       - ".github/workflows/render.yml"
+      - ".github/workflows/scene.yml"
       - "requirements.txt"
       - "script/**"
       - "src/**"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      adopt:
+        description: The id of an earlier run whose scene clips to take, in place of rendering, for the scenes that have none
+        required: false
+        type: string
+permissions:
+  actions: read
+  contents: read
