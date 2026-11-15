@@ -7,6 +7,7 @@ stands over its own board, where fifty light up.
 import math
 
 import kit
+import parts
 from kit import fr, sec, span, mix, key, alpha, every
 
 FIRST_AT = (-4.6, 1.3)
@@ -46,12 +47,12 @@ def build(T):
     kit.motes(seed=52, colour=kit.AMBER)
     stage = kit.layer('stage', 1.0)
 
-    first = kit.pip('first', stage, FIRST_AT, 1.0, *kit.score_colour(20))
+    first = parts.pip('first', stage, FIRST_AT, 1.0, *parts.score_colour(20))
     kit.pop(first['root'], t_first - 0.4, 1.0)
-    kit.pip_idle(first, step=2)
-    kit.pip_blink(first, (2.0, 5.5, 8.0))
-    kit.pip_look(first, t_solve - 0.3, 0.0, -0.1)
-    kit.pip_look(first, t_best + 0.2, 0.13, 0.05)
+    parts.pip_idle(first, step=2)
+    parts.pip_blink(first, (2.0, 5.5, 8.0))
+    parts.pip_look(first, t_solve - 0.3, 0.0, -0.1)
+    parts.pip_look(first, t_best + 0.2, 0.13, 0.05)
     cues.append({'t': max(0.05, t_first - 0.4), 'type': 'pop'})
 
     board('first', stage, (FIRST_AT[0], -2.0), 20, t_solve, 0.9, (kit.MINT, kit.MINT_DEEP))
@@ -74,15 +75,15 @@ def build(T):
         steps.append(dot)
     cues.append({'t': t_rounds0, 'type': 'rise', 'dur': t_rounds1 - t_rounds0, 'pitch': 1.0, 'gain': 0.5})
 
-    best = kit.pip('best', stage, BEST_AT, 1.25, *kit.score_colour(50))
+    best = parts.pip('best', stage, BEST_AT, 1.25, *parts.score_colour(50))
     kit.pop(best['root'], t_best, 1.25)
-    kit.pip_idle(best, phase=1.1, step=2)
-    kit.pip_blink(best, (t_best + 1.2,))
+    parts.pip_idle(best, phase=1.1, step=2)
+    parts.pip_blink(best, (t_best + 1.2,))
     alpha(best['halo'], 1, 1.0)
     cues.append({'t': t_best, 'type': 'pop', 'pitch': 1.3})
-    kit.pip_look(best, t_fifty - 0.3, 0.0, -0.1)
-    kit.pip_arm(best, 'right', t_fifty + 1.0, 140, 0.3)
-    kit.pip_arm(best, 'left', t_fifty + 1.0, 140, 0.3)
+    parts.pip_look(best, t_fifty - 0.3, 0.0, -0.1)
+    parts.pip_arm(best, 'right', t_fifty + 1.0, 140, 0.3)
+    parts.pip_arm(best, 'left', t_fifty + 1.0, 140, 0.3)
 
     board('best', stage, (BEST_AT[0], -2.0), 50, t_fifty, 1.1, (kit.AMBER, kit.AMBER_DEEP))
     for k in range(6):

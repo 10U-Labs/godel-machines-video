@@ -10,6 +10,7 @@ generation. An old program from early on becomes a parent again.
 import math
 
 import kit
+import parts
 from kit import fr, sec, span, mix, key, alpha, every
 
 SHEET_W, SHEET_H = 6.4, 4.6
@@ -73,14 +74,14 @@ def build(T):
     # ------------------------------------------------------------ the blueprint, never built
     sheet = kit.empty('sheet', stage, (0, 0.3, kit.next_z(stage)))
     paper = kit.shape('sheet-paper', kit.rrect_pts(SHEET_W, SHEET_H, 0.15), kit.material('#1d3f8f', '#16307a'), sheet)
-    parts = [paper]
+    drawn = [paper]
     for i in range(1, 12):
-        parts.append(kit.shape(f'grid-v{i}', kit.rrect_pts(0.025, SHEET_H - 0.3, 0), kit.material(kit.SKY, alpha=0.18), sheet, (-SHEET_W / 2 + i * SHEET_W / 12, 0)))
+        drawn.append(kit.shape(f'grid-v{i}', kit.rrect_pts(0.025, SHEET_H - 0.3, 0), kit.material(kit.SKY, alpha=0.18), sheet, (-SHEET_W / 2 + i * SHEET_W / 12, 0)))
     for i in range(1, 9):
-        parts.append(kit.shape(f'grid-h{i}', kit.rrect_pts(SHEET_W - 0.3, 0.025, 0), kit.material(kit.SKY, alpha=0.18), sheet, (0, -SHEET_H / 2 + i * SHEET_H / 9)))
-    for k, (x, y) in enumerate(kit.machine_outline()):
-        parts.append(kit.shape(f'dash{k}', kit.circle_pts(0.04, n=10), kit.material('#cfe9ff'), sheet, (x * 1.4, y * 1.4 - 0.1)))
-    for ob in parts:
+        drawn.append(kit.shape(f'grid-h{i}', kit.rrect_pts(SHEET_W - 0.3, 0.025, 0), kit.material(kit.SKY, alpha=0.18), sheet, (0, -SHEET_H / 2 + i * SHEET_H / 9)))
+    for k, (x, y) in enumerate(parts.machine_outline()):
+        drawn.append(kit.shape(f'dash{k}', kit.circle_pts(0.04, n=10), kit.material('#cfe9ff'), sheet, (x * 1.4, y * 1.4 - 0.1)))
+    for ob in drawn:
         alpha(ob, 1, 1.0)
         alpha(ob, fr(t_dim), 1.0)
         alpha(ob, fr(t_dim + 0.8), 0.35)
@@ -122,19 +123,19 @@ def build(T):
 
     year = kit.text('year', '2025', 0.62, kit.material(kit.PAPER), stage, (-6.9, 3.85), align='LEFT')
     kit.appear(year, t_2025, t_out0, 0.4)
-    m = kit.pip('machine', stage, (SCREEN_AT[0], SCREEN_AT[1] + 0.05), 1.0)
+    m = parts.pip('machine', stage, (SCREEN_AT[0], SCREEN_AT[1] + 0.05), 1.0)
     kit.pop(m['root'], t_built, 1.0, t_out=t_out0 - 0.1)
-    kit.pip_idle(m, step=2)
-    kit.pip_blink(m, (t_built + 1.5, t_name + 0.8))
+    parts.pip_idle(m, step=2)
+    parts.pip_blink(m, (t_built + 1.5, t_name + 0.8))
     cues.append({'t': t_built, 'type': 'pop', 'pitch': 1.2})
     title = kit.text('title', 'Darwin Gödel Machine', 0.55, kit.material(kit.PAPER), stage, (SCREEN_AT[0], 3.25))
     kit.appear(title, t_name, t_out0 - 0.2, 0.5)
     cues.append({'t': t_name, 'type': 'chime', 'gain': 0.6})
 
     # ------------------------------------------------------------ Pip writes a changed copy: its child
-    n0 = kit.pip('n0', stage, PIP_AT, 1.3)
-    kit.pip_idle(n0, step=2)
-    kit.pip_blink(n0, (t_pip + 1.2, t_copy + 1.0, t_tests + 2.0, t_move + 3.0, t_grow1 + 1.0))
+    n0 = parts.pip('n0', stage, PIP_AT, 1.3)
+    parts.pip_idle(n0, step=2)
+    parts.pip_blink(n0, (t_pip + 1.2, t_copy + 1.0, t_tests + 2.0, t_move + 3.0, t_grow1 + 1.0))
     alpha(n0['halo'], 1, 0.6)
     cues.append({'t': t_pip, 'type': 'pop'})
 
@@ -144,12 +145,12 @@ def build(T):
     for f in every(1, fr(t_place), fr(t_place + 1.8)):
         key(loop, 'rotation_euler', f, (0, 0, -(sec(f) - t_place) * 2.5))
     for k, dx in enumerate((0.1, -0.1, 0.1, 0.0)):
-        kit.pip_look(n0, t_place + 0.5 + 0.22 * k, dx, 0.0, 0.18)
+        parts.pip_look(n0, t_place + 0.5 + 0.22 * k, dx, 0.0, 0.18)
 
-    code = kit.program('code', stage, CODE_AT, rows=6, w=3.0, h=3.6, seed=44, tab_icon=True, scale=0.8)
+    code = parts.program('code', stage, CODE_AT, rows=6, w=3.0, h=3.6, seed=44, tab_icon=True, scale=0.8)
     kit.pop(code['root'], t_code, 0.8, t_out=t_child - 0.1)
     cues.append({'t': t_code, 'type': 'pop', 'pitch': 0.9})
-    copy = kit.program('copy', stage, CODE_AT, rows=6, w=3.0, h=3.6, seed=44, tab_icon=True, scale=0.8)
+    copy = parts.program('copy', stage, CODE_AT, rows=6, w=3.0, h=3.6, seed=44, tab_icon=True, scale=0.8)
     zc = copy['root'].location.z
     for f in every(1, 1, fr(t_child + 0.4)):
         t = sec(f)
@@ -158,7 +159,7 @@ def build(T):
         s = 0.8 * (1.0 if t >= t_copy else 0.001) * (1 - span(t, t_child, t_child + 0.25)) + 0.001
         key(copy['root'], 'scale', f, (s, s, s))
     cues.append({'t': t_copy, 'type': 'whoosh', 'gain': 0.5})
-    kit.pip_look(n0, t_copy - 0.3, 0.13, 0.0)
+    parts.pip_look(n0, t_copy - 0.3, 0.13, 0.0)
     row = 2
     y = copy['rows'][row][0].location.y
     hl = kit.shape('changed-row', kit.rrect_pts(2.8, 0.36, 0.18), kit.material(kit.AMBER, alpha=0.4), copy['root'], (0, y), lift=-0.0015)
@@ -171,21 +172,21 @@ def build(T):
         key(ob, 'scale', fr(t_change) + 10, (1.25, 1, 1))
     cues.append({'t': t_change, 'type': 'tick', 'pitch': 1.3, 'gain': 0.7})
 
-    child = kit.pip('n1', stage, CHILD_AT, 1.0, *kit.score_colour(23))
+    child = parts.pip('n1', stage, CHILD_AT, 1.0, *parts.score_colour(23))
     kit.pop(child['root'], t_child, 1.0)
-    kit.pip_idle(child, phase=1.3, step=2)
-    kit.pip_blink(child, (t_child + 1.0, t_score + 0.6, t_move + 2.4))
+    parts.pip_idle(child, phase=1.3, step=2)
+    parts.pip_blink(child, (t_child + 1.0, t_score + 0.6, t_move + 2.4))
     alpha(child['halo'], 1, 0.6)
     cues.append({'t': t_child, 'type': 'pop', 'pitch': 1.3})
     first_line = kit.branch('first-line', lines, PIP_AT, CHILD_AT, kit.MIST)
     kit.grow(first_line, t_child - 0.1, 0.4, t_out=t_move - 0.2)
-    kit.pip_look(n0, t_child + 0.3, 0.14, 0.0)
+    parts.pip_look(n0, t_child + 0.3, 0.14, 0.0)
 
     # ------------------------------------------------------------ the child is tested and gets a score
-    kit.pip_look(child, t_tests - 0.2, 0.12, -0.05)
+    parts.pip_look(child, t_tests - 0.2, 0.12, -0.05)
     for k in range(4):
         t0 = t_tests + 0.55 * k
-        job = kit.program(f'task{k}', stage, (9.5, -2.6), rows=3, w=2.0, h=1.4, seed=50 + k, mistake=1, scale=0.6)
+        job = parts.program(f'task{k}', stage, (9.5, -2.6), rows=3, w=2.0, h=1.4, seed=50 + k, mistake=1, scale=0.6)
         zj = job['root'].location.z
         t_hit = t0 + 0.55
         for f in every(1, fr(t0 - 0.1), fr(t0 + 1.7)):
@@ -229,7 +230,7 @@ def build(T):
     t_tree['n17'] = t_old + 1.6
     nodes = [{'id': n, 'parent': pa, 'at': at, 'score': sc, 't': t_tree[n]} for n, pa, at, sc in TREE[2:]]
     places = {n: at for n, _, at, _ in TREE}
-    fam = kit.family('fam', stage, lines, nodes, SIZE, known=places)
+    fam = parts.family('fam', stage, lines, nodes, SIZE, known=places)
     for n, pa, at, sc in TREE[2:]:
         r = kit.ring(f'{n}-pick', stage, places[pa], 0.62, kit.AMBER, lift=0.02)
         kit.flash(r, t_tree[n] - 0.45, 0.6)

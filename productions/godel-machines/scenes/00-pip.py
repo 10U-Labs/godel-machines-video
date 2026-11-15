@@ -7,6 +7,7 @@ new program drops in, and its title bar shows Pip's own face.
 import math
 
 import kit
+import parts
 from kit import fr, sec, span, mix, key, alpha, every
 
 HOME = (0.0, -0.3)
@@ -48,7 +49,7 @@ def build(T):
     stage = kit.layer('stage', 1.0)
 
     # ------------------------------------------------------------ Pip
-    p = kit.pip('pip', stage, HOME, PIP_SCALE)
+    p = parts.pip('pip', stage, HOME, PIP_SCALE)
     label = kit.text('pip-name', 'Pip', 0.55, kit.material(kit.PAPER), stage, (0, -2.25))
     kit.fade(label, t_hello + 0.5, t_job - 0.5)
 
@@ -67,14 +68,14 @@ def build(T):
         key(p['root'], 'location', f, (x, y, z_root))
         s = PIP_SCALE * max(0.001, kit.back_out((t - t_hello) / 0.5))
         key(p['root'], 'scale', f, (s, s, s))
-    kit.pip_idle(p)
+    parts.pip_idle(p)
     cues.append({'t': t_hello, 'type': 'pop'})
 
-    kit.pip_wave(p, t_hello + 0.7, t_hello + 2.6)
-    kit.pip_blink(p, (3.6, t_job + 1.3, t_made_up + 1.6, t_real + 2.0, t_new + 1.1))
+    parts.pip_wave(p, t_hello + 0.7, t_hello + 2.6)
+    parts.pip_blink(p, (3.6, t_job + 1.3, t_made_up + 1.6, t_real + 2.0, t_new + 1.1))
 
     # ------------------------------------------------------------ a program with a mistake
-    a = kit.program('job', stage, (14, CARD[1]), rows=7, seed=4, mistake=3)
+    a = parts.program('job', stage, (14, CARD[1]), rows=7, seed=4, mistake=3)
     zc = a['root'].location.z
     for f in every(1):
         t = sec(f)
@@ -84,7 +85,7 @@ def build(T):
     cues.append({'t': t_job, 'type': 'whoosh'})
     cues.append({'t': t_made_up, 'type': 'whoosh', 'gain': 0.7})
 
-    kit.pip_look(p, t_job + 0.5, 0.13, 0.0)
+    parts.pip_look(p, t_job + 0.5, 0.13, 0.0)
     for f in every(1, fr(t_job), fr(t_fix)):  # the mistake twitches until it is fixed
         t = sec(f)
         jig = 0.035 * math.sin(t * 31) * (0.5 + 0.5 * math.sin(t * 5.3))
@@ -102,7 +103,7 @@ def build(T):
     cues.append({'t': t_find + 0.12, 'type': 'tick', 'pitch': 1.2})
 
     # Pip reaches out, a spark flies to the mistake, and the red bars turn mint.
-    kit.pip_arm(p, 'right', t_fix - 0.55, 82, 0.25)
+    parts.pip_arm(p, 'right', t_fix - 0.55, 82, 0.25)
     hand = (WORK[0] + PIP_SCALE * 1.3, WORK[1] + PIP_SCALE * -0.27)
     target = (CARD[0] + a['bad']['x'], CARD[1] + a['bad']['y'])
     spark = kit.shape('spark', kit.star_pts(0.32, 0.08), kit.material('#eafff9'), stage, lift=0.3)
@@ -136,16 +137,16 @@ def build(T):
     cues.append({'t': t_fly, 'type': 'rise', 'dur': 0.3, 'pitch': 1.5, 'gain': 0.6})
     cues.append({'t': t_fix, 'type': 'chime'})
 
-    kit.pip_arm(p, 'right', t_fix + 0.35, 150, 0.2)       # a small cheer
-    kit.pip_eyes(p, t_fix + 0.1, 1.1, 0.55)                # happy squint
-    kit.pip_arm(p, 'right', t_made_up - 0.2, 18, 0.35)
-    kit.pip_eyes(p, t_made_up - 0.1, 1.0, 1.0)
-    kit.pip_look(p, t_made_up + 0.2, 0.0, 0.0)
+    parts.pip_arm(p, 'right', t_fix + 0.35, 150, 0.2)       # a small cheer
+    parts.pip_eyes(p, t_fix + 0.1, 1.1, 0.55)                # happy squint
+    parts.pip_arm(p, 'right', t_made_up - 0.2, 18, 0.35)
+    parts.pip_eyes(p, t_made_up - 0.1, 1.0, 1.0)
+    parts.pip_look(p, t_made_up + 0.2, 0.0, 0.0)
 
     # ------------------------------------------------------------ other programs like Pip
     for i, (x, y, z, sc, col, deep) in enumerate(CROWD):
         lay = kit.layer(f'crowd{i}', z)
-        bot = kit.pip(f'bot{i}', lay, (x, y), sc, body=col, body_deep=deep)
+        bot = parts.pip(f'bot{i}', lay, (x, y), sc, body=col, body_deep=deep)
         t_in = t_real + 0.09 * i
         zb = bot['root'].location.z
         for f in every(1, fr(t_real - 0.2), fr(t_crowd_out + 0.8)):
@@ -157,24 +158,24 @@ def build(T):
         bot['root'].keyframe_insert('scale', frame=1)
         key(bot['root'], 'location', fr(t_real), (x, y, zb))
         key(bot['root'], 'location', fr(t_crowd_out + 0.8), (x + 0.25 * (1 if x > 0 else -1), y + 0.15, zb))
-        kit.pip_idle(bot, t_real - 0.2, t_crowd_out + 0.8, phase=i * 0.7, step=3)
-        kit.pip_look(bot, t_in + 0.5, -0.06 if x > 0 else 0.06, -0.03 if y > 0 else 0.03)
+        parts.pip_idle(bot, t_real - 0.2, t_crowd_out + 0.8, phase=i * 0.7, step=3)
+        parts.pip_look(bot, t_in + 0.5, -0.06 if x > 0 else 0.06, -0.03 if y > 0 else 0.03)
         if i % 3 == 1:
-            kit.pip_wave(bot, t_in + 0.6, t_in + 1.8, rate=8 + i % 4)
+            parts.pip_wave(bot, t_in + 0.6, t_in + 1.8, rate=8 + i % 4)
         cues.append({'t': t_in, 'type': 'blip', 'pitch': 0.8 + 0.06 * (i % 7), 'gain': 0.45})
-    kit.pip_look(p, t_real + 0.5, -0.12, 0.05)
-    kit.pip_look(p, t_real + 1.6, 0.12, 0.05)
-    kit.pip_look(p, t_crowd_out, 0.0, 0.0)
+    parts.pip_look(p, t_real + 0.5, -0.12, 0.05)
+    parts.pip_look(p, t_real + 1.6, 0.12, 0.05)
+    parts.pip_look(p, t_crowd_out, 0.0, 0.0)
 
     # ------------------------------------------------------------ a new program: Pip's own code
-    b = kit.program('own', stage, (CARD[0], 10), rows=7, seed=9, tab_icon=True)
+    b = parts.program('own', stage, (CARD[0], 10), rows=7, seed=9, tab_icon=True)
     zb = b['root'].location.z
     for f in every(1):
         t = sec(f)
         y = mix(10.0, CARD[1], span(t, t_new, t_new + 0.9, kit.back_out))
         key(b['root'], 'location', f, (CARD[0], y, zb))
     cues.append({'t': t_new, 'type': 'whoosh'})
-    kit.pip_look(p, t_new + 0.6, 0.13, 0.03)
+    parts.pip_look(p, t_new + 0.6, 0.13, 0.03)
 
     icon = b['icon']
     for f in every(1):
@@ -185,8 +186,8 @@ def build(T):
     cues.append({'t': t_own, 'type': 'pop', 'pitch': 1.3})
     cues.append({'t': t_own + 0.15, 'type': 'rise', 'dur': 1.2, 'pitch': 0.8, 'gain': 0.7})
 
-    kit.pip_eyes(p, t_own + 0.15, 1.35, 1.35, 0.15)        # Pip sees its own face
-    kit.pip_look(p, t_own + 0.15, 0.15, 0.06, 0.15)
+    parts.pip_eyes(p, t_own + 0.15, 1.35, 1.35, 0.15)        # Pip sees its own face
+    parts.pip_look(p, t_own + 0.15, 0.15, 0.06, 0.15)
     for f in every(1, fr(t_own), fr(t_own + 0.8)):
         t = sec(f)
         flash = 1 + 0.9 * math.sin(math.pi * span(t, t_own + 0.1, t_own + 0.7, lambda v: v))

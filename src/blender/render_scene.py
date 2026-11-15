@@ -5,8 +5,10 @@
 
 Each scene lives in productions/<name>/scenes/<scene id>.py and defines
 build(timing), which builds the scene for the length of its narration and
-returns its sound effect cues as a list of {"t": seconds, "type": ...}. The
-narration timings are read from out/<name>/voice/timings.json. Frames
+returns its sound effect cues as a list of {"t": seconds, "type": ...}. A
+scene imports the shared kit (kit.py) and any module of its own production, a
+Python file directly in productions/<name>/; where both have a module of one
+name, the shared one is imported. The narration timings are read from out/<name>/voice/timings.json. Frames
 start..end are rendered as PNG into out/<name>/frames/<scene id>/; --sfx also
 writes the cues there, as sfx.json. The frame size, the frame rate, the render
 engine, and the sample count are the production's [picture] settings (see
@@ -40,6 +42,7 @@ def args():
 def main():
     a = args()
     out = production.out(a.production)
+    sys.path.insert(2, str(production.folder(a.production)))    # after the two shared folders
     frames = out / 'frames' / a.scene
     timings = json.loads((out / 'voice/timings.json').read_text(encoding='utf-8'))
     entry = next((s for s in timings['scenes'] if s['id'] == a.scene), None)

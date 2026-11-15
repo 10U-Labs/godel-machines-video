@@ -9,6 +9,7 @@ last, and the trail goes on up into the dark.
 import math
 
 import kit
+import parts
 from kit import fr, sec, span, mix, key, alpha, every
 
 LEFT, MID, RIGHT = (-5.4, 0.2), (0.0, 0.2), (5.4, 0.2)
@@ -72,9 +73,9 @@ def build(T):
 
     # ------------------------------------------------------------ the Gödel Machine: one program rewriting itself
     g_root, _ = picture('godel', LEFT, t_show[0], 0)
-    g = kit.pip('godel-pip', g_root, (0, 0), 1.0, body=kit.SKY, body_deep=kit.SKY_DEEP)
-    kit.pip_idle(g, step=2)
-    kit.pip_blink(g, (3.0, t_g + 2.6, 14.0, 21.0))
+    g = parts.pip('godel-pip', g_root, (0, 0), 1.0, body=kit.SKY, body_deep=kit.SKY_DEEP)
+    parts.pip_idle(g, step=2)
+    parts.pip_blink(g, (3.0, t_g + 2.6, 14.0, 21.0))
     loop = kit.empty('godel-loop', g_root, (0, 0, kit.next_z(g_root)))
     kit.shape('godel-arc', kit.arc_pts(1.65, 0.09, 120, 400, n=48), kit.material(kit.SKY, alpha=0.75), loop)
     tip_a = math.radians(400)
@@ -110,7 +111,7 @@ def build(T):
     later = [n for n, *_ in DARWIN[2:]]
     for k, n in enumerate(later):
         t_d_node[n] = mix(T.at(2, 0.12), T.at(2, 0.9), k / (len(later) - 1))
-    dfam = kit.family('darwin-fam', d_root, d_lines,
+    dfam = parts.family('darwin-fam', d_root, d_lines,
                       [{'id': n, 'parent': pa, 'at': at, 'score': sc, 't': t_d_node[n]} for n, pa, at, sc in DARWIN], SIZE)
     for n, pa, at, sc in DARWIN[2:]:
         r = kit.ring(f'{n}-pick', d_root, dfam[pa]['at'], 0.5, kit.AMBER, lift=0.02)
@@ -121,7 +122,7 @@ def build(T):
     h_root, h_lines = picture('huxley', RIGHT, t_show[2], 2)
     t_h_node = {n: t_show[2] + 0.1 + 0.1 * k for k, (n, *_) in enumerate(HUXLEY[:6])}
     t_h_node['h6'], t_h_node['h7'] = T.at(3, 0.62), T.at(3, 0.78)
-    hfam = kit.family('huxley-fam', h_root, h_lines,
+    hfam = parts.family('huxley-fam', h_root, h_lines,
                       [{'id': n, 'parent': pa, 'at': at, 'score': sc, 't': t_h_node[n]} for n, pa, at, sc in HUXLEY], SIZE)
     for name, centre, w, h, colour, t_in in (('best', (-1.2, -0.6), 2.7, 3.7, kit.MINT, T.at(3, 0.3)),
                                              ('weak', (1.2, 0.0), 1.4, 2.4, kit.CORAL, T.at(3, 0.38))):
@@ -141,15 +142,15 @@ def build(T):
         t0 = mix(t_stair0, t_stair1, k / (len(STAIR) - 1))
         step = kit.shape(f'stair{k}', kit.rrect_pts(2.0, 0.16, 0.08), kit.material(kit.INK500), stage, (x, y - 1.05 * s))
         kit.appear(step, t0 - 0.3, None, 0.3)
-        p = kit.pip(f'version{k}', stage, (x, y), s, *kit.score_colour(score))
+        p = parts.pip(f'version{k}', stage, (x, y), s, *parts.score_colour(score))
         kit.pop(p['root'], t0, s)
-        kit.pip_idle(p, t0=t0, phase=k * 1.3, step=2)
+        parts.pip_idle(p, t0=t0, phase=k * 1.3, step=2)
         alpha(p['halo'], 1, 0.4 + 0.15 * k)
         pips.append((p, t0))
         cues.append({'t': t0, 'type': 'pop', 'pitch': 0.9 + 0.12 * k, 'gain': 0.55})
     for k in range(1, len(pips)):
         prev, t0 = pips[k - 1][0], pips[k][1]
-        kit.pip_look(prev, t0 - 0.5, 0.12, 0.06)
+        parts.pip_look(prev, t0 - 0.5, 0.12, 0.06)
         spark = kit.shape(f'spark{k}', kit.star_pts(0.22, 0.07), kit.material('#fff3cf'), stage, lift=0.3)
         sg = kit.shape(f'spark{k}-glow', kit.circle_pts(0.6), kit.glow_material(kit.AMBER, 0.8), stage, lift=0.29)
         (x0, y0), (x1, y1) = STAIR[k - 1][:2], STAIR[k][:2]
@@ -161,8 +162,8 @@ def build(T):
                 key(ob, 'location', f, (mix(x0, x1, q), mix(y0, y1, q) + 0.8 * math.sin(math.pi * q), z))
                 alpha(ob, f, 1.0 if 0 < q < 1 else 0.0)
     last = pips[-1][0]
-    kit.pip_look(last, t_far, 0.06, 0.12, 0.4)
-    kit.pip_arm(last, 'right', t_far + 0.3, 110, 0.4)
+    parts.pip_look(last, t_far, 0.06, 0.12, 0.4)
+    parts.pip_arm(last, 'right', t_far + 0.3, 110, 0.4)
 
     # the trail goes on up, into the dark
     lx, ly = STAIR[-1][:2]

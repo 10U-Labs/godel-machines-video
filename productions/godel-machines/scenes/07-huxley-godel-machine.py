@@ -11,6 +11,7 @@ used.
 import math
 
 import kit
+import parts
 from kit import fr, sec, span, mix, key, alpha, every
 
 SIZE = 0.42
@@ -103,7 +104,7 @@ def build(T):
     t_node['b9'], t_node['b10'] = t_more + 0.45, t_more + 1.2
     nodes = [{'id': n, 'parent': pa, 'at': at, 'score': sc, 't': t_node[n],
               't_out': t_clear + 0.02 * i} for i, (n, pa, at, sc) in enumerate(TREE)]
-    fam = kit.family('fam', stage, lines, nodes, SIZE)
+    fam = parts.family('fam', stage, lines, nodes, SIZE)
     places = {n: at for n, _, at, _ in TREE}
     cues.append({'t': t_tree0, 'type': 'rise', 'dur': 2.0, 'pitch': 0.9, 'gain': 0.4})
     for n in ('r', 'a', 'b', 'c'):
@@ -170,8 +171,8 @@ def build(T):
         alpha(b_ring, f, a)
     cues.append({'t': t_starts, 'type': 'chime', 'gain': 0.6})
     for n in ('b', 'b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'b8', 'b9', 'b10'):
-        kit.pip_eyes(fam[n]['pip'], t_starts + 0.1, 1.12, 0.7)
-    kit.pip_look(fam['c']['pip'], t_starts, -0.1, -0.05)
+        parts.pip_eyes(fam[n]['pip'], t_starts + 0.1, 1.12, 0.7)
+    parts.pip_look(fam['c']['pip'], t_starts, -0.1, -0.05)
 
     # ------------------------------------------------------------ the two machines: score and computer time
     cues.append({'t': t_clear, 'type': 'whoosh', 'gain': 0.5})
@@ -180,9 +181,9 @@ def build(T):
                 ('hgm', 3.4, 3.4, (kit.MINT, kit.MINT_DEEP), 'Huxley-Gödel Machine', 10)]
     for k, (name, x, height, (body, deep), label, lit) in enumerate(machines):
         col = kit.shape(f'{name}-column', [(0.75, 0), (0.75, 1), (-0.75, 1), (-0.75, 0)], kit.material(body, deep), stage, (x, base))
-        p = kit.pip(f'{name}-pip', stage, (x, base + 0.95), 0.9, body=body, body_deep=deep)
-        kit.pip_idle(p, phase=k * 1.7, step=2)
-        kit.pip_blink(p, (t_cols + 2.0 + k * 0.6,))
+        p = parts.pip(f'{name}-pip', stage, (x, base + 0.95), 0.9, body=body, body_deep=deep)
+        parts.pip_idle(p, phase=k * 1.7, step=2)
+        parts.pip_blink(p, (t_cols + 2.0 + k * 0.6,))
         z = p['root'].location.z
         t0 = t_cols + 0.35 * k
         for f in every(1):

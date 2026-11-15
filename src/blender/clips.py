@@ -10,6 +10,8 @@ render workflow keeps each clip as an artifact named scene-<scene>-<hash>.
 The hash covers everything that decides the clip's pixels:
 
     the scene's file in productions/<name>/scenes/
+    the production's own modules, the Python files directly in
+        productions/<name>/, which its scenes import
     kit.py and render_scene.py
     the fonts in src/fonts/
     the production's [picture] settings: the frame size, the frame rate, the
@@ -74,6 +76,7 @@ def name(scenes, entry, picture, blender):
     scene = entry['id']
     inputs = {
         'scene': digest(scenes / f'{scene}.py'),
+        'own': {p.name: digest(p) for p in scenes.parent.glob('*.py')},
         'kit': digest(HERE / 'kit.py'),
         'render_scene': digest(HERE / 'render_scene.py'),
         'fonts': {p.name: digest(p) for p in FONTS.iterdir() if not p.name.startswith('.')},

@@ -8,6 +8,7 @@ it, and one instruction is crossed out and rewritten.
 import math
 
 import kit
+import parts
 from kit import fr, sec, span, mix, key, alpha, every
 
 LINES = ['read the program', 'run its tests', 'find the line that fails', 'write a fix', 'run the tests again']
@@ -31,7 +32,7 @@ def page(stage):
     kit.shape('page-bar-fill', [(x, y + PAGE_H / 2 - 0.48) for x, y in kit.rrect_pts(PAGE_W, 0.32, 0)], kit.material(kit.INK600), root)
     for i, c in enumerate((kit.CORAL, kit.AMBER, kit.MINT)):
         kit.shape(f'page-dot{i}', kit.circle_pts(0.09), kit.material(c), root, (-PAGE_W / 2 + 0.34 + i * 0.28, PAGE_H / 2 - 0.32))
-    icon = kit.badge('page-badge', root, (PAGE_W / 2 - 0.5, PAGE_H / 2 - 0.32))
+    icon = parts.badge('page-badge', root, (PAGE_W / 2 - 0.5, PAGE_H / 2 - 0.32))
     left = -PAGE_W / 2 + 0.55
     rows = []
     for i, body in enumerate(LINES):
@@ -67,7 +68,7 @@ def build(T):
     stage = kit.layer('stage', 1.0)
 
     # ------------------------------------------------------------ Pip
-    p = kit.pip('pip', stage, PIP_SIDE, 1.2)
+    p = parts.pip('pip', stage, PIP_SIDE, 1.2)
     zp = p['root'].location.z
     for f in every(1):
         t = sec(f)
@@ -76,9 +77,9 @@ def build(T):
         x = mix(mix(PIP_SIDE[0], PIP_TOP[0], q1), PIP_SIDE[0], q2)
         y = mix(mix(PIP_SIDE[1], PIP_TOP[1], q1), PIP_SIDE[1], q2)
         key(p['root'], 'location', f, (x, y, zp))
-    kit.pip_idle(p)
-    kit.pip_blink(p, (2.4, 7.0, t_stream + 2.0, t_open + 1.5))
-    kit.pip_look(p, 0.4, 0.13, 0.02)
+    parts.pip_idle(p)
+    parts.pip_blink(p, (2.4, 7.0, t_stream + 2.0, t_open + 1.5))
+    parts.pip_look(p, 0.4, 0.13, 0.02)
 
     # ------------------------------------------------------------ the page of instructions
     pg = page(stage)
@@ -165,7 +166,7 @@ def build(T):
         q = min(1.0, (t - t_slow) / d_stop)
         return v * (t_slow - t_go) + v * d_stop * (q - q * q / 2)
 
-    files = [kit.file_icon(f'file{i}', stage, (x0[i], STREAM_Y), 1.25, mine=(i == mine), seed=i) for i in range(count)]
+    files = [parts.file_icon(f'file{i}', stage, (x0[i], STREAM_Y), 1.25, mine=(i == mine), seed=i) for i in range(count)]
     first = files[0]['root']
     for i, fi in enumerate(files):
         ob = fi['root']
@@ -197,17 +198,17 @@ def build(T):
     cues.append({'t': t_own, 'type': 'chime', 'pitch': 0.9, 'gain': 0.7})
 
     # Pip follows the files with its eyes, then looks down at its own file
-    kit.pip_look(p, t_text, 0.13, 0.0)
-    kit.pip_look(p, t_stream + 0.2, 0.08, -0.08)
+    parts.pip_look(p, t_text, 0.13, 0.0)
+    parts.pip_look(p, t_stream + 0.2, 0.08, -0.08)
     for k in range(4):
-        kit.pip_look(p, t_stream + 0.5 + 0.55 * k, -0.06, -0.08, 0.45)
-        kit.pip_look(p, t_stream + 0.75 + 0.55 * k, 0.08, -0.08, 0.05)
-    kit.pip_look(p, t_own - 0.3, 0.0, -0.1, 0.3)
-    kit.pip_eyes(p, t_own, 1.2, 1.2, 0.2)
-    kit.pip_eyes(p, t_open, 1.0, 1.0, 0.3)
-    kit.pip_look(p, t_open + 0.3, 0.13, 0.02)
-    kit.pip_arm(p, 'right', t_change - 0.35, 75, 0.25)
-    kit.pip_arm(p, 'right', t_typed + 0.2, 18, 0.35)
+        parts.pip_look(p, t_stream + 0.5 + 0.55 * k, -0.06, -0.08, 0.45)
+        parts.pip_look(p, t_stream + 0.75 + 0.55 * k, 0.08, -0.08, 0.05)
+    parts.pip_look(p, t_own - 0.3, 0.0, -0.1, 0.3)
+    parts.pip_eyes(p, t_own, 1.2, 1.2, 0.2)
+    parts.pip_eyes(p, t_open, 1.0, 1.0, 0.3)
+    parts.pip_look(p, t_open + 0.3, 0.13, 0.02)
+    parts.pip_arm(p, 'right', t_change - 0.35, 75, 0.25)
+    parts.pip_arm(p, 'right', t_typed + 0.2, 18, 0.35)
 
     # ------------------------------------------------------------ camera
     def path(t):

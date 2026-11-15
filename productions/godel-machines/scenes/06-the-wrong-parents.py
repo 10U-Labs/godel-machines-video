@@ -8,6 +8,7 @@ lower-scored program's family comes out strong.
 import math
 
 import kit
+import parts
 from kit import fr, sec, span, mix, key, alpha, every
 
 SIZE = 0.5
@@ -43,7 +44,7 @@ def build(T):
     stage = kit.layer('stage', 1.0)
 
     # ------------------------------------------------------------ two would-be parents and their scores
-    parents = kit.family('par', stage, lines, [
+    parents = parts.family('par', stage, lines, [
         {'id': 'a', 'parent': None, 'at': A_AT, 'score': 41, 't': 0.15},
         {'id': 'b', 'parent': None, 'at': B_AT, 'score': 33, 't': 0.3},
     ], SIZE, idle_step=2)
@@ -59,10 +60,10 @@ def build(T):
         key(pick, 'scale', f, (max(0.001, s),) * 2 + (1,))
     cues.append({'t': t_pick, 'type': 'chime', 'gain': 0.5})
     a_pip = parents['a']['pip']
-    kit.pip_eyes(a_pip, t_pick + 0.1, 1.15, 0.65)          # pleased
-    kit.pip_eyes(a_pip, t_grand + 0.4, 1.0, 1.0)
+    parts.pip_eyes(a_pip, t_pick + 0.1, 1.15, 0.65)          # pleased
+    parts.pip_eyes(a_pip, t_grand + 0.4, 1.0, 1.0)
     b_pip = parents['b']['pip']
-    kit.pip_look(b_pip, t_pick, 0.0, 0.1)
+    parts.pip_look(b_pip, t_pick, 0.0, 0.1)
 
     # ------------------------------------------------------------ a second group looks further down the family
     group = [((5.6, 1.0), 10.5, 0.74, '#4a6fd1', '#33509e', '#d8c7a0'),
@@ -88,7 +89,7 @@ def build(T):
         gen2 = pa in ('a', 'b')
         t = (t_kids if gen2 else t_grand) + (0.12 if n.startswith('b') else 0.0) + 0.05 * int(n[1])
         nodes.append({'id': n, 'parent': pa, 'at': at, 'score': sc, 't': t})
-    fam = kit.family('fam', stage, lines, nodes, SIZE * 0.9, known={'a': A_AT, 'b': B_AT})
+    fam = parts.family('fam', stage, lines, nodes, SIZE * 0.9, known={'a': A_AT, 'b': B_AT})
     for d in nodes:
         kit.pop(fam[d['id']]['tag']['root'], d['t'] + 0.2, 1.0, 0.3)
     cues.append({'t': t_kids, 'type': 'pop', 'pitch': 0.9, 'gain': 0.6})
@@ -98,7 +99,7 @@ def build(T):
     glow = kit.shape('b-glow', kit.rrect_pts(7.0, 4.4, 1.6), kit.glow_material(kit.AMBER, 0.45, power=0.9), stage, (-2.9, -1.6), lift=-0.2)
     kit.appear(glow, t_verdict - 0.8, None, 0.8)
     cues.append({'t': t_verdict - 0.8, 'type': 'rise', 'dur': 0.8, 'pitch': 1.1, 'gain': 0.5})
-    kit.pip_look(b_pip, t_grand + 0.3, 0.12, -0.04)
+    parts.pip_look(b_pip, t_grand + 0.3, 0.12, -0.04)
 
     def path(t):
         q = kit.smooth(t / end)

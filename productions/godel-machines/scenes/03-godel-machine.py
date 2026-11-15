@@ -9,6 +9,7 @@ becomes Pip: only one Pip, changing itself again and again.
 import math
 
 import kit
+import parts
 from kit import fr, sec, span, mix, key, alpha, every
 
 SHEET_AT = (1.3, 0.3)
@@ -104,8 +105,8 @@ def build(T):
     cues.append({'t': t_name, 'type': 'chime', 'gain': 0.6})
 
     # ------------------------------------------------------------ the machine and its own code
-    m = kit.pip('machine', stage, MACHINE_AT, BOT_S, body=kit.SKY, body_deep=kit.SKY_DEEP)
-    p = kit.pip('pip', stage, (0, 0.2), 1.6)
+    m = parts.pip('machine', stage, MACHINE_AT, BOT_S, body=kit.SKY, body_deep=kit.SKY_DEEP)
+    p = parts.pip('pip', stage, (0, 0.2), 1.6)
     zm, zp = m['root'].location.z, p['root'].location.z
     for f in every(1):
         t = sec(f)
@@ -114,11 +115,11 @@ def build(T):
         grow = max(0.001, kit.back_out((t - t_one - 0.2) / 0.45)) * (1 - span(t, t_pip + 0.7, t_pip + 0.95))
         key(m['root'], 'location', f, (x, mix(SHEET_AT[1] + 0.5, MACHINE_AT[1], span(t, t_one + 0.5, t_one + 1.3)), zm))
         key(m['root'], 'scale', f, (BOT_S * max(0.001, grow),) * 3)
-    kit.pip_idle(m, phase=0.5)
-    kit.pip_blink(m, (t_one + 2.5, t_rewrite + 1.4, t_any + 2.3))
+    parts.pip_idle(m, phase=0.5)
+    parts.pip_blink(m, (t_one + 2.5, t_rewrite + 1.4, t_any + 2.3))
     cues.append({'t': t_one + 0.2, 'type': 'pop'})
 
-    code = kit.program('code', stage, CODE_AT, rows=7, w=3.4, h=4.4, seed=31)
+    code = parts.program('code', stage, CODE_AT, rows=7, w=3.4, h=4.4, seed=31)
     zc = code['root'].location.z
     for f in every(1):
         t = sec(f)
@@ -139,7 +140,7 @@ def build(T):
     # the machine does its job: small programs come along, and each leaves fixed
     for k in range(5):
         t0 = t_job + 0.75 * k
-        job = kit.program(f'task{k}', stage, (-9, -3.0), rows=3, w=2.0, h=1.4, seed=40 + k, mistake=1, scale=0.68)
+        job = parts.program(f'task{k}', stage, (-9, -3.0), rows=3, w=2.0, h=1.4, seed=40 + k, mistake=1, scale=0.68)
         zj = job['root'].location.z
         t_mid = t0 + 0.7
         for f in every(1, fr(t0 - 0.1), fr(t0 + 1.6)):
@@ -154,10 +155,10 @@ def build(T):
             alpha(ob, fr(t_mid), 0.0)
             alpha(ob, fr(t_mid + 0.1), 1.0)
         cues.append({'t': t_mid, 'type': 'blip', 'pitch': 1.1 + 0.05 * k, 'gain': 0.5})
-    kit.pip_look(m, t_job, -0.05, -0.12)
+    parts.pip_look(m, t_job, -0.05, -0.12)
 
     # ... and while it works, it rewrites its own code
-    kit.pip_look(m, t_rewrite - 0.3, 0.13, 0.0)
+    parts.pip_look(m, t_rewrite - 0.3, 0.13, 0.0)
     flash = []
     for r in (1, 3, 5):
         y = code['rows'][r][0].location.y
@@ -175,8 +176,8 @@ def build(T):
             key(ob, 'scale', fr(t0) + 4, (0.001, 1, 1))
             key(ob, 'scale', fr(t0) + 9, (0.6 + 0.7 * rnd.random(), 1, 1))
         cues.append({'t': t0, 'type': 'tick', 'pitch': 1.3, 'gain': 0.6})
-    kit.pip_arm(m, 'right', t_rewrite - 0.3, 80, 0.25)
-    kit.pip_arm(m, 'right', t_rewrite + 1.4, 18, 0.3)
+    parts.pip_arm(m, 'right', t_rewrite - 0.3, 80, 0.25)
+    parts.pip_arm(m, 'right', t_rewrite + 1.4, 18, 0.3)
 
     # ------------------------------------------------------------ any part, even the part that changes
     rings = []
@@ -194,8 +195,8 @@ def build(T):
         alpha(ring, 1, 0.0)
         cues.append({'t': t0, 'type': 'pop', 'pitch': 1.0 + 0.1 * k, 'gain': 0.6})
         rings.append(ring)
-    kit.pip_eyes(m, t_any + 1.65, 1.25, 1.25, 0.15)
-    kit.pip_eyes(m, t_any + 2.1, 1.0, 1.0, 0.2)
+    parts.pip_eyes(m, t_any + 1.65, 1.25, 1.25, 0.15)
+    parts.pip_eyes(m, t_any + 2.1, 1.0, 1.0, 0.2)
 
     # the part that makes the changes: a pencil beside one line of the code, which rewrites itself
     row = 6
@@ -230,7 +231,7 @@ def build(T):
         t = sec(f)
         s = 1.6 * max(0.001, kit.back_out((t - t_pip - 0.8) / 0.45))
         key(p['root'], 'scale', f, (s, s, s))
-    kit.pip_idle(p)
+    parts.pip_idle(p)
     cues.append({'t': t_pip + 0.75, 'type': 'pop', 'pitch': 1.1})
     spot = kit.shape('spotlight', kit.circle_pts(4.0), kit.glow_material(kit.PAPER, 0.18, power=1.0), stage, (0, 0.2), lift=-0.01)
     alpha(spot, 1, 0.0)
@@ -257,8 +258,8 @@ def build(T):
         sh = p['arms'][side]
         sh.keyframe_insert('scale', frame=fr(changes[2]))
         key(sh, 'scale', fr(changes[2]) + 5, (1.2, 1.3, 1))
-    kit.pip_arm(p, 'right', changes[2] + 0.3, 140, 0.25)
-    kit.pip_arm(p, 'left', changes[2] + 0.3, 140, 0.25)
+    parts.pip_arm(p, 'right', changes[2] + 0.3, 140, 0.25)
+    parts.pip_arm(p, 'left', changes[2] + 0.3, 140, 0.25)
 
     # ------------------------------------------------------------ camera
     def path(t):

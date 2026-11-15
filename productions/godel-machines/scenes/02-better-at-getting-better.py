@@ -7,6 +7,7 @@ faster and lifts the meter under Pip by more than the last one.
 import math
 
 import kit
+import parts
 from kit import fr, sec, span, mix, key, alpha, every
 
 PIP_AT = (-4.4, 0.2)
@@ -66,13 +67,13 @@ def build(T):
         alpha(hot, f, span(t, t_result, t_result + 0.3) * (1 - span(t, t_result + 2.0, t_result + 2.5)) * (0.7 + 0.3 * math.sin((t - t_result) * 8)))
 
     # ------------------------------------------------------------ Pip and Pip's code
-    p = kit.pip('pip', stage, PIP_AT, 1.15)
-    kit.pip_idle(p)
-    kit.pip_blink(p, (2.6, 9.2, 14.2, 21.0, 24.5))
-    kit.pip_look(p, 0.3, 0.1, 0.03)
+    p = parts.pip('pip', stage, PIP_AT, 1.15)
+    parts.pip_idle(p)
+    parts.pip_blink(p, (2.6, 9.2, 14.2, 21.0, 24.5))
+    parts.pip_look(p, 0.3, 0.1, 0.03)
     code_glow = kit.shape('code-glow', kit.rrect_pts(4.6, 5.2, 1.5), kit.glow_material(kit.AMBER, 0.7, power=1.2), stage, CODE_AT)
     alpha(code_glow, 1, 0.0)
-    code = kit.program('code', stage, CODE_AT, rows=6, w=3.0, h=3.6, seed=14, tab_icon=True, scale=0.85)
+    code = parts.program('code', stage, CODE_AT, rows=6, w=3.0, h=3.6, seed=14, tab_icon=True, scale=0.85)
 
     # ------------------------------------------------------------ the meter under Pip
     lit = []
@@ -162,18 +163,18 @@ def build(T):
         key(p['root'], 'scale', f, (s, s, s))
     cues.append({'t': laps[0][3], 'type': 'chime', 'gain': 0.8})
 
-    kit.pip_look(p, t_write - 0.2, 0.13, 0.05)
-    kit.pip_look(p, t_back + 0.3, 0.0, 0.0)
-    kit.pip_eyes(p, laps[0][3], 1.1, 0.6)                   # pleased
-    kit.pip_eyes(p, laps[0][3] + 1.0, 1.0, 1.0)
-    kit.pip_look(p, t_own - 0.2, 0.13, 0.03)
+    parts.pip_look(p, t_write - 0.2, 0.13, 0.05)
+    parts.pip_look(p, t_back + 0.3, 0.0, 0.0)
+    parts.pip_eyes(p, laps[0][3], 1.1, 0.6)                   # pleased
+    parts.pip_eyes(p, laps[0][3] + 1.0, 1.0, 1.0)
+    parts.pip_look(p, t_own - 0.2, 0.13, 0.03)
     icon = code['icon']
     for f in every(1, fr(t_own), fr(t_own + 1.0)):
         q = span(sec(f), t_own, t_own + 1.0, lambda v: v)
         s = 1 + 0.5 * math.sin(math.pi * q)
         key(icon, 'scale', f, (s, s, 1))
     cues.append({'t': t_own, 'type': 'pop', 'pitch': 1.2, 'gain': 0.6})
-    kit.pip_look(p, T.start(2), 0.06, 0.06)
+    parts.pip_look(p, T.start(2), 0.06, 0.06)
 
     # ------------------------------------------------------------ the name
     title = kit.text('title', 'recursive self-improvement', 0.62, kit.material(kit.PAPER), stage, (0, 3.75))
