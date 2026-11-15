@@ -5,5 +5,5 @@ __pycache__/
 models/
 node_modules/
 out/
-research/sources/
+productions/*/research/sources/
 tools/

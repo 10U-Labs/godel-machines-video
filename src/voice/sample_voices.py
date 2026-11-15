@@ -1,22 +1,24 @@
-"""Read the film's opening in several candidate voices, so a narrator can be picked by ear.
+"""Read a production's opening in several candidate voices, so a narrator can be picked by ear.
 
-    python src/voice/sample_voices.py kokoro script/script.md
-    python src/voice/sample_voices.py pocket script/script.md
+    python src/voice/sample_voices.py kokoro godel-machines
+    python src/voice/sample_voices.py pocket godel-machines
 
-Writes one WAV per voice to out/voice-samples/, plus a text file that lists
+Writes one WAV per voice to out/<name>/voice-samples/, plus a text file that lists
 each voice and its licence. Every model and voice here is free to use in a
 published video; the Pocket TTS voices under a non-commercial licence are left
-out. Kokoro asks for no credit. Pocket TTS's weights are CC BY 4.0, so a film
-that uses one of its voices should credit Kyutai. Both models run on a plain CPU.
+out. Kokoro asks for no credit. Pocket TTS's weights are CC BY 4.0, so a
+production that uses one of its voices should credit Kyutai. Both models run on a plain CPU.
 """
 import argparse
+import sys
 from pathlib import Path
 
 import numpy as np
 import soundfile as sf
 
-HERE = Path(__file__).resolve().parent
-ROOT = HERE.parent.parent
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "src"))
+import production  # noqa: E402
 
 LINES = 6           # how many voiced lines of the first scene each voice reads
 LINE_GAP = 0.38     # silence between consecutive lines, as in make_voice.py
@@ -29,7 +31,7 @@ KOKORO = [
     ("am_fenrir", "en-us", "American man"),
     ("am_puck", "en-us", "American man"),
     ("am_onyx", "en-us", "American man"),
-    ("af_heart", "en-us", "American woman; the voice chosen for the film"),
+    ("af_heart", "en-us", "American woman; the voice of the Gödel machines film"),
     ("af_bella", "en-us", "American woman"),
     ("bm_george", "en-gb", "British man"),
     ("bm_fable", "en-gb", "British man"),
@@ -120,17 +122,17 @@ def pocket_samples(items, out, args):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("engine", choices=["kokoro", "pocket"])
-    ap.add_argument("script", type=Path)
+    ap.add_argument("production")
     ap.add_argument("--model", type=Path, default=ROOT / "models/kokoro/kokoro-v1.0.fp16.onnx")
     ap.add_argument("--voices", type=Path, default=ROOT / "models/kokoro/voices-v1.0.bin")
-    ap.add_argument("--out", type=Path, default=ROOT / "out/voice-samples")
     args = ap.parse_args()
 
-    items = opening(args.script)
-    args.out.mkdir(parents=True, exist_ok=True)
-    notes = (kokoro_samples if args.engine == "kokoro" else pocket_samples)(items, args.out, args)
+    items = opening(production.folder(args.production) / "script.md")
+    out = production.out(args.production) / "voice-samples"
+    out.mkdir(parents=True, exist_ok=True)
+    notes = (kokoro_samples if args.engine == "kokoro" else pocket_samples)(items, out, args)
     text = "\n\n".join(value for kind, value in items if kind == "line")
-    (args.out / f"{args.engine}-voices.txt").write_text(
+    (out / f"{args.engine}-voices.txt").write_text(
         "\n".join(notes) + "\n\nEach voice reads:\n\n" + text + "\n", encoding="utf-8")
 
 

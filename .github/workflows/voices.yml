@@ -2,6 +2,8 @@
 concurrency:
   cancel-in-progress: true
   group: ${{ github.workflow }}-${{ github.ref }}
+env:
+  PRODUCTION: godel-machines
 jobs:
   samples:
     needs: yamllint
@@ -39,13 +41,13 @@ jobs:
             curl -fsSL -o "$file" "$base/model-files-v1.0/$file"
           done
       - name: Read the opening in each voice
-        run: python src/voice/sample_voices.py ${{ matrix.engine }} script/script.md
+        run: python src/voice/sample_voices.py ${{ matrix.engine }} "$PRODUCTION"
       - name: Upload samples
         uses: actions/upload-artifact@v7
         with:
           if-no-files-found: error
           name: voice-samples-${{ matrix.engine }}
-          path: out/voice-samples
+          path: out/${{ env.PRODUCTION }}/voice-samples
     strategy:
       fail-fast: false
       matrix:

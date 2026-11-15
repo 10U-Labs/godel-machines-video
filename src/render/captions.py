@@ -1,20 +1,23 @@
-"""Write closed captions for the film from the narration timings.
+"""Write closed captions for a production from its narration timings.
 
-    python src/render/captions.py
+    python src/render/captions.py godel-machines
 
-Reads out/voice/timings.json, which holds every narration line with its
-start and end inside its scene. Scenes play one after another, so a line's
-time in the film is the length of the scenes before it plus its start (the
-same rule src/audio/mix.py uses to place the voice). Long lines are broken
-into captions of at most two short rows, and each caption gets a share of
-the line's time in proportion to its length. Writes out/film.srt.
+Reads out/<name>/voice/timings.json, which holds every narration line with
+its start and end inside its scene. Scenes play one after another, so a
+line's time in the video is the length of the scenes before it plus its start
+(the same rule src/audio/mix.py uses to place the voice). Long lines are
+broken into captions of at most two short rows, and each caption gets a share
+of the line's time in proportion to its length. Writes out/<name>/<name>.srt.
 """
 import argparse
 import json
 import re
+import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import production  # noqa: E402
+
 ROW = 42            # most characters on one caption row
 GAP = 0.05          # seconds of blank between two captions from one line
 
@@ -103,18 +106,18 @@ def captions(timings):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--voice", type=Path, default=ROOT / "out/voice")
-    ap.add_argument("--out", type=Path, default=ROOT / "out/film.srt")
+    ap.add_argument("production")
     args = ap.parse_args()
+    out = production.out(args.production)
+    srt = out / f"{args.production}.srt"
 
-    timings = json.loads((args.voice / "timings.json").read_text(encoding="utf-8"))
+    timings = json.loads((out / "voice/timings.json").read_text(encoding="utf-8"))
     cues = captions(timings)
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(
+    srt.write_text(
         "\n".join(f"{i}\n{stamp(a)} --> {stamp(b)}\n{text}\n" for i, (a, b, text) in enumerate(cues, 1)),
         encoding="utf-8",
     )
-    print(f"{len(cues)} captions -> {args.out}")
+    print(f"{len(cues)} captions -> {srt}")
 
 
 if __name__ == "__main__":

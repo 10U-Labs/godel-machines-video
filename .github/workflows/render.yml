@@ -4,6 +4,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
 env:
   BLENDER: blender-4.5.16-linux-x64
+  PRODUCTION: godel-machines
 jobs:
   adopt:
     if: needs.narration.outputs.adopt != '[]'
@@ -53,35 +54,36 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: narration
-          path: out/voice
+          path: out/${{ env.PRODUCTION }}/voice
       - name: Download the clip names
         uses: actions/download-artifact@v8
         with:
           name: clips
-          path: out
+          path: out/${{ env.PRODUCTION }}
       - env:
           GH_TOKEN: ${{ github.token }}
         name: Download every scene's clip
-        run: python src/blender/clips.py fetch out/clips.json
+        run: python src/blender/clips.py fetch "$PRODUCTION"
       - name: Mix the soundtrack
-        run: python src/audio/mix.py
+        run: python src/audio/mix.py "$PRODUCTION"
       - name: Assemble the film
-        run: python src/render/assemble.py
+        run: python src/render/assemble.py "$PRODUCTION"
       - name: Write the captions
-        run: python src/render/captions.py
+        run: python src/render/captions.py "$PRODUCTION"
       - name: Upload film
         uses: actions/upload-artifact@v7
         with:
           if-no-files-found: error
           name: film
           path: |
-            out/film.mp4
-            out/film.srt
+            out/${{ env.PRODUCTION }}/${{ env.PRODUCTION }}.mp4
+            out/${{ env.PRODUCTION }}/${{ env.PRODUCTION }}.srt
   narration:
     needs: yamllint
     outputs:
       adopt: ${{ steps.plan.outputs.adopt }}
       blender: ${{ env.BLENDER }}
+      production: ${{ env.PRODUCTION }}
       render: ${{ steps.plan.outputs.render }}
       scenes: ${{ steps.plan.outputs.scenes }}
     runs-on: ubuntu-latest
@@ -112,31 +114,31 @@ jobs:
       - name: Restore narration clips
         uses: actions/cache@v6
         with:
-          key: narration-${{ hashFiles('script/script.md', 'src/voice/**') }}
-          path: out/voice/lines
+          key: narration-${{ hashFiles(format('productions/{0}/script.md', env.PRODUCTION), format('productions/{0}/pronunciations.json', env.PRODUCTION), 'src/voice/**') }}
+          path: out/${{ env.PRODUCTION }}/voice/lines
           restore-keys: narration-
       - name: Generate narration
-        run: python src/voice/make_voice.py script/script.md
+        run: python src/voice/make_voice.py "$PRODUCTION"
       - env:
           ADOPT: ${{ inputs.adopt }}
           GH_TOKEN: ${{ github.token }}
         id: plan
         name: Plan which scenes to render
-        run: python src/blender/plan.py out/voice/timings.json --blender "$BLENDER" --chunk 90 --clips out/clips.json --adopt "$ADOPT" >> "$GITHUB_OUTPUT"
+        run: python src/blender/plan.py "$PRODUCTION" --blender "$BLENDER" --chunk 90 --adopt "$ADOPT" >> "$GITHUB_OUTPUT"
       - name: Upload narration
         uses: actions/upload-artifact@v7
         with:
           if-no-files-found: error
           name: narration
           path: |
-            out/voice/*.wav
-            out/voice/timings.json
+            out/${{ env.PRODUCTION }}/voice/*.wav
+            out/${{ env.PRODUCTION }}/voice/timings.json
       - name: Upload the clip names
         uses: actions/upload-artifact@v7
         with:
           if-no-files-found: error
           name: clips
-          path: out/clips.json
+          path: out/${{ env.PRODUCTION }}/clips.json
   scenes:
     if: needs.narration.outputs.scenes != '[]'
     needs: narration
@@ -149,6 +151,7 @@ jobs:
       blender: ${{ needs.narration.outputs.blender }}
       chunks: ${{ toJSON(fromJSON(needs.narration.outputs.render)[matrix.scene].chunks) }}
       clip: ${{ fromJSON(needs.narration.outputs.render)[matrix.scene].clip }}
+      production: ${{ needs.narration.outputs.production }}
       scene: ${{ matrix.scene }}
   yamllint:
     runs-on: ubuntu-latest
@@ -175,8 +178,8 @@ on:
     paths:
       - ".github/workflows/render.yml"
       - ".github/workflows/scene.yml"
+      - "productions/**"
       - "requirements.txt"
-      - "script/**"
       - "src/**"
   workflow_dispatch:
     inputs:

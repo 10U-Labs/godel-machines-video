@@ -1,19 +1,20 @@
-"""Plan which of the film's Blender scenes a workflow run renders, and in which chunks of frames.
+"""Plan which of a production's Blender scenes a workflow run renders, and in which chunks of frames.
 
-    python src/blender/plan.py out/voice/timings.json --blender blender-4.5.16-linux-x64 \
-        --chunk 90 --clips out/clips.json [--adopt 43653948688] >> "$GITHUB_OUTPUT"
+    python src/blender/plan.py godel-machines --blender blender-4.5.16-linux-x64 \
+        --chunk 90 [--adopt 43653948688] >> "$GITHUB_OUTPUT"
 
-Takes every scene in the timings that has a file in src/blender/scenes/, in
-script order. A scene whose clip is still kept as an artifact (see clips.py)
-needs nothing. The others are rendered, each split into chunks of frames for
-parallel jobs.
+Takes every scene in out/<name>/voice/timings.json that has a file in
+productions/<name>/scenes/, in script order. A scene whose clip is still kept
+as an artifact (see clips.py) needs nothing. The others are rendered, each
+split into chunks of frames for parallel jobs.
 
 --adopt names an earlier workflow run. A scene that has no clip under its
 name takes that run's clip of the scene, which is uploaded again under the
 scene's name and not rendered. That is for clips rendered before a change that
 gives them new names and is known to alter no picture.
 
-Writes {scene: clip name} for every scene to --clips, and prints three lines:
+Writes {scene: clip name} for every scene to out/<name>/clips.json, and
+prints three lines:
 
     scenes=[scene, ...]
     render={scene: {"clip", "chunks": [{"start", "end"}, ...]}, ...}
@@ -29,7 +30,9 @@ import sys
 import tempfile
 from pathlib import Path
 
-import clips
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import clips  # noqa: E402
+import production  # noqa: E402
 
 MATRIX = 256        # the most jobs one job matrix allows
 
@@ -58,19 +61,18 @@ def offered(run, scenes):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('timings', type=Path)
+    ap.add_argument('production')
     ap.add_argument('--blender', required=True)
     ap.add_argument('--chunk', type=int, default=60)
-    ap.add_argument('--clips', type=Path, required=True)
     ap.add_argument('--adopt', default='')
     a = ap.parse_args()
     if a.adopt and not a.adopt.isdigit():
         raise SystemExit(f'--adopt takes the id of a workflow run, not {a.adopt!r}')
 
-    timings = json.loads(a.timings.read_text(encoding='utf-8'))
-    names = clips.names(timings, a.blender)
-    a.clips.parent.mkdir(parents=True, exist_ok=True)
-    a.clips.write_text(json.dumps(names, indent=1), encoding='utf-8')
+    out = production.out(a.production)
+    timings = json.loads((out / 'voice/timings.json').read_text(encoding='utf-8'))
+    names = clips.names(production.folder(a.production) / 'scenes', timings, a.blender)
+    (out / 'clips.json').write_text(json.dumps(names, indent=1), encoding='utf-8')
 
     missing = [scene for scene, clip in names.items() if clips.find(clip) is None]
     offer = offered(int(a.adopt), missing) if a.adopt and missing else {}

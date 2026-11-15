@@ -1,6 +1,7 @@
 ---
 env:
   BLENDER: ${{ inputs.blender }}
+  PRODUCTION: ${{ inputs.production }}
 jobs:
   clip:
     needs: frames
@@ -14,22 +15,22 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           merge-multiple: "true"
-          path: out/frames
+          path: out/${{ env.PRODUCTION }}/frames
           pattern: frames-${{ inputs.scene }}-*
       - name: Encode the clip and pick stills
-        run: python3 src/blender/clips.py encode "${{ inputs.scene }}"
+        run: python3 src/blender/clips.py encode "$PRODUCTION" "${{ inputs.scene }}"
       - name: Upload the clip
         uses: actions/upload-artifact@v7
         with:
           if-no-files-found: error
           name: ${{ inputs.clip }}
-          path: out/scenes
+          path: out/${{ env.PRODUCTION }}/scenes
       - name: Upload stills
         uses: actions/upload-artifact@v7
         with:
           if-no-files-found: error
           name: stills-${{ inputs.scene }}
-          path: out/stills
+          path: out/${{ env.PRODUCTION }}/stills
   frames:
     runs-on: ubuntu-latest
     steps:
@@ -53,23 +54,22 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: narration
-          path: out/voice
+          path: out/${{ env.PRODUCTION }}/voice
       - name: Render frames
         run: |
           scene="${{ inputs.scene }}"
           start="${{ matrix.chunk.start }}"
           sfx=""
-          if [ "$start" = "1" ]; then sfx="--sfx out/frames/$scene/sfx.json"; fi
+          if [ "$start" = "1" ]; then sfx="--sfx"; fi
           # shellcheck disable=SC2086
           "tools/$BLENDER/blender" -b --factory-startup --python-exit-code 1 -P src/blender/render_scene.py -- \
-            --scene "$scene" --timings out/voice/timings.json --out "out/frames/$scene" \
-            --start "$start" --end "${{ matrix.chunk.end }}" $sfx
+            --production "$PRODUCTION" --scene "$scene" --start "$start" --end "${{ matrix.chunk.end }}" $sfx
       - name: Upload frames
         uses: actions/upload-artifact@v7
         with:
           if-no-files-found: error
           name: frames-${{ inputs.scene }}-${{ matrix.chunk.start }}
-          path: out/frames
+          path: out/${{ env.PRODUCTION }}/frames
           retention-days: 3
     strategy:
       fail-fast: true
@@ -89,6 +89,10 @@ on:
         type: string
       clip:
         description: The artifact name to keep the scene's clip under
+        required: true
+        type: string
+      production:
+        description: The name of the production the scene belongs to
         required: true
         type: string
       scene:

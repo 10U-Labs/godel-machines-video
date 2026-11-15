@@ -1,18 +1,21 @@
-"""Join the rendered scenes and the soundtrack into the film.
+"""Join a production's rendered scenes and its soundtrack into the finished video.
 
-    python src/render/assemble.py
+    python src/render/assemble.py godel-machines
 
-Takes every scene video in out/scenes/ that the narration timings list, in
-script order, joins them without re-encoding, and adds out/audio/mix.wav.
-Writes out/film.mp4.
+Works under out/<name>/. Takes every scene video in scenes/ that the narration
+timings list, in script order, joins them without re-encoding, and adds
+audio/mix.wav. Writes <name>.mp4.
 """
 import argparse
 import json
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import production  # noqa: E402
+
 FFMPEG = ["ffmpeg", "-hide_banner", "-loglevel", "error", "-y"]
 
 
@@ -22,33 +25,31 @@ def run(*cmd):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--voice", type=Path, default=ROOT / "out/voice")
-    ap.add_argument("--scenes", type=Path, default=ROOT / "out/scenes")
-    ap.add_argument("--mix", type=Path, default=ROOT / "out/audio/mix.wav")
-    ap.add_argument("--out", type=Path, default=ROOT / "out/film.mp4")
+    ap.add_argument("production")
     args = ap.parse_args()
+    out = production.out(args.production)
+    video = out / f"{args.production}.mp4"
 
-    timings = json.loads((args.voice / "timings.json").read_text(encoding="utf-8"))
-    videos = [args.scenes / f"{s['id']}.mp4" for s in timings["scenes"]]
+    timings = json.loads((out / "voice/timings.json").read_text(encoding="utf-8"))
+    videos = [out / "scenes" / f"{s['id']}.mp4" for s in timings["scenes"]]
     videos = [v for v in videos if v.exists()]
     if not videos:
-        raise SystemExit(f"No rendered scenes found in {args.scenes}")
+        raise SystemExit(f"No rendered scenes found in {out / 'scenes'}")
 
-    args.out.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmp:
         listing = Path(tmp) / "scenes.txt"
         listing.write_text("".join(f"file '{v.resolve()}'\n" for v in videos), encoding="utf-8")
         silent = Path(tmp) / "silent.mp4"
         run(*FFMPEG, "-f", "concat", "-safe", "0", "-i", listing, "-c", "copy", silent)
         run(
-            *FFMPEG, "-i", silent, "-i", args.mix,
+            *FFMPEG, "-i", silent, "-i", out / "audio/mix.wav",
             "-c:v", "copy",
             "-af", "loudnorm=I=-14:TP=-1.5:LRA=11", "-ar", "48000",
             "-c:a", "aac", "-b:a", "192k",
             "-shortest", "-movflags", "+faststart",
-            args.out,
+            video,
         )
-    print(f"{len(videos)} scenes -> {args.out}")
+    print(f"{len(videos)} scenes -> {video}")
 
 
 if __name__ == "__main__":

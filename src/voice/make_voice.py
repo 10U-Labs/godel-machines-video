@@ -1,8 +1,9 @@
-"""Generate narration audio for every line of the script and record the timings.
+"""Generate narration audio for every line of a production's script and record the timings.
 
-    .venv/bin/python src/voice/make_voice.py script/script.md
+    .venv/bin/python src/voice/make_voice.py godel-machines
 
-Script format (markdown):
+Reads productions/<name>/script.md, and productions/<name>/pronunciations.json
+where the production has one. Script format (markdown):
 
     ## 01-opening | Any title for the scene
     One paragraph is one voiced line. Keep each to a single beat so that
@@ -12,7 +13,7 @@ Script format (markdown):
 
     > Visual: notes for the storyboard. Lines starting with ">" are not voiced.
 
-Outputs, under out/voice/:
+Outputs, under out/<name>/voice/:
     lines/<scene>-<nn>.wav   one clip per line (24 kHz mono), cached by content
     timings.json             start and end of every line within its scene
     <scene>.wav              the scene's narration laid out on its timeline
@@ -21,14 +22,16 @@ import argparse
 import hashlib
 import json
 import re
+import sys
 from pathlib import Path
 
 import numpy as np
 import soundfile as sf
 from kokoro_onnx import Kokoro
 
-HERE = Path(__file__).resolve().parent
-ROOT = HERE.parent.parent
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "src"))
+import production  # noqa: E402
 
 VOICE = "af_heart"
 LANG = "en-us"
@@ -93,19 +96,19 @@ def phonemize(kokoro, text, pronunciations):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("script", type=Path)
+    ap.add_argument("production")
     ap.add_argument("--model", type=Path, default=ROOT / "models/kokoro/kokoro-v1.0.fp16.onnx")
     ap.add_argument("--voices", type=Path, default=ROOT / "models/kokoro/voices-v1.0.bin")
-    ap.add_argument("--pronunciations", type=Path, default=HERE / "pronunciations.json")
-    ap.add_argument("--out", type=Path, default=ROOT / "out/voice")
     args = ap.parse_args()
 
-    scenes = parse_script(args.script.read_text(encoding="utf-8"))
+    folder = production.folder(args.production)
+    out = production.out(args.production) / "voice"
+    scenes = parse_script((folder / "script.md").read_text(encoding="utf-8"))
     if not scenes:
         raise SystemExit("No scenes found. Scene headings look like: ## 01-opening | Title")
-    pronunciations = load_pronunciations(args.pronunciations)
+    pronunciations = load_pronunciations(folder / "pronunciations.json")
 
-    lines_dir = args.out / "lines"
+    lines_dir = out / "lines"
     lines_dir.mkdir(parents=True, exist_ok=True)
     kokoro = Kokoro(str(args.model), str(args.voices))
 
@@ -155,7 +158,7 @@ def main():
         for start, audio in placed:
             i = int(round(start * sample_rate))
             track[i:i + len(audio)] += audio[: len(track) - i]
-        sf.write(args.out / f"{scene['id']}.wav", track, sample_rate)
+        sf.write(out / f"{scene['id']}.wav", track, sample_rate)
 
         timings["scenes"].append({
             "id": scene["id"],
@@ -167,7 +170,7 @@ def main():
         print(f"{scene['id']:<24} {duration:7.2f}s  {len(entries)} lines")
 
     timings["duration"] = round(total, 3)
-    (args.out / "timings.json").write_text(json.dumps(timings, indent=2, ensure_ascii=False), encoding="utf-8")
+    (out / "timings.json").write_text(json.dumps(timings, indent=2, ensure_ascii=False), encoding="utf-8")
     words = sum(len(e["text"].split()) for s in timings["scenes"] for e in s["lines"])
     print(f"total {total:.1f}s ({total / 60:.1f} min), {words} words, {generated} clips generated")
 

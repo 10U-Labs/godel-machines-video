@@ -1,14 +1,14 @@
 """Name each scene's clip by what decides its pictures, and reuse the clips that exist.
 
-    python3 src/blender/clips.py encode 00-pip
-    python3 src/blender/clips.py fetch out/clips.json
+    python3 src/blender/clips.py encode godel-machines 00-pip
+    python3 src/blender/clips.py fetch godel-machines
 
-A scene's clip is its rendered video, out/scenes/<scene>.mp4. The render
-workflow keeps each clip, with the scene's sound effect cues, as an artifact
-named scene-<scene>-<hash>. The hash covers everything that decides the
-clip's pixels:
+A scene's clip is its rendered video, out/<name>/scenes/<scene>.mp4. The
+render workflow keeps each clip, with the scene's sound effect cues, as an
+artifact named scene-<scene>-<hash>. The hash covers everything that decides
+the clip's pixels:
 
-    the scene's file in src/blender/scenes/
+    the scene's file in productions/<name>/scenes/
     kit.py and render_scene.py, which also set the render engine, the sample
         count, the resolution, and the frame rate
     the fonts in src/fonts/
@@ -30,12 +30,14 @@ import json
 import re
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-ROOT = HERE.parents[1]
-SCENES = HERE / 'scenes'
-FONTS = ROOT / 'src/fonts'
+sys.path.insert(0, str(HERE.parent))
+import production  # noqa: E402
+
+FONTS = HERE.parent / 'fonts'
 
 FPS = 30            # the same as kit.FPS; kit itself can only be imported inside Blender
 ENCODE = ['-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18']
@@ -53,11 +55,11 @@ def digest(path):
     return hashlib.sha256(data).hexdigest()
 
 
-def name(entry, blender):
+def name(scenes, entry, blender):
     """The artifact name of one scene's clip, from the scene's entry in the narration timings."""
     scene = entry['id']
     inputs = {
-        'scene': digest(SCENES / f'{scene}.py'),
+        'scene': digest(scenes / f'{scene}.py'),
         'kit': digest(HERE / 'kit.py'),
         'render_scene': digest(HERE / 'render_scene.py'),
         'fonts': {p.name: digest(p) for p in FONTS.iterdir() if not p.name.startswith('.')},
@@ -68,9 +70,9 @@ def name(entry, blender):
     return f"scene-{scene}-{hashlib.sha256(json.dumps(inputs, sort_keys=True).encode()).hexdigest()[:16]}"
 
 
-def names(timings, blender):
+def names(scenes, timings, blender):
     """{scene: clip name} for every scene in the timings that has a file in scenes/, in script order."""
-    return {s['id']: name(s, blender) for s in timings['scenes'] if (SCENES / f"{s['id']}.py").exists()}
+    return {s['id']: name(scenes, s, blender) for s in timings['scenes'] if (scenes / f"{s['id']}.py").exists()}
 
 
 def gh(*args):
@@ -120,18 +122,16 @@ def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest='command', required=True)
     enc = sub.add_parser('encode')
+    enc.add_argument('production')
     enc.add_argument('scene')
-    enc.add_argument('--frames', type=Path, default=ROOT / 'out/frames')
-    enc.add_argument('--scenes', type=Path, default=ROOT / 'out/scenes')
-    enc.add_argument('--stills', type=Path, default=ROOT / 'out/stills')
     fet = sub.add_parser('fetch')
-    fet.add_argument('clips', type=Path)
-    fet.add_argument('--scenes', type=Path, default=ROOT / 'out/scenes')
+    fet.add_argument('production')
     a = ap.parse_args()
+    out = production.out(a.production)
     if a.command == 'encode':
-        encode(a.scene, a.frames / a.scene, a.scenes, a.stills)
+        encode(a.scene, out / 'frames' / a.scene, out / 'scenes', out / 'stills')
     else:
-        fetch(a.clips, a.scenes)
+        fetch(out / 'clips.json', out / 'scenes')
 
 
 if __name__ == '__main__':

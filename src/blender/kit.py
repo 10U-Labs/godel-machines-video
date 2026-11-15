@@ -1,4 +1,4 @@
-"""Shared parts for the film's Blender scenes: palette, flat shapes, motion, Pip.
+"""Shared parts for a production's Blender scenes: palette, flat shapes, motion, Pip.
 
 Every scene is built from flat 2D shapes set out in depth, so a moving camera
 gives parallax and depth of field softens what is near and far. Every surface
@@ -17,7 +17,7 @@ FPS = 30
 H0 = 20.0
 ROOT = Path(__file__).resolve().parents[2]
 
-# Colours (sRGB hex), the same palette as the rest of the film.
+# Colours (sRGB hex), one palette for every scene.
 INK900, INK800, INK700, INK600, INK500 = '#0b1030', '#121a47', '#1b2660', '#27347d', '#3a4aa3'
 MINT, MINT_DEEP, AMBER, AMBER_DEEP = '#4fe3c1', '#1fae93', '#ffc24b', '#f09a1f'
 CORAL, CORAL_DEEP, VIOLET, VIOLET_DEEP = '#ff6b6b', '#d9434f', '#a78bfa', '#7357e0'
