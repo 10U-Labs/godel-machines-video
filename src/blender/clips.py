@@ -1,29 +1,42 @@
 """Name each scene's clip by what decides its pictures, and reuse the clips that exist.
 
     python3 src/blender/clips.py encode godel-machines 00-pip
+    python3 src/blender/clips.py adopt godel-machines 00-pip --run 43739981974 \
+        --artifact scene-00-pip-ed65a4ec9311f957 --narration 43739981974
     python3 src/blender/clips.py fetch godel-machines
 
 A scene's clip is its rendered video, out/<name>/scenes/<scene>.mp4. The
-render workflow keeps each clip, with the scene's sound effect cues, as an
-artifact named scene-<scene>-<hash>. The hash covers everything that decides
-the clip's pixels:
+render workflow keeps each clip as an artifact named scene-<scene>-<hash>.
+The hash covers everything that decides the clip's pixels:
 
     the scene's file in productions/<name>/scenes/
     kit.py and render_scene.py
     the fonts in src/fonts/
     the production's [picture] settings: the frame size, the frame rate, the
         render engine, and the sample count
-    the numbers in the scene's narration timings: its length, and the start
-        and end of each line, but not the lines' text, which no scene reads
+    the key of the scene's narration, which make_voice.py writes: what is
+        spoken, but not the numbers in the timings
     the Blender version
     how the frames are encoded into the clip
 
 A scene is rendered only when no artifact is left under its clip's name, so
 a change renders only the scenes it reaches. plan.py does that planning.
 
-encode turns a scene's rendered frames into its clip, and keeps the cues and
-some of the frames as stills. fetch downloads the clip of every scene in the
-list that plan.py wrote, from whichever workflow run made it.
+A scene's pictures are timed to the start and end of each narration line, and
+two machines can give the same line clips of slightly different lengths. So
+the artifact holds, beside the clip, the narration the scene was rendered for,
+and that narration is used wherever the clip is:
+
+    <scene>.mp4             the clip
+    <scene>.sfx.json        the scene's sound effect cues
+    <scene>.wav             the scene's narration track
+    <scene>.timings.json    the scene's entry in the narration timings
+
+encode turns a scene's rendered frames into its clip, keeps the cues and the
+narration beside it, and keeps some of the frames as stills. adopt takes a
+clip that an earlier run kept under another name. fetch downloads the clip of
+every scene in the list that plan.py wrote, from whichever workflow run made
+it, and puts each clip's narration in place of the run's own.
 """
 import argparse
 import hashlib
@@ -32,6 +45,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -64,7 +78,7 @@ def name(scenes, entry, picture, blender):
         'render_scene': digest(HERE / 'render_scene.py'),
         'fonts': {p.name: digest(p) for p in FONTS.iterdir() if not p.name.startswith('.')},
         'picture': picture,
-        'timings': [entry['duration'], [[ln['start'], ln['end']] for ln in entry['lines']]],
+        'narration': entry['key'],
         'blender': blender,
         'encode': ENCODE,
     }
@@ -97,8 +111,17 @@ def download(run, artifact, out):
     gh('run', 'download', str(run), '--name', artifact, '--dir', str(out))
 
 
-def encode(scene, frames, scenes, stills, fps):
-    """Turn a scene's frames into its clip, and keep its cues and some of its frames beside it."""
+def keep_narration(scene, voice, scenes):
+    """Put a scene's narration track and its entry in the timings beside its clip."""
+    timings = json.loads((voice / 'timings.json').read_text(encoding='utf-8'))
+    entry = next(s for s in timings['scenes'] if s['id'] == scene)
+    shutil.copy(voice / f'{scene}.wav', scenes / f'{scene}.wav')
+    (scenes / f'{scene}.timings.json').write_text(json.dumps(entry, indent=1, ensure_ascii=False), encoding='utf-8')
+
+
+def encode(scene, out, fps):
+    """Turn a scene's frames into its clip, and keep its cues, its narration, and some stills."""
+    frames, scenes, stills = out / 'frames' / scene, out / 'scenes', out / 'stills'
     scenes.mkdir(parents=True, exist_ok=True)
     stills.mkdir(parents=True, exist_ok=True)
     subprocess.run(
@@ -107,19 +130,54 @@ def encode(scene, frames, scenes, stills, fps):
         check=True,
     )
     shutil.copy(frames / 'sfx.json', scenes / f'{scene}.sfx.json')
+    keep_narration(scene, out / 'voice', scenes)
     for png in sorted(frames.glob('frame_*.png')):
         if (int(png.stem.split('_')[1]) - 1) % STILL_EVERY == 0:
             shutil.copy(png, stills / f'{scene}-{png.name}')
 
 
-def fetch(listing, scenes):
-    """Download the clip of every scene in plan.py's list, from whichever run made it."""
-    for scene, clip in json.loads(listing.read_text(encoding='utf-8')).items():
+def adopt(scene, run, artifact, narration, scenes):
+    """Download a scene's clip from an artifact of an earlier run, with the narration it was rendered for.
+
+    A clip kept before narration was kept with it takes its narration from the
+    'narration' artifact of the run given for that.
+    """
+    download(run, artifact, scenes)
+    for kept in ('mp4', 'sfx.json'):
+        if not (scenes / f'{scene}.{kept}').exists():
+            raise SystemExit(f'Artifact {artifact} of run {run} holds no {scene}.{kept}')
+    if not (scenes / f'{scene}.timings.json').exists():
+        with tempfile.TemporaryDirectory() as tmp:
+            download(narration, 'narration', Path(tmp))
+            keep_narration(scene, Path(tmp), scenes)
+
+
+def fetch(out):
+    """Download the clip of every scene in plan.py's list, and put its narration in place of the run's own.
+
+    The narration track and the numbers in the timings come from the clip's
+    artifact. The lines' text stays the run's own, so a change to the script
+    that leaves a line sounding the same still reaches the captions.
+    """
+    scenes, voice = out / 'scenes', out / 'voice'
+    timings = json.loads((voice / 'timings.json').read_text(encoding='utf-8'))
+    entries = {s['id']: s for s in timings['scenes']}
+    for scene, clip in json.loads((out / 'clips.json').read_text(encoding='utf-8')).items():
         run = find(clip)
         if run is None:
             raise SystemExit(f'Scene {scene} has no clip: no artifact named {clip} is left')
         download(run, clip, scenes)
+        kept = json.loads((scenes / f'{scene}.timings.json').read_text(encoding='utf-8'))
+        entry = entries[scene]
+        if len(kept['lines']) != len(entry['lines']):
+            raise SystemExit(f'{clip} was rendered for {len(kept["lines"])} lines, and scene {scene} has {len(entry["lines"])}')
+        entry['duration'] = kept['duration']
+        for line, was in zip(entry['lines'], kept['lines']):
+            line['start'], line['end'] = was['start'], was['end']
+        shutil.copy(scenes / f'{scene}.wav', voice / f'{scene}.wav')
         print(f'{scene:<28} {clip}  from run {run}')
+    timings['duration'] = round(sum(s['duration'] for s in timings['scenes']), 3)
+    (voice / 'timings.json').write_text(json.dumps(timings, indent=2, ensure_ascii=False), encoding='utf-8')
 
 
 def main():
@@ -128,15 +186,22 @@ def main():
     enc = sub.add_parser('encode')
     enc.add_argument('production')
     enc.add_argument('scene')
+    ado = sub.add_parser('adopt')
+    ado.add_argument('production')
+    ado.add_argument('scene')
+    ado.add_argument('--run', required=True)
+    ado.add_argument('--artifact', required=True)
+    ado.add_argument('--narration', required=True)
     fet = sub.add_parser('fetch')
     fet.add_argument('production')
     a = ap.parse_args()
     out = production.out(a.production)
     if a.command == 'encode':
-        fps = production.settings(a.production)['picture']['fps']
-        encode(a.scene, out / 'frames' / a.scene, out / 'scenes', out / 'stills', fps)
+        encode(a.scene, out, production.settings(a.production)['picture']['fps'])
+    elif a.command == 'adopt':
+        adopt(a.scene, a.run, a.artifact, a.narration, out / 'scenes')
     else:
-        fetch(out / 'clips.json', out / 'scenes')
+        fetch(out)
 
 
 if __name__ == '__main__':

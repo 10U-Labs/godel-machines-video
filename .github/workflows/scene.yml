@@ -17,6 +17,11 @@ jobs:
           merge-multiple: "true"
           path: out/${{ env.PRODUCTION }}/frames
           pattern: frames-${{ inputs.scene }}-*
+      - name: Download narration
+        uses: actions/download-artifact@v8
+        with:
+          name: narration
+          path: out/${{ env.PRODUCTION }}/voice
       - name: Encode the clip and pick stills
         run: python3 src/blender/clips.py encode "$PRODUCTION" "${{ inputs.scene }}"
       - name: Upload the clip

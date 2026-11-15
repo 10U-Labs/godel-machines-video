@@ -11,23 +11,24 @@ jobs:
     needs: narration
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
       - env:
-          GH_REPO: ${{ github.repository }}
           GH_TOKEN: ${{ github.token }}
-        name: Download the clip
+        name: Download the clip and its narration
         run: |
-          scene="${{ matrix.clip.scene }}"
-          gh run download "${{ matrix.clip.run }}" --name "${{ matrix.clip.artifact }}" --dir out/adopt
-          test -f "out/adopt/$scene.mp4"
-          test -f "out/adopt/$scene.sfx.json"
+          python3 src/blender/clips.py adopt "$PRODUCTION" "${{ matrix.clip.scene }}" --run "${{ matrix.clip.run }}" \
+            --artifact "${{ matrix.clip.artifact }}" --narration "${{ matrix.clip.narration }}"
       - name: Upload the clip under its name
         uses: actions/upload-artifact@v7
         with:
           if-no-files-found: error
           name: ${{ matrix.clip.clip }}
           path: |
-            out/adopt/${{ matrix.clip.scene }}.mp4
-            out/adopt/${{ matrix.clip.scene }}.sfx.json
+            out/${{ env.PRODUCTION }}/scenes/${{ matrix.clip.scene }}.mp4
+            out/${{ env.PRODUCTION }}/scenes/${{ matrix.clip.scene }}.sfx.json
+            out/${{ env.PRODUCTION }}/scenes/${{ matrix.clip.scene }}.timings.json
+            out/${{ env.PRODUCTION }}/scenes/${{ matrix.clip.scene }}.wav
     strategy:
       matrix:
         clip: ${{ fromJSON(needs.narration.outputs.adopt) }}

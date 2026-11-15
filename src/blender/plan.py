@@ -9,20 +9,22 @@ as an artifact (see clips.py) needs nothing. The others are rendered, each
 split into chunks of frames for parallel jobs.
 
 --adopt names an earlier workflow run. A scene that has no clip under its
-name takes that run's clip of the scene, which is uploaded again under the
-scene's name and not rendered. That is for clips rendered before a change that
-gives them new names and is known to alter no picture.
+name takes that run's clip of the scene, with the narration it was rendered
+for, which is uploaded again under the scene's name and not rendered. That is
+for clips rendered before a change that gives them new names and is known to
+alter no picture.
 
 Writes {scene: clip name} for every scene to out/<name>/clips.json, and
 prints three lines:
 
     scenes=[scene, ...]
     render={scene: {"clip", "chunks": [{"start", "end"}, ...]}, ...}
-    adopt=[{"scene", "clip", "run", "artifact"}, ...]
+    adopt=[{"scene", "clip", "run", "artifact", "narration"}, ...]
 
 scenes lists the scenes to render, and render gives each one's clip name and
 chunks. In adopt, run and artifact say which artifact of which run holds the
-clip to take.
+clip to take, and narration is the run whose narration goes with a clip that
+was kept without its own.
 """
 import argparse
 import json
@@ -86,7 +88,9 @@ def main():
             print(f'{scene:<28} reused', file=sys.stderr)
         elif scene in offer:
             run, artifact = offer[scene]
-            adopt.append({'scene': scene, 'clip': names[scene], 'run': run, 'artifact': artifact})
+            adopt.append({
+                'scene': scene, 'clip': names[scene], 'run': run, 'artifact': artifact, 'narration': int(a.adopt),
+            })
             print(f'{scene:<28} adopted from {artifact} of run {run}', file=sys.stderr)
         else:
             total = int(round(s['duration'] * picture['fps']))

@@ -19,6 +19,12 @@ Outputs, under out/<name>/voice/:
     lines/<scene>-<nn>.wav   one clip per line (24 kHz mono), cached by content
     timings.json             start and end of every line within its scene
     <scene>.wav              the scene's narration laid out on its timeline
+
+Each scene in timings.json also has a key, which says what the scene's
+narration is made from: each line's phonemes, voice, and speed, the pauses,
+and the silences set around the lines. Two machines can give the same line
+clips that differ in length by a few hundredths of a second, so the numbers in
+the timings can differ from run to run where the key does not.
 """
 import argparse
 import hashlib
@@ -112,6 +118,7 @@ def main():
     generated = 0
     for scene in scenes:
         cursor = voice["lead_in"]
+        spoken = [voice["lead_in"], voice["line_gap"], voice["tail"]]   # what the scene's key covers
         placed = []          # (start_seconds, samples)
         entries = []
         sample_rate = 24000
@@ -120,6 +127,7 @@ def main():
         for kind, value in scene["items"]:
             if kind == "pause":
                 cursor += value
+                spoken.append(value)
                 previous_was_line = False
                 continue
             if previous_was_line:
@@ -128,6 +136,7 @@ def main():
             line_id = f"{scene['id']}-{n:02d}"
             phonemes = phonemize(kokoro, value, voice["lang"], pronunciations)
             key = hashlib.sha256(f"{voice['name']}|{voice['speed']}|{phonemes}".encode()).hexdigest()[:16]
+            spoken.append(key)
             wav = lines_dir / f"{line_id}.wav"
             stamp = lines_dir / f"{line_id}.key"
             if wav.exists() and stamp.exists() and stamp.read_text() == key:
@@ -158,6 +167,7 @@ def main():
         timings["scenes"].append({
             "id": scene["id"],
             "title": scene["title"],
+            "key": hashlib.sha256(json.dumps(spoken).encode()).hexdigest()[:16],
             "duration": duration,
             "lines": entries,
         })
