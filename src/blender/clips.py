@@ -1,7 +1,7 @@
 """Name each scene's clip by what decides its pictures, and reuse the clips that exist.
 
     python3 src/blender/clips.py encode godel-machines 00-pip
-    python3 src/blender/clips.py adopt godel-machines 00-pip --run 43741576538 \
+    python3 src/blender/clips.py adopt godel-machines 00-pip --source 43741576538 \
         --artifact scene-00-pip-f2b80fbdaa2b5e32 --narration 43741576538
     python3 src/blender/clips.py fetch godel-machines
 
@@ -35,11 +35,16 @@ and that narration is used wherever the clip is:
     <scene>.wav             the scene's narration track
     <scene>.timings.json    the scene's entry in the narration timings
 
+An artifact is deleted 90 days after its run. src/render/release.py keeps the
+same four files of each scene in a GitHub release, as an asset named
+<clip name>.zip.
+
 encode turns a scene's rendered frames into its clip, keeps the cues and the
 narration beside it, and keeps some of the frames as stills. adopt takes a
-clip that an earlier run kept under another name. fetch downloads the clip of
-every scene in the list that plan.py wrote, from whichever workflow run made
-it, and puts each clip's narration in place of the run's own.
+clip that an earlier run or a release kept, under another name or the same
+one; --source is the run's id or the release's tag. fetch downloads the clip
+of every scene in the list that plan.py wrote, from whichever workflow run
+made it, and puts each clip's narration in place of the run's own.
 """
 import argparse
 import hashlib
@@ -110,10 +115,19 @@ def find(artifact):
     return max(live, key=lambda a: a['created_at'])['workflow_run']['id'] if live else None
 
 
-def download(run, artifact, out):
-    """Unpack one artifact of a workflow run into a folder."""
+def download(source, artifact, out):
+    """Unpack into a folder what a workflow run keeps as an artifact, or a release as an asset.
+
+    A run is given by its id, which is all digits, and a release by its tag.
+    The release's asset is <artifact>.zip.
+    """
     out.mkdir(parents=True, exist_ok=True)
-    gh('run', 'download', str(run), '--name', artifact, '--dir', str(out))
+    if str(source).isdigit():
+        gh('run', 'download', str(source), '--name', artifact, '--dir', str(out))
+        return
+    with tempfile.TemporaryDirectory() as tmp:
+        gh('release', 'download', source, '--pattern', f'{artifact}.zip', '--dir', tmp)
+        shutil.unpack_archive(Path(tmp) / f'{artifact}.zip', out)
 
 
 def keep_narration(scene, voice, scenes):
@@ -141,17 +155,19 @@ def encode(scene, out, fps):
             shutil.copy(png, stills / f'{scene}-{png.name}')
 
 
-def adopt(scene, run, artifact, narration, scenes):
-    """Download a scene's clip from an artifact of an earlier run, with the narration it was rendered for.
+def adopt(scene, source, artifact, narration, scenes):
+    """Download a scene's clip from an earlier run or from a release, with the narration it was rendered for.
 
     A clip kept before narration was kept with it takes its narration from the
     'narration' artifact of the run given for that.
     """
-    download(run, artifact, scenes)
+    download(source, artifact, scenes)
     for kept in ('mp4', 'sfx.json'):
         if not (scenes / f'{scene}.{kept}').exists():
-            raise SystemExit(f'Artifact {artifact} of run {run} holds no {scene}.{kept}')
+            raise SystemExit(f'{artifact} of {source} holds no {scene}.{kept}')
     if not (scenes / f'{scene}.timings.json').exists():
+        if not narration:
+            raise SystemExit(f'{artifact} of {source} holds no narration for {scene}, and no run is given to take it from')
         with tempfile.TemporaryDirectory() as tmp:
             download(narration, 'narration', Path(tmp))
             keep_narration(scene, Path(tmp), scenes)
@@ -194,9 +210,9 @@ def main():
     ado = sub.add_parser('adopt')
     ado.add_argument('production')
     ado.add_argument('scene')
-    ado.add_argument('--run', required=True)
+    ado.add_argument('--source', required=True)
     ado.add_argument('--artifact', required=True)
-    ado.add_argument('--narration', required=True)
+    ado.add_argument('--narration', default='')
     fet = sub.add_parser('fetch')
     fet.add_argument('production')
     a = ap.parse_args()
@@ -204,7 +220,7 @@ def main():
     if a.command == 'encode':
         encode(a.scene, out, production.settings(a.production)['picture']['fps'])
     elif a.command == 'adopt':
-        adopt(a.scene, a.run, a.artifact, a.narration, out / 'scenes')
+        adopt(a.scene, a.source, a.artifact, a.narration, out / 'scenes')
     else:
         fetch(out)
 

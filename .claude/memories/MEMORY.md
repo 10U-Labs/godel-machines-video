@@ -4,8 +4,9 @@
 
 - [The repo is a media factory](the-repo-is-a-media-factory.md) — many productions, the Gödel film is the first; keep one production's material out of shared code; which memories hold for every production
 - [Never quote the user verbatim](never-quote-the-user-verbatim.md) — restate what the user says in fresh words in memories, commits, comments, and summaries
-- [Render in GitHub workflows](render-in-github-workflows.md) — no local renders; push and let Actions render, fetch artifacts with gh
+- [Render in GitHub workflows](render-in-github-workflows.md) — no local renders; push and let Actions render, fetch artifacts with gh; a manual run with release=true publishes a production
 - [Free tools only](free-tools-only.md) — nothing paid, for voice or anything else; open-source models on free runners, licence checked
+- [A release is numbered by the time](a-release-is-numbered-by-the-time.md) — tag is v plus the fourteen-digit UTC time, as in the sibling repos; never a count; the production's name comes first here
 - [Oxford commas](oxford-commas.md) — the user's rule for the repo's About; apply to other repo prose too, and ask before changing a spoken line
 - [Long-running commands in the background](long-running-commands-in-the-background.md) — anything past about a minute is a background Bash call with a time limit; no foreground wait after it
 - [A wait runs in the background](a-wait-runs-in-the-background.md) — wait for a workflow run with background Bash or Monitor, never a foreground sleep or gh run watch; --interval 60
@@ -24,9 +25,9 @@
 - [The work in hand can be several issues](the-work-in-hand-can-be-several-issues.md) — the lowest-numbered unblocked issue, alone or with others chosen; a blocked issue joins only with all its open blockers
 - [Blocked-by edges set the order](blocked-by-edges-set-the-order.md) — issues 1 to 8 are chained in number order, which is the user's order; three edges state order alone, leave them; gh api commands for edges
 - [An issue is brought up to date before work](an-issue-is-brought-up-to-date-before-work.md) — fix a stale title and body first, without widening; one problem and one commit per issue, split otherwise
-- [Before an issue is labelled needs decision](before-an-issue-is-labelled-needs-decision.md) — check the memories and the code first, then write what is to be decided into the body
+- [Before an issue is labelled needs decision](before-an-issue-is-labelled-needs-decision.md) — check the memories and the code first, then write what is to be decided into the body; publishing a production needs no decision
 - [A commit closes at least one issue](a-commit-closes-at-least-one-issue.md) — a Closes #N line for each issue; after the push, check that each one closed
-- [Every run is watched](every-run-is-watched.md) — after a push the work goes on; each run gets a background watch; a failed run is fixed in the next push; a push that renames clips and alters no picture adopts them
+- [Every run is watched](every-run-is-watched.md) — after a push the work goes on; each run gets a background watch; a failed run is fixed in the next push; a push that renames clips and alters no picture adopts them, from a run or, once artifacts are deleted, from a release
 
 ## The Gödel machines film
 

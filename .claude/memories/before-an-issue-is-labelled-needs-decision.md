@@ -13,4 +13,6 @@ Two things are done before the autopilot (`.claude/skills/autopilot/SKILL.md`) l
 
 **How to apply:** Read the memories for a rule that settles the question, and the code and the other issues for a fact that does. Only when neither does, rewrite the body so that it says what is to be decided, what the choices are, and what the work needs from the answer, with a guarded edit such as `[ -s body.md ] && gh issue edit <number> --body-file body.md`. Then add the label with `gh issue edit <number> --add-label 'needs decision'`.
 
-Claude's interpretation of what is a person's to decide in this repo: the look, voice, music, length, and audience of a new production, per [The repo is a media factory](the-repo-is-a-media-factory.md); anything that might cost money, per [Free tools only](free-tools-only.md); and anything that publishes a production, such as a public GitHub release.
+Claude's interpretation of what is a person's to decide in this repo: the look, voice, music, length, and audience of a new production, per [The repo is a media factory](the-repo-is-a-media-factory.md); and anything that might cost money, per [Free tools only](free-tools-only.md).
+
+Publishing a production is not a person's to decide. The user's statement is that everything in this repository is public, so a public GitHub release of a production needs no go-ahead. That the statement covers productions still to come is Claude's reading. How a release is tagged is settled as well, per [A release is numbered by the time](a-release-is-numbered-by-the-time.md).

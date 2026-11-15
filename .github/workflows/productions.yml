@@ -34,6 +34,9 @@ jobs:
   render:
     if: needs.productions.outputs.names != '[]'
     needs: productions
+    permissions:
+      actions: read
+      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -42,6 +45,7 @@ jobs:
     with:
       adopt: ${{ inputs.adopt }}
       production: ${{ matrix.production }}
+      release: ${{ inputs.release == true }}
   yamllint:
     runs-on: ubuntu-latest
     steps:
@@ -73,13 +77,18 @@ on:
   workflow_dispatch:
     inputs:
       adopt:
-        description: The id of an earlier run whose scene clips to take, in place of rendering, for the scenes that have none
+        description: The id of an earlier run, or the tag of a release, whose scene clips to take, in place of rendering, for the scenes that have none
         required: false
         type: string
       production:
         description: The name of the production to render, a folder in productions/
         required: true
         type: string
+      release:
+        default: false
+        description: Publish the film, its captions, and its scene clips as a GitHub release, which anyone can see
+        required: false
+        type: boolean
 permissions:
   actions: read
   contents: read

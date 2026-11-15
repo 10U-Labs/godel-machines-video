@@ -17,7 +17,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         name: Download the clip and its narration
         run: |
-          python3 src/blender/clips.py adopt "$PRODUCTION" "${{ matrix.clip.scene }}" --run "${{ matrix.clip.run }}" \
+          python3 src/blender/clips.py adopt "$PRODUCTION" "${{ matrix.clip.scene }}" --source "${{ matrix.clip.source }}" \
             --artifact "${{ matrix.clip.artifact }}" --narration "${{ matrix.clip.narration }}"
       - name: Upload the clip under its name
         uses: actions/upload-artifact@v7
@@ -138,6 +138,30 @@ jobs:
           if-no-files-found: error
           name: ${{ env.PRODUCTION }}-clips
           path: out/${{ env.PRODUCTION }}/clips.json
+  release:
+    if: ${{ inputs.release && !cancelled() && needs.film.result == 'success' }}
+    needs: film
+    permissions:
+      actions: read
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+      - name: Download the film
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.PRODUCTION }}-film
+          path: out/${{ env.PRODUCTION }}
+      - name: Download the clip names
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.PRODUCTION }}-clips
+          path: out/${{ env.PRODUCTION }}
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        name: Publish the film, its captions, and its scene clips
+        run: python3 src/render/release.py "$PRODUCTION" --target "$GITHUB_SHA"
   scenes:
     if: needs.narration.outputs.scenes != '[]'
     needs: narration
@@ -157,13 +181,18 @@ on:
   workflow_call:
     inputs:
       adopt:
-        description: The id of an earlier run whose scene clips to take, in place of rendering, for the scenes that have none
+        description: The id of an earlier run, or the tag of a release, whose scene clips to take, in place of rendering, for the scenes that have none
         required: false
         type: string
       production:
         description: The name of the production to render, a folder in productions/
         required: true
         type: string
+      release:
+        default: false
+        description: Publish the film, its captions, and its scene clips as a GitHub release, which anyone can see
+        required: false
+        type: boolean
 permissions:
   actions: read
   contents: read
