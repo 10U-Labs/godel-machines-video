@@ -9,7 +9,7 @@ metadata:
 
 Every commit the autopilot (`.claude/skills/autopilot/SKILL.md`) makes closes at least one issue of the work in hand. It may close more than one, and it never closes none.
 
-**Why:** A string of commits that each touch an issue and none closes it leaves the issue's work half done on `main`, and the list of open issues stops saying what is left to do. Here an issue left open also keeps every issue it blocks out of the autopilot's reach, per [Blocked-by edges set the order](blocked-by-edges-set-the-order.md). The user holds this rule in the sibling repo `cladenc`. It was carried over on 2026-11-15, when the user asked for an autopilot skill in this repo; the user has not reviewed it for this repo.
+**Why:** A string of commits that each touch an issue and none closes it leaves the issue's work half done on `main`, and the list of open issues stops saying what is left to do. Here an issue left open also keeps every issue it blocks out of the autopilot's reach, per [Blocked-by edges set the order](blocked-by-edges-set-the-order.md). The user holds this rule in the sibling repo `cladenc`. That it holds in this repo is Claude's reading, which the user has not confirmed.
 
 **How to apply:**
 
@@ -19,4 +19,4 @@ Every commit the autopilot (`.claude/skills/autopilot/SKILL.md`) makes closes at
 - A memory, or anything else changed along the way, rides in a commit that closes an issue.
 - Two kinds of commit close nothing: the fix for a failed run of the session's own push, per [Every run is watched](every-run-is-watched.md), and a change the user asks for directly. The sibling repo records both exceptions as Claude's reading, not the user's.
 - Some of what an issue asks for is not in the tree, such as the repo's About text or a manual workflow run. Do that part with the push, so that no issue is closed with part of its change undone.
-- After the push, read `gh issue view <N> --json state --jq .state` for each `Closes #N` line. The sibling repos have seen GitHub accept a commit on `main` and act on none of its closing lines. Close any issue still open with `gh issue close <N> --reason completed` and a comment that names the commit.
+- After the push, read `gh issue view <N> --json state --jq .state` for each `Closes #N` line. GitHub can accept a commit on `main` and act on none of its closing lines, which the sibling repos record. Close any issue still open with `gh issue close <N> --reason completed` and a comment that names the commit.

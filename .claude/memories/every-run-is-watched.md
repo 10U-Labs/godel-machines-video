@@ -9,7 +9,7 @@ metadata:
 
 After a push, the autopilot (`.claude/skills/autopilot/SKILL.md`) goes straight on with the next work, further commits and pushes included. Every workflow run the push started is watched to its end by a background command.
 
-**Why:** A run that nobody watches can fail unseen, most of all when the session has no new work and stops. A render of the whole Gödel machines film takes about four hours, so a session that waited for each run would sit idle for most of a day. The user allowed other work during a run in this repo on 2026-11-14, as [A wait runs in the background](a-wait-runs-in-the-background.md) records. That further pushes go on as well, that each run is watched, and that a failed run is fixed first are rules of the autopilot in the sibling repo `cladenc`. They were carried over on 2026-11-15, when the user asked for an autopilot skill in this repo; the user has not reviewed them for this repo.
+**Why:** A run that nobody watches can fail unseen, most of all when the session has no new work and stops. A render of the whole Gödel machines film takes about four hours, so a session that waited for each run would sit idle for most of a day. The user allows other work during a run in this repo, per [A wait runs in the background](a-wait-runs-in-the-background.md). That further pushes go on as well, that each run is watched, and that a failed run is fixed first are the user's rules for the autopilot in the sibling repo `cladenc`. That they hold in this repo is Claude's reading, which the user has not confirmed.
 
 **How to apply:**
 
