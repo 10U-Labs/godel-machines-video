@@ -16,3 +16,4 @@
 - [Show people, not panels](show-people-not-panels.md) — illustrated scenes with people and places; no slide-deck panels or captions that repeat the voice
 - [One idea at a time](one-idea-at-a-time.md) — each scene carries one idea; cut true but extra details
 - [Only the four concepts](only-the-four-concepts.md) — RSI, Gödel, DGM, HGM at concept level; no history, mechanism details, or name origins
+- [The repo is a media factory](the-repo-is-a-media-factory.md) — many productions since 2026-11-15, the Gödel film is the first; keep one production's material out of shared code; rule scopes are open in issue 9
