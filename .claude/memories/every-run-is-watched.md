@@ -13,7 +13,7 @@ After a push, the autopilot (`.claude/skills/autopilot/SKILL.md`) goes straight 
 
 **How to apply:**
 
-- Right after a push, list the runs it started: `gh run list --commit <sha> --json databaseId,workflowName,status`. A run takes a few seconds to appear, so when the listing shows fewer runs than the `on:` sections of the workflows in `.github/workflows/` say the push starts, list again.
+- Right after a push, list the runs it started: `gh run list --commit <sha> --json databaseId,workflowName,status`, where `<sha>` is the full hash that `git rev-parse HEAD` prints; a short hash lists nothing. A run takes a few seconds to appear, so when the listing shows fewer runs than the `on:` sections of the workflows in `.github/workflows/` say the push starts, list again.
 - Start one watch for each run as a background `Bash` call: `perl -e 'alarm 21600; exec @ARGV' gh run watch <id> --exit-status --interval 60 --compact`, with its output sent to a file in the scratchpad.
 - Go on with the work. When nothing but the watches is left, end the turn; the notification of a watch that ends resumes the session.
 - A watch that ends with status 0 says the run passed. For any other status, read `gh run view <id> --json conclusion --jq .conclusion`.
