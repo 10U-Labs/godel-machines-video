@@ -1,5 +1,9 @@
 """Synthesized music bed and sound effects. Everything is generated from
-numbers here; there are no samples or recordings, so nothing needs a licence."""
+numbers here; there are no samples or recordings, so nothing needs a licence.
+
+The instruments and the effects are shared. The tune they play is a
+production's own: its [music] settings (see src/production.py).
+"""
 import numpy as np
 from scipy.signal import butter, lfilter
 
@@ -52,20 +56,6 @@ def _swell(n, attack, release):
 
 
 # ---------------------------------------------------------------- music
-
-BPM = 80
-BEAT = 60 / BPM
-CHORD_LEN = 8 * BEAT  # two bars per chord
-
-# Dm9, Bbmaj7, Fmaj9, Cadd9: bass note and chord tones as MIDI numbers.
-CHORDS = [
-    {"bass": 38, "notes": [57, 60, 64, 65, 69]},
-    {"bass": 34, "notes": [58, 62, 65, 69]},
-    {"bass": 41, "notes": [57, 60, 64, 67]},
-    {"bass": 36, "notes": [55, 60, 62, 64, 67]},
-]
-ARP_PATTERN = [0, 2, 1, 3, 2, 4, 3, 2, 0, 2, 1, 3, 4, 3, 2, 1]
-
 
 def _pad_note(freq, dur):
     t = _times(dur)
@@ -121,9 +111,19 @@ def _ping_pong(x, delay, feedback=0.32, mix=0.35, repeats=5):
     return out
 
 
-def music(duration, arp_from=6.0):
-    """Calm bed: pad chords, soft bass, a plucked arpeggio that enters at
-    `arp_from` seconds, and an occasional bell. Returns stereo float array."""
+def music(duration, bpm, chords, arpeggio, arpeggio_from):
+    """Calm bed: pad chords, soft bass, a plucked arpeggio, and an occasional bell.
+
+    The tune is a production's [music] settings. bpm is the tempo in beats a
+    minute. chords are played in turn, round and round, each for two bars of
+    four beats: a chord is {"bass": note, "notes": [note, ...]} in MIDI
+    numbers. arpeggio is played over every chord, one step each half beat:
+    a step picks one of the chord's notes, counted from 0, and the number
+    after the last note picks the first note an octave up. The arpeggio and
+    the bell fade in from arpeggio_from seconds. Returns stereo float array.
+    """
+    beat = 60 / bpm
+    chord_len = 8 * beat
     n = int(duration * SR)
     pad = np.zeros((n, 2))
     bass = np.zeros((n, 2))
@@ -133,27 +133,27 @@ def music(duration, arp_from=6.0):
     t0 = 0.0
     index = 0
     while t0 < duration:
-        chord = CHORDS[index % len(CHORDS)]
+        chord = chords[index % len(chords)]
         for note in chord["notes"]:
-            place(pad, _pad_note(midi(note), CHORD_LEN + 2.0) * 0.05, t0 - 0.4)
-        place(bass, _bass_note(midi(chord["bass"]), CHORD_LEN + 0.6) * 0.2, t0)
+            place(pad, _pad_note(midi(note), chord_len + 2.0) * 0.05, t0 - 0.4)
+        place(bass, _bass_note(midi(chord["bass"]), chord_len + 0.6) * 0.2, t0)
 
         ladder = chord["notes"] + [chord["notes"][0] + 12]
-        for step, pick in enumerate(ARP_PATTERN):
-            when = t0 + step * BEAT / 2
+        for step, pick in enumerate(arpeggio):
+            when = t0 + step * beat / 2
             note = ladder[pick % len(ladder)] + 12
             side = 0.35 if step % 2 else -0.35
             place(arp, pan(_pluck(midi(note)) * 0.085, side), when)
 
         if index % 2 == 1:
             top = chord["notes"][-1] + 12
-            place(bells, pan(_bell(midi(top)) * 0.05, 0.2), t0 + 2 * BEAT)
-        t0 += CHORD_LEN
+            place(bells, pan(_bell(midi(top)) * 0.05, 0.2), t0 + 2 * beat)
+        t0 += chord_len
         index += 1
 
-    arp = _ping_pong(arp, BEAT * 0.75)
+    arp = _ping_pong(arp, beat * 0.75)
     t = np.arange(n) / SR
-    arp_gain = np.clip((t - arp_from) / 6.0, 0, 1)[:, None]
+    arp_gain = np.clip((t - arpeggio_from) / 6.0, 0, 1)[:, None]
     mix = pad + bass + arp * arp_gain + bells * arp_gain
 
     fade_in = np.clip(t / 1.5, 0, 1)

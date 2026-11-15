@@ -4,3 +4,14 @@ title = "Machines That Rewrite Themselves"
 name = "af_heart"
 lang = "en-us"
 speed = 0.95
+
+[music]
+bpm = 80
+chords = [
+    { bass = 38, notes = [57, 60, 64, 65, 69] },    # Dm9
+    { bass = 34, notes = [58, 62, 65, 69] },        # B♭maj7
+    { bass = 41, notes = [57, 60, 64, 67] },        # Fmaj9
+    { bass = 36, notes = [55, 60, 62, 64, 67] },    # Cadd9
+]
+arpeggio = [0, 2, 1, 3, 2, 4, 3, 2, 0, 2, 1, 3, 4, 3, 2, 1]
+arpeggio_from = 6.0
