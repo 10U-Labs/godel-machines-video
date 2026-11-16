@@ -113,9 +113,9 @@ def build(T):
     night = parts.dark(stage, t_black)
     cues.append({'t': t_black, 'type': 'pop', 'pitch': 0.3, 'gain': 0.7})
     last = parts.presence('last', night, (cam_lab[0], cam_lab[1] + 0.15), 2.2)
-    for bar in last['bars']:
-        alpha(bar, 1, 0.0)
-    parts.lit(last['halo'], [(0.0, 0.0), (t_eyes, 0.0), (t_eyes + 1.6, 0.35)])
+    # Only the eyes show: the wide glow around them and the bars he talks with stay dark.
+    for ob in last['bars'] + [last['halo']]:
+        alpha(ob, 1, 0.0)
     parts.visible(last['eyes']['shapes'], [(t_eyes, None)], 0.3)
     parts.open_eyes(last['eyes'], t_eyes + 0.05, 0.6)
     parts.hover(last, t_eyes, end)

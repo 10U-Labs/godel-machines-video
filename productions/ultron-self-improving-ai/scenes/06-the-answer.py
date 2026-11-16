@@ -58,7 +58,7 @@ def build(T):
     cues.append({'t': t_yes + 0.15, 'type': 'pop', 'pitch': 0.6, 'gain': 0.8})
 
     # ------------------------------------------------------------ the three reasons, one lamp each
-    parts.tally('reasons', near, (MARK[0], 1.95), t_tally, (t_changed, t_more, t_himself))
+    parts.tally('reasons', near, (MARK[0], 1.8), t_tally, (t_changed, t_more, t_himself))
     for k, when in enumerate((t_changed, t_more, t_himself)):
         cues.append({'t': when, 'type': 'blip', 'pitch': 0.8 + 0.2 * k, 'gain': 0.7})
 
@@ -78,7 +78,7 @@ def build(T):
 
     # and he made them himself
     for k, (x, _) in enumerate(parts.FORMS):
-        parts.pulse(f'himself{k}', row, (x, parts.FLOOR + 1.9 + 0.3 * k), t_himself + 0.12 * k, 1.5 + 0.35 * k, parts.RED, 1.0, 0.06)
+        parts.pulse(f'himself{k}', row, (x, parts.FLOOR + 1.9 + 0.3 * k), t_himself + 0.12 * k, 1.2 + 0.4 * k, parts.RED, 1.0, 0.06)
     cues.append({'t': t_himself, 'type': 'chime', 'gain': 0.5, 'pitch': 0.8})
 
     # ------------------------------------------------------------ camera

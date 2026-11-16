@@ -65,7 +65,7 @@ def build(T):
         cues.append({'t': t_machines + 0.5 * k, 'type': 'blip', 'pitch': 0.7 + 0.1 * k, 'gain': 0.5})
     for k in range(5):
         dot = kit.shape(f'signal{k}', kit.circle_pts(0.09, n=12), kit.material(parts.HOT, parts.RED), front, lift=0.2)
-        halo = kit.shape(f'signal-glow{k}', kit.circle_pts(0.4), kit.glow_material(parts.RED, 0.7), front, lift=0.19)
+        halo = parts.glow(f'signal-glow{k}', front, (0, 0), 0.3, parts.RED, 0.8, lift=0.19)
         t0 = t_wire + 0.25 * k
         for ob in (dot, halo):
             z = ob.location.z
@@ -134,7 +134,8 @@ def build(T):
     def path(t):
         pos = mix((-0.6, 0.3, 20.2), (-0.2, 0.3, 19.6), span(t, 0.0, T.end(0)))
         pos = mix(pos, (0.6, 0.5, 19.4), span(t, t_machines - 0.6, t_machines + 0.8))
-        pos = mix(pos, (1.8, -0.1, 17.4), span(t, t_build - 0.4, t_build + 1.0))
+        # closer on the build, with Ultron on the left and the heap on the right both wholly in the frame
+        pos = mix(pos, (0.9, 0.0, 18.0), span(t, t_build - 0.4, t_build + 1.0))
         pos = mix(pos, (0.4, 0.1, 18.4), span(t, t_move - 0.3, t_move + 0.6))
         return mix(pos, (-0.6, 0.2, 17.2), span(t, t_walk, t_stop + 0.6))
 

@@ -485,10 +485,17 @@ def person(name, parent, loc=(0, 0), scale=1.0, coat='#5566c2', coat_deep=INK500
 # ---------------------------------------------------------------- entrances, branches, and props
 
 def pop(ob, t, s=1.0, dur=0.45, t_out=None, out_dur=0.3):
-    """Scale an object up from nothing at t, overshooting a little, and back to nothing at t_out."""
+    """Scale an object up from nothing at t, overshooting a little, and back to nothing at t_out.
+
+    The frame nearest t can fall a little after t, where the object is
+    already part grown. So the object is also keyed at nothing on the frame
+    before that one, or it would grow toward that size from the first frame.
+    """
     tiny = (0.001, 0.001, 0.001)
+    first = fr(t)
     key(ob, 'scale', 1, tiny)
-    for f in every(1, fr(t), fr(t + dur)):
+    key(ob, 'scale', max(1, first - 1), tiny)
+    for f in every(1, first, fr(t + dur)):
         v = max(0.001, s * back_out((sec(f) - t) / dur))
         key(ob, 'scale', f, (v, v, v))
     if t_out is not None:
@@ -542,12 +549,21 @@ def ring(name, parent, loc, r=0.6, colour=AMBER, w=0.08, lift=0.0):
 
 
 def flash(ob, t, dur=0.9, grow_by=0.5):
-    """Light a ring at t: it swells a little and fades out over dur seconds."""
-    for f in every(1, fr(t), fr(t + dur)):
+    """Light a ring at t: it swells a little and fades out over dur seconds.
+
+    The ring is dark on the frame before the one nearest t, and on the last
+    frame of the flash. Those two frames can fall a little inside the flash,
+    and without a dark key on each the ring would show faintly from the first
+    frame until t, and stay faintly lit after the flash.
+    """
+    first = fr(t)
+    last = max(fr(t + dur), first + 1)
+    alpha(ob, max(1, first - 1), 0.0)
+    for f in every(1, first, last):
         q = span(sec(f), t, t + dur, lambda v: v)
         s = 1 + grow_by * q
         key(ob, 'scale', f, (s, s, 1))
-        alpha(ob, f, math.sin(math.pi * q))
+        alpha(ob, f, 0.0 if f == last else math.sin(math.pi * q))
 
 
 def veil(t, dur=1.0, colour=INK900):

@@ -26,7 +26,7 @@ BONE, ASH = '#efe9df', '#8b8e99'
 RUST, RUST_DEEP = '#8a5a44', '#5c3a2c'
 
 FLOOR = -2.7        # the height feet stand at, in screen units
-SOFT = 2.6          # how fast a pool of light falls away from its middle: enough that its edge cannot be seen
+SOFT = 2.6          # how fast a wide pool of light falls away from its middle
 
 # The kit sets each new shape a little closer to the camera than the last, and
 # a scene of this film has hundreds of shapes. At the kit's own step the last
@@ -72,6 +72,21 @@ def move_in(p, t, a, b, s0, s1, dur=0.6):
         size = mix(s0, s1, q)
         key(root, 'location', f, (mix(a[0], b[0], q), mix(a[1], b[1], q), step * (1 - size)))
         key(root, 'scale', f, (size, size, size))
+
+
+def glow(name, parent, loc=(0, 0), r=0.5, colour=RED, a=0.75, lift=0.0):
+    """A round light with no edge: brightest in the middle, and a tenth as bright at distance r.
+
+    The kit's glow fades with the distance from a shape's middle, and counts
+    that distance against the shape's size with 1 more added on every side:
+    a curve's texture space reaches out to the radius of its points, which is
+    1. A small round shape has hardly faded where it ends, and shows as a
+    disc. So this light is drawn three times as wide as r, and it fades fast
+    enough to be at nothing where the shape ends.
+    """
+    wide = 3 * r
+    power = math.log(0.1) / math.log(1 - r / (wide + 1))
+    return shape(name, circle_pts(wide), glow_material(colour, a, power=power), parent, loc, lift=lift)
 
 
 # ---------------------------------------------------------------- the stage
@@ -156,13 +171,15 @@ def eyes(name, parent, loc=(0, 0), scale=1.0, colour=RED, hot=HOT, slant=True, g
     pair, shapes = [], []
     for side in (-1, 1):
         e = group(f'{name}-eye{side}', root, (side * gap, 0))
-        shapes.append(shape(f'{name}-glow{side}', circle_pts(0.5), glow_material(colour, 0.75, power=2.2), e))
+        shapes.append(glow(f'{name}-glow{side}', e, (0, 0), 0.7, colour, 0.9))
+        pair.append(e)
+    # Both lights are made before either lens, so that neither light lies over the other eye's lens.
+    for side, e in zip((-1, 1), pair):
         if slant:
             pts = [(-0.2 * side, -0.03), (-0.03 * side, 0.1), (0.22 * side, 0.09), (0.05 * side, -0.08)]
         else:
             pts = circle_pts(0.12, ry=0.15, n=20)
         shapes.append(shape(f'{name}-lens{side}', pts, material(hot, colour), e, smooth=slant))
-        pair.append(e)
     return {'root': root, 'pair': pair, 'shapes': shapes, 'home': (loc[0], loc[1])}
 
 
@@ -186,7 +203,7 @@ def presence(name, parent, loc=(0, 0), scale=1.0, colour=RED, hot=HOT, slant=Tru
     """A program with no body: a pair of eyes in a glow, over a row of bars that jump when it talks."""
     root = group(name, parent, loc, scale)
     rig = empty(f'{name}-rig', root, (0, 0, 0))
-    halo = shape(f'{name}-halo', circle_pts(2.3), glow_material(colour, 0.42, power=SOFT), rig)
+    halo = glow(f'{name}-halo', rig, (0, 0), 1.9, colour, 0.42)
     e = eyes(f'{name}-eyes', rig, (0, 0.12), 1.0, colour, hot, slant)
     bars = []
     for i in range(9):
@@ -219,7 +236,7 @@ def talk(p, t0, t1, seed=0, step=2):
 def spark(name, parent, colour=RED, hot=HOT):
     """A point of light: Ultron on his way from one computer to another. Hidden until the scene shows it."""
     root = empty(name, parent)
-    shapes = [shape(f'{name}-glow', circle_pts(0.7), glow_material(colour, 0.8), root),
+    shapes = [glow(f'{name}-glow', root, (0, 0), 0.55, colour, 0.9),
               shape(f'{name}-core', circle_pts(0.1), material(hot, colour), root)]
     for ob in shapes:
         alpha(ob, 1, 0.0)
@@ -295,7 +312,7 @@ def powerful(name, parent, loc=(0, FLOOR), scale=1.0):
     for i in range(3):
         shape(f'{name}-slit{i}', rrect_pts(0.74 + 0.08 * i, 0.05, 0), material(NIGHT800), torso, (0, 0.42 + 0.2 * i))
     shape(f'{name}-chest', [(-0.66, 0.95), (0.66, 0.95), (1.12, 1.75), (0.98, 2.1), (-0.98, 2.1), (-1.12, 1.75)], steel, torso)
-    core = [shape(f'{name}-core-glow', circle_pts(0.75), glow_material(RED, 0.7), torso, (0, 1.55)),
+    core = [glow(f'{name}-core-glow', torso, (0, 1.55), 0.6, RED, 0.75),
             shape(f'{name}-core-rim', circle_pts(0.3, n=24), dark, torso, (0, 1.55)),
             shape(f'{name}-core', circle_pts(0.2, n=24), material(HOT, RED), torso, (0, 1.55))]
     arms = {}
@@ -457,7 +474,7 @@ def machine(name, parent, base, l1=1.7, l2=1.5, colour=STEEL500, deep=STEEL700):
     shape(f'{name}-joint', circle_pts(0.17, n=20), material(STEEL300, STEEL500), elbow)
     shape(f'{name}-hub', circle_pts(0.2, n=20), material(STEEL300, STEEL500), shoulder)
     shape(f'{name}-lamp-off', circle_pts(0.08, n=12), material(ASH), shoulder)
-    lamp = [shape(f'{name}-lamp-glow', circle_pts(0.5), glow_material(RED, 0.75), shoulder),
+    lamp = [glow(f'{name}-lamp-glow', shoulder, (0, 0), 0.4, RED, 0.8),
             shape(f'{name}-lamp-on', circle_pts(0.08, n=12), material(HOT, RED), shoulder)]
     for ob in lamp:
         alpha(ob, 1, 0.0)
@@ -527,7 +544,7 @@ def page(name, parent, loc=(0, 0), rows=8, w=3.4, h=4.2, seed=1, colour=ICE, dee
     """
     rnd = random.Random(seed)
     root = group(name, parent, loc, scale)
-    glow = shape(f'{name}-glow', circle_pts(w * 0.5 + 1.9, ry=h * 0.5 + 1.9), glow_material(colour, 0.3, power=SOFT), root)
+    glow = shape(f'{name}-glow', circle_pts(w * 0.5 + 1.9, ry=h * 0.5 + 1.9), glow_material(colour, 0.5, power=4.0), root)
     shape(f'{name}-sheet', rrect_pts(w, h, 0.18), material(NIGHT500, NIGHT600), root)
     shape(f'{name}-rule', rrect_pts(w - 0.5, 0.03, 0), material(STEEL700), root, (0, h / 2 - 0.62))
     e = eyes(f'{name}-eyes', root, (0, h / 2 - 0.32), 0.55, colour, hot, slant, gap=0.26) if face else None
@@ -580,7 +597,7 @@ def pen(name, parent, loc=(0, 0), scale=1.0, colour=ICE, hot=FROST):
 def seal(name, parent, loc=(0, 0), scale=1.0, colour=ICE, hot=FROST):
     """A proof's mark: a tick in a ring. It is shrunk to nothing until the scene pops it."""
     root = group(name, parent, loc, scale)
-    shape(f'{name}-glow', circle_pts(1.0), glow_material(colour, 0.6), root)
+    glow(f'{name}-glow', root, (0, 0), 0.9, colour, 0.7)
     shape(f'{name}-disc', circle_pts(0.5), material(NIGHT700), root)
     shape(f'{name}-ring', arc_pts(0.5, 0.07, 0, 360, n=40), material(colour), root)
     shape(f'{name}-tick', [(-0.26, 0.06), (-0.08, -0.06), (0.24, 0.3), (0.32, 0.22), (-0.08, -0.22), (-0.32, 0.0)], material(hot), root)
@@ -652,7 +669,7 @@ def strike(name, parent, t, a, b, colour=BONE, dur=0.12):
     key(streak, 'scale', fr(t), (0.001, 1, 1))
     key(streak, 'scale', max(fr(t) + 1, fr(t + dur)), (1, 1, 1))
     lit(streak, [(0.0, 0.0), (t - 0.04, 0.0), (t, 1.0), (t + dur, 1.0), (t + dur + 0.15, 0.0)])
-    flash = shape(f'{name}-flash', circle_pts(1.1), glow_material(colour, 0.9, power=2.2), parent, b, lift=0.31)
+    flash = glow(f'{name}-flash', parent, b, 0.9, colour, 0.9, lift=0.31)
     lit(flash, [(0.0, 0.0), (t + dur, 0.0), (t + dur + 0.04, 1.0), (t + dur + 0.35, 0.0)])
     return streak, flash
 
@@ -661,13 +678,12 @@ def pulse(name, parent, loc, t, r=0.7, colour=BONE, dur=0.8, width=0.07):
     """A ring of light that swells and fades at t."""
     ob = kit.ring(name, parent, loc, r, colour, width, lift=0.25)
     kit.flash(ob, t, dur)
-    alpha(ob, fr(t + dur), 0.0)
     return ob
 
 
 def spot(name, parent, loc, r=2.4, colour=BONE, a=0.14):
-    """A soft pool of light behind something, hidden until the scene shows it."""
-    ob = shape(name, circle_pts(r), glow_material(colour, a, power=SOFT), parent, loc)
+    """A soft pool of light behind something, about r across at its brightest part. Hidden until the scene shows it."""
+    ob = glow(name, parent, loc, 0.8 * r, colour, a)
     alpha(ob, 1, 0.0)
     return ob
 
@@ -847,7 +863,7 @@ def tally(name, parent, loc, t_show, times, gap=0.7):
                shape(f'{name}-well{k}', circle_pts(0.14, n=24), material(NIGHT800), root, (x, 0))]
         visible(off, [(t_show, None)], 0.3)
         if t is not None:
-            on = [shape(f'{name}-glow{k}', circle_pts(0.75), glow_material(RED, 0.8, power=2.2), root, (x, 0)),
+            on = [glow(f'{name}-glow{k}', root, (x, 0), 0.32, RED, 0.85),
                   shape(f'{name}-lamp{k}', circle_pts(0.14, n=24), material(HOT, RED), root, (x, 0))]
             visible(on, [(max(t_show, t), None)], 0.2)
     return root

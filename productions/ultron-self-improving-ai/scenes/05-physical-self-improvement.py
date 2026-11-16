@@ -137,7 +137,8 @@ def build(T):
     def path(t):
         pos = mix((-3.9, 0.6, 16.6), (-3.7, 0.7, 15.6), span(t, 0.0, t_in))
         pos = mix(pos, (0.5, 0.4, 20.6), span(t, t_other - 1.2, t_other + 0.4))
-        pos = mix(pos, (1.6, 0.4, 19.2), span(t, t_code - 0.6, t_code + 0.6))
+        # close on the other AI: the powerful body stays in the frame, and the feeble one is wholly out of it
+        pos = mix(pos, (2.3, 0.4, 17.6), span(t, t_code - 0.6, t_code + 0.6))
         pos = mix(pos, (0.5, 0.4, 20.6), span(t, t_his - 0.8, t_his + 0.2))
         return mix(pos, (0.5, 0.5, 20.2), span(t, t_paper, end))
 
