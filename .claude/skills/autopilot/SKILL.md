@@ -53,6 +53,7 @@ Each file is under `.claude/memories/`.
 | After a push the work goes straight on, every run the push starts is watched to its end in the background, and a failed run is fixed in the next commit pushed. | `every-run-is-watched.md` |
 | A wait for a workflow run is a background command. | `a-wait-runs-in-the-background.md` |
 | A command that can take more than about a minute runs in the background. | `long-running-commands-in-the-background.md` |
+| Every part of the work is done in the session itself, with no Agent or Workflow call. | `working-without-subagents.md` |
 | Nothing is rendered on the local machine. | `render-in-github-workflows.md` |
 | Nothing used to make a production costs money. | `free-tools-only.md` |
 | Nothing that belongs to one production goes into shared code. | `the-repo-is-a-media-factory.md` |

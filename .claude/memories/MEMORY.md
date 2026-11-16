@@ -10,6 +10,7 @@
 - [Oxford commas](oxford-commas.md) — the user's rule for the repo's About; apply to other repo prose too, and ask before changing a spoken line
 - [Long-running commands in the background](long-running-commands-in-the-background.md) — anything past about a minute is a background Bash call with a time limit; no foreground wait after it
 - [A wait runs in the background](a-wait-runs-in-the-background.md) — wait for a workflow run with background Bash or Monitor, never a foreground sleep or gh run watch; --interval 60
+- [Working without subagents](working-without-subagents.md) — no Agent or Workflow call, whatever the work's size; denied in the tracked settings.json, lifted only by the user's own ask
 - [Memory links are Markdown links](memory-links-are-markdown-links.md) — link memories as title plus file name, never with double brackets
 - [A memory says what holds now](a-memory-says-what-holds-now.md) — the rule, its reason, and how to apply it, in the present tense; no dates, no account of what was said or done, no note of where a rule came from
 - [Every production tells a story](every-production-tells-a-story.md) — hook and feeling; someone to follow, a question, and a payoff; but/therefore joins
