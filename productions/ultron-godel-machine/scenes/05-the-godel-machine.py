@@ -11,11 +11,11 @@ import math
 
 import kit
 import parts
-from kit import alpha, every, fr, key, mix, sec, span
+from kit import every, fr, key, mix, sec, span
 
 BOARD = (-3.5, parts.FLOOR + 3.4)
 PAGE = (2.9, 1.0)
-LANE = parts.FLOOR + 0.85
+LANE = parts.FLOOR + 1.0
 
 
 def build(T):
@@ -35,7 +35,7 @@ def build(T):
     kit.motes(n=18, seed=62, colour=parts.ICE)
     far = kit.layer('far', -3.0)
     stage = kit.layer('stage', 1.0)
-    front = parts.room('study', far, stage, light=parts.ICE, glow=0.13)[1]
+    front = parts.room('study', far, stage, light=parts.ICE, glow=0.06)[1]
 
     # ------------------------------------------------------------ the scientist and the design
     board = parts.blueprint('design', front, BOARD)
@@ -49,8 +49,8 @@ def build(T):
     parts.reach(who, t_draw1 + 0.1, 12, 0.5)
     for k in range(8):
         cues.append({'t': mix(t_draw0, t_draw1, k / 8), 'type': 'tick', 'pitch': 0.9 + 0.05 * (k % 4), 'gain': 0.35})
-    year = kit.text('year', '2003', 0.6, kit.material(parts.BONE), front, (-7.3, 3.5), align='LEFT')
-    name = kit.text('name', 'Jürgen Schmidhuber', 0.3, kit.material(parts.ASH), front, (-7.3, 2.97), align='LEFT')
+    year = kit.text('year', '2003', 0.6, kit.material(parts.BONE), front, (-9.3, 2.5), align='LEFT')
+    name = kit.text('name', 'Jürgen Schmidhuber', 0.36, kit.material(parts.ASH), front, (-9.3, 1.92), align='LEFT')
     kit.fade(year, T.start(1) + 0.2, t_program - 0.3)
     kit.fade(name, T.at(1, 0.45), t_program - 0.3)
 
@@ -87,16 +87,18 @@ def build(T):
         arrivals.append(when)
         when += 1.25 if when < t_own + 1.0 else 0.62
     for k, t0 in enumerate(arrivals):
-        card = parts.task(f'task{k}', front, (10.5, LANE), 0.7, seed=k)
+        card = parts.task(f'task{k}', front, (11.5, LANE), 0.8, seed=k)
         zc = card['root'].location.z
+        key(card['root'], 'location', max(1, fr(t0) - 1), (11.5, LANE, zc))
         for f in every(1, fr(t0), fr(t0 + 1.4)):
             t = sec(f)
-            x = mix(10.5, PAGE[0], span(t, t0, t0 + 0.5, kit.ease_out))
+            x = mix(11.5, PAGE[0], span(t, t0, t0 + 0.5, kit.ease_out))
             x = mix(x, -0.4, span(t, t0 + 0.75, t0 + 1.3, lambda v: v * v))
-            s = 0.7 * (1 - span(t, t0 + 1.0, t0 + 1.35))
+            s = 0.8 * (1 - span(t, t0 + 1.0, t0 + 1.35))
             key(card['root'], 'location', f, (x, LANE, zc))
             key(card['root'], 'scale', f, (max(0.001, s),) * 3)
         parts.fix(card, t0 + 0.55)
+        parts.pulse(f'fixed{k}', front, (PAGE[0], LANE), t0 + 0.55, 0.6, parts.FROST, 0.5, 0.05)
         cues.append({'t': t0 + 0.55, 'type': 'blip', 'pitch': 1.0 + 0.04 * k, 'gain': 0.4})
     for k, r in enumerate((3, 5, 2)):
         parts.rewrite(pg, r, t_own + 0.4 * k)
@@ -105,16 +107,14 @@ def build(T):
 
     # ------------------------------------------------------------ any part, even the part that rewrites
     for r in range(8):
-        lit = parts.band(pg, r, parts.FROST, 0.28)
+        bar = parts.band(pg, r, parts.FROST, 0.28)
         t0 = t_any + 0.14 * r
-        for when, a in ((t0, 0.0), (t0 + 0.1, 1.0), (t0 + 0.45, 0.0)):
-            alpha(lit, fr(when), a)
+        parts.lit(bar, [(0.0, 0.0), (t0, 0.0), (t0 + 0.1, 1.0), (t0 + 0.45, 0.0)])
         cues.append({'t': t0, 'type': 'tick', 'pitch': 0.9 + 0.06 * r, 'gain': 0.3})
     quill = parts.pen('pen', pg['root'], (-pg['w'] / 2 - 0.35, pg['ys'][7]))
     kit.pop(quill, t_own - 0.3, 1.0)
     last = parts.band(pg, 7, parts.BONE, 0.34)
-    for when, a in ((t_even - 0.1, 0.0), (t_even + 0.2, 1.0), (end - 0.4, 0.6)):
-        alpha(last, fr(when), a)
+    parts.lit(last, [(0.0, 0.0), (t_even - 0.1, 0.0), (t_even + 0.2, 1.0), (end - 0.4, 0.6)])
     for f in every(1, fr(t_even + 0.3), fr(t_even + 1.0)):
         q = span(sec(f), t_even + 0.3, t_even + 0.95)
         s = 1 + 0.5 * math.sin(math.pi * q)

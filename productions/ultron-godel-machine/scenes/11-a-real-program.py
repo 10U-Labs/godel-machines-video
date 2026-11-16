@@ -7,8 +7,9 @@ past it and leave fixed, and then it rewrites its own lines. On the wall a
 board of a hundred squares lights two rows, and after many rewrites, five.
 Beside the screen the dotted outline of a body shows and fades: the program
 has none. Then the researchers are gone, and Ultron's eyes hang over a
-console as they did at the start. A feeble body is built beside him and he
-moves into it, while the program on the screen goes on rewriting itself.
+console as they did at the start, beside the outline of the body he does not
+have. A feeble body is built where the outline was and he moves into it,
+while the program on the screen goes on rewriting itself.
 """
 import math
 
@@ -47,7 +48,7 @@ def build(T):
     stage = kit.layer('stage', 1.0)
 
     # ------------------------------------------------------------ the design that was never built
-    study = parts.room('study', far, stage, light=parts.ICE, glow=0.13)
+    study = parts.room('study', far, stage, light=parts.ICE, glow=0.06)
     design = parts.blueprint('design', study[1], BOARD)
     for i, ob in enumerate(design['dots']):
         for f in every(4, 1, fr(t_real)):
@@ -62,7 +63,7 @@ def build(T):
     parts.cut(study, None, t_real)
 
     # ------------------------------------------------------------ 2025: researchers, and a program on their screen
-    office = parts.room('office', far, stage, light=parts.STEEL100, glow=0.18)
+    office = parts.room('office', far, stage, light=parts.STEEL100, glow=0.06)
     side = office[1]
     parts.cut(office, t_real, None)
     screen = parts.monitor('screen', side, SCREEN)
@@ -83,7 +84,7 @@ def build(T):
     parts.reach(one, t_fixes, 15, 0.5)
     parts.reach(two, t_rewrites - 0.3, 62)
     parts.reach(two, T.end(1), 10, 0.5)
-    year = kit.text('year', '2025', 0.6, kit.material(parts.BONE), crew, (-5.0, 3.5), align='LEFT')
+    year = kit.text('year', '2025', 0.6, kit.material(parts.BONE), crew, (-4.3, 2.95), align='LEFT')
     kit.fade(year, t_real + 0.5, T.end(1))
 
     spot = (centre[0] + 1.55, centre[1])
@@ -115,23 +116,21 @@ def build(T):
         at = (-1.35 + 0.3 * col, 1.35 - 0.3 * row)
         kit.shape(f'cell{i}', kit.rrect_pts(0.2, 0.2, 0.04), kit.material(parts.STEEL700), results, at)
         if i < 50:
-            lit = kit.shape(f'fixed{i}', kit.rrect_pts(0.2, 0.2, 0.04), kit.material(parts.FROST, parts.ICE), results, at)
-            when = mix(t_first, t_first + 1.0, i / 19) if i < 20 else mix(t_best, t_best + 1.1, (i - 20) / 29)
-            alpha(lit, 1, 0.0)
-            alpha(lit, fr(when), 0.0)
-            alpha(lit, fr(when) + 2, 1.0)
+            cell = kit.shape(f'fixed{i}', kit.rrect_pts(0.2, 0.2, 0.04), kit.material(parts.FROST, parts.ICE), results, at)
+            when = mix(t_first, t_first + 1.0, i / 19) if i < 20 else mix(t_rounds + 0.2, t_best + 0.3, (i - 20) / 29)
+            parts.lit(cell, [(0.0, 0.0), (when, 0.0), (when + 0.07, 1.0)])
     kit.pop(results, T.start(2) - 0.3, 1.0)
     cues.append({'t': T.start(2) - 0.3, 'type': 'pop', 'pitch': 1.0})
     for k in range(4):
         cues.append({'t': t_first + 0.25 * k, 'type': 'tick', 'pitch': 1.2, 'gain': 0.4})
-        cues.append({'t': t_best + 0.25 * k, 'type': 'tick', 'pitch': 1.5, 'gain': 0.4})
-    cues.append({'t': t_best + 1.1, 'type': 'chime', 'gain': 0.5})
-    for k in range(12):
-        parts.rewrite(prog, (k * 3) % 8, t_rounds + 0.13 * k, dur=0.2)
-    cues.append({'t': t_rounds, 'type': 'rise', 'dur': 1.6, 'pitch': 1.0, 'gain': 0.5})
+        cues.append({'t': mix(t_rounds + 0.2, t_best + 0.3, k / 3), 'type': 'tick', 'pitch': 1.5, 'gain': 0.4})
+    cues.append({'t': t_best + 0.4, 'type': 'chime', 'gain': 0.5})
+    for k in range(16):
+        parts.rewrite(prog, (k * 3) % 8, t_rounds + 0.14 * k, dur=0.2)
+    cues.append({'t': t_rounds, 'type': 'rise', 'dur': 2.2, 'pitch': 1.0, 'gain': 0.5})
 
     # ------------------------------------------------------------ no body: only its code got better
-    ghost = parts.outline('no-body', crew, (6.9, parts.FLOOR + 3.1), 0.78, parts.ICE, 0.7)
+    ghost = parts.outline('no-body', crew, (6.9, parts.FLOOR + 3.1), 0.78, parts.ICE)
     parts.visible(ghost['shapes'], [(t_no_body + 0.1, t_code - 0.3)], 0.4)
     cues.append({'t': t_no_body + 0.1, 'type': 'tick', 'gain': 0.5})
     parts.pulse('its-code', side, centre, t_code, 1.6, parts.FROST, 1.0, 0.05)
@@ -149,8 +148,8 @@ def build(T):
     parts.blink(u['eyes'], (t_was + 2.6,))
     parts.look(u['eyes'], T.at(4, 0.5), 0.13)
     parts.look(prog['eyes'], T.at(4, 0.5), -0.07)
-    was = parts.outline('his-body', then, (at[0], at[1] + 0.12), 0.5)
-    parts.visible(was['shapes'], [(t_was + 0.5, t_into)], 0.4)
+    was = parts.outline('his-body', then, (BODY[0], parts.FLOOR + 2.82), 0.72, parts.ASH)
+    parts.visible(was['shapes'], [(t_was + 0.5, t_builds + 0.3)], 0.4)
     parts.visible([stand['beam']], [(t_was, t_into + 0.2)], 0.3)
     cues.append({'t': t_was + 0.3, 'type': 'rise', 'dur': 1.0, 'pitch': 0.7, 'gain': 0.6})
 
@@ -181,9 +180,9 @@ def build(T):
         if t < t_real:
             return mix((1.8, 0.4, 17.8), (2.4, 0.4, 17.0), span(t, 0.0, t_real))
         if t < t_was:
-            pos = mix((1.4, 0.4, 17.4), (0.6, 0.4, 18.2), span(t, t_real, T.end(1)))
+            pos = mix((1.2, 0.2, 15.8), (1.3, 0.2, 15.4), span(t, t_real, T.end(1)))
             pos = mix(pos, (-0.9, 0.4, 20.0), span(t, T.start(2) - 0.6, T.start(2) + 0.8))
-            return mix(pos, (3.6, 0.5, 16.2), span(t, t_no_body - 0.4, t_no_body + 1.0))
+            return mix(pos, (3.6, 0.5, 16.2), span(t, t_no_body - 0.1, t_no_body + 1.1))
         pos = mix((-0.9, 0.4, 19.8), (-0.9, 0.4, 19.2), span(t, t_was, t_builds))
         return mix(pos, (0.6, 0.5, 18.2), span(t, t_itself - 0.3, end))
 

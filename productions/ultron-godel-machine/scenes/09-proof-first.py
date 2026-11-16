@@ -44,7 +44,7 @@ def build(T):
     kit.motes(n=16, seed=102, colour=parts.ASH)
     far = kit.layer('far', -3.0)
     stage = kit.layer('stage', 1.0)
-    study = parts.room('study', far, stage, light=parts.ICE, glow=0.13)
+    study = parts.room('study', far, stage, light=parts.ICE, glow=0.06)
     side = study[1]
     who = parts.figure('scientist', side, (-4.0, parts.FLOOR), coat='#56707e', coat_deep='#3b505c', hair='#c9c2b8')
     parts.nod(who, 0.0, t_film, 0.4)
@@ -83,7 +83,7 @@ def build(T):
     edge = (PAGE[0] + pg['w'] / 2, PAGE[1] + pg['ys'][ROW])
     hold = (edge[0] + 1.3, edge[1])
     change = parts.group('change', side, (hold[0] + 0.9, hold[1]))
-    kit.shape('change-glow', kit.rrect_pts(2.6, 1.1, 0.5), kit.glow_material(parts.BONE, 0.3, power=1.0), change)
+    kit.shape('change-glow', kit.circle_pts(1.7, ry=0.95), kit.glow_material(parts.BONE, 0.3, power=parts.SOFT), change)
     kit.shape('change-card', kit.rrect_pts(1.8, 0.44, 0.14), kit.material(parts.NIGHT500, parts.NIGHT600), change)
     x = -0.72
     for k, ln in enumerate((0.5, 0.34, 0.42)):
@@ -105,7 +105,7 @@ def build(T):
 
     # ------------------------------------------------------------ the proof
     sheet = parts.group('proof', side, SHEET)
-    kit.shape('proof-glow', kit.rrect_pts(3.6, 4.8, 1.0), kit.glow_material(parts.ICE, 0.16, power=1.0), sheet)
+    kit.shape('proof-glow', kit.circle_pts(2.6, ry=3.2), kit.glow_material(parts.ICE, 0.22, power=parts.SOFT), sheet)
     kit.shape('proof-paper', kit.rrect_pts(2.4, 3.6, 0.1), kit.material('#16283a', '#101d2b'), sheet)
     for k, ln in enumerate(STEPS):
         step = kit.shape(f'proof-step{k}', kit.bar_pts(ln, 0.1), kit.material(parts.FROST if k % 2 else parts.ICE), sheet, (-0.95, 1.35 - 0.34 * k))

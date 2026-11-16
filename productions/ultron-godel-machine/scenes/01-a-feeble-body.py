@@ -1,10 +1,11 @@
 """Scene 01: A feeble body.
 
-Ultron hangs over the console, with no hands. Red light runs from the console
+Ultron hangs over the console, with no hands, and under the machines is the
+dotted outline of the body he means to have. Red light runs from the console
 along a cable to the two machines, and their lamps turn red: he controls
-them. They build a body on the floor, part by part, out of the heap of broken
-robots. The finished body sags. Ultron crosses from the console into its
-head, its eyes light, and it limps out of the lab.
+them. They build a body where the outline was, part by part, out of the heap
+of broken robots. The finished body sags. Ultron crosses from the console
+into its head, its eyes light, and it limps out of the lab.
 """
 import math
 
@@ -37,7 +38,7 @@ def build(T):
     t_walk = T.at(2, 0.42)
 
     parts.backdrop(seed=21)
-    kit.motes(n=18, seed=22, colour=parts.RED)
+    kit.motes(n=12, seed=22, colour=parts.ASH)
     far = kit.layer('far', -3.0)
     stage = kit.layer('stage', 1.0)
     lab = parts.first_lab(far, stage)
@@ -70,8 +71,10 @@ def build(T):
     parts.work(lab['machines'][1], t_build, t_built + 0.6, sh=(-34, 4), el=(20, 70), rate=0.6)
 
     # ------------------------------------------------------------ the body, built from broken robots
-    glow = parts.spot('heap-light', front, lab['heap_at'], 2.2, parts.BONE, 0.2)
+    glow = parts.spot('heap-light', lab['roots'][0], (lab['heap_at'][0], parts.FLOOR + 1.2), 3.2, parts.BONE, 0.2)
     parts.visible([glow], [(t_heap, t_feeble + 0.4)], 0.4)
+    plan = parts.outline('plan', front, (stand[0], parts.FLOOR + 3.25), 0.8)
+    parts.visible(plan['shapes'], [(-1.0, t_built - 0.4)], 0.5)
     bot = parts.feeble('body', front, stand, 0.9)
     source = ((lab['heap_at'][0] - stand[0]) / 0.9, 0.6)
     times = [mix(t_build + 0.3, t_built, k / 5) for k in range(6)]
@@ -94,10 +97,6 @@ def build(T):
     parts.hover(u)
     parts.visible(u['shapes'], [(-1.0, t_move + 0.55)], 0.25)
     parts.visible([lab['console']['beam']], [(-1.0, t_move)], 0.3)
-    ghost = parts.outline('ghost', front, (sx, sy + 0.12), 0.5)
-    parts.visible(ghost['shapes'], [(-1.0, t_wire - 0.4)], 0.4)
-    for k, side in enumerate((-1, 1)):
-        parts.pulse(f'hand{side}', front, (sx + side * 0.53, sy - 0.98), T.at(0, 0.05) + 0.15 * k, 0.22, parts.RED, 0.7, 0.04)
     parts.look(u['eyes'], T.at(0, 0.02), 0.0, -0.09)
     parts.look(u['eyes'], t_wire - 0.2, 0.13, 0.04)
     parts.blink(u['eyes'], (t_wire + 1.6, t_build + 2.2))
@@ -106,17 +105,17 @@ def build(T):
     parts.visible(bot['eyes']['shapes'], [(t_move + 0.5, None)], 0.25)
     cues.append({'t': t_move, 'type': 'swoosh', 'gain': 0.7})
     cues.append({'t': t_move + 0.6, 'type': 'pop', 'pitch': 0.8})
-    parts.walk(bot, t_walk, end + 0.4, stand[0], 10.2, limp=1.0, rate=1.5)
+    parts.walk(bot, t_walk, end + 0.4, stand[0], 10.6, limp=1.0, rate=1.5)
     for k in range(int((end - t_walk) * 1.5) + 1):
         cues.append({'t': t_walk + (k + 0.5) / 1.5, 'type': 'tick', 'pitch': 0.5 if k % 2 else 0.42, 'gain': 0.6})
 
     # ------------------------------------------------------------ camera
     def path(t):
         pos = mix((-1.2, 0.3, 19.6), (0.4, 0.4, 19.0), span(t, 0.0, t_take))
-        pos = mix(pos, (1.9, -0.2, 16.5), span(t, t_take, t_build + 1.0))
+        pos = mix(pos, (1.5, -0.1, 17.6), span(t, t_take, t_build + 1.0))
         pos = mix(pos, (3.3, -0.5, 17.0), span(t, t_heap - 0.3, t_heap + 0.7))
-        pos = mix(pos, (2.2, -0.2, 15.0), span(t, t_feeble - 0.2, t_move))
-        return mix(pos, (4.4, -0.2, 17.5), span(t, t_walk, end))
+        pos = mix(pos, (1.2, -0.1, 17.4), span(t, t_feeble - 0.2, t_move))
+        return mix(pos, (2.4, -0.2, 17.5), span(t, t_walk, end))
 
     kit.camera(path, focus_z=1.0)
     return cues

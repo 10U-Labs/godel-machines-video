@@ -35,7 +35,7 @@ def build(T):
     stage = kit.layer('stage', 1.0)
 
     # ------------------------------------------------------------ the party
-    party = parts.room('party', far, stage, light=parts.WARM, glow=0.26)
+    party = parts.room('party', far, stage, light=parts.WARM, glow=0.12)
     behind, front = party
     for k in range(15):
         u = k / 14
@@ -48,7 +48,7 @@ def build(T):
     for k in range(3):
         kit.shape(f'box-off{k}', kit.circle_pts(0.05, n=10), kit.material(parts.ASH), front, (BOX[0] - 0.22 + 0.22 * k, BOX[1]))
         lamps.append(kit.shape(f'box-on{k}', kit.circle_pts(0.05, n=10), kit.material(parts.HOT, parts.RED), front, (BOX[0] - 0.22 + 0.22 * k, BOX[1])))
-    lamps.append(kit.shape('box-glow', kit.circle_pts(0.9), kit.glow_material(parts.RED, 0.7), front, BOX))
+    lamps.append(kit.shape('box-glow', kit.circle_pts(1.2), kit.glow_material(parts.RED, 0.7, power=2.2), front, BOX))
     parts.visible(lamps, [(t_smash + 0.3, None)], 0.2)
 
     heroes = []
@@ -68,9 +68,7 @@ def build(T):
         cues.append({'t': 0.2 + (k + 0.5) / 1.5, 'type': 'tick', 'pitch': 0.5 if k % 2 else 0.42, 'gain': 0.6})
     parts.strike('blow', front, t_smash - 0.12, (-0.9, parts.FLOOR + 2.3), (-2.4, parts.FLOOR + 2.0))
     parts.scatter(bot, t_smash, seed=5)
-    for ob in bot['eyes']['shapes']:
-        alpha(ob, fr(t_smash), 1.0)
-        alpha(ob, fr(t_smash + 0.25), 0.0)
+    parts.hide(bot['eyes']['shapes'], t_smash, 0.25)
     cues.append({'t': t_smash - 0.3, 'type': 'whoosh', 'gain': 0.8})
     cues.append({'t': t_smash, 'type': 'pop', 'pitch': 0.55, 'gain': 1.0})
     for k in range(4):
@@ -84,10 +82,7 @@ def build(T):
         x, y = mix((-2.4, parts.FLOOR + 3.0), BOX, q)
         key(gone['root'], 'location', f, (x, y + 0.9 * math.sin(math.pi * q), zs))
     for ob in gone['shapes']:
-        alpha(ob, fr(t_smash - 0.1), 0.0)
-        alpha(ob, fr(t_smash - 0.05), 1.0)
-        alpha(ob, fr(t_smash + 0.3), 1.0)
-        alpha(ob, fr(t_smash + 0.4), 0.0)
+        parts.lit(ob, [(0.0, 0.0), (t_smash - 0.1, 0.0), (t_smash - 0.05, 1.0), (t_smash + 0.3, 1.0), (t_smash + 0.4, 0.0)])
     cues.append({'t': t_smash, 'type': 'rise', 'dur': 0.35, 'pitch': 1.5, 'gain': 0.5})
     cues.append({'t': t_box, 'type': 'blip', 'pitch': 0.8, 'gain': 0.5})
 
@@ -112,9 +107,8 @@ def build(T):
     def path(t):
         if t >= t_city:
             return mix((-1.6, 0.4, 19.6), (2.6, 0.6, 18.6), span(t, t_city, end))
-        pos = mix((-1.4, 0.1, 19.8), (0.6, 0.0, 18.6), span(t, 0.0, t_face + 1.0))
-        pos = mix(pos, (-2.2, -1.2, 14.4), span(t, t_smash + 0.5, T.start(1) + 1.4))
-        return mix(pos, (-4.7, 0.3, 14.5), span(t, t_box - 0.6, t_city - 0.5))
+        pos = mix((-1.4, 0.1, 19.8), (0.0, 0.0, 19.6), span(t, 0.0, t_face + 1.0))
+        return mix(pos, (-3.2, -0.3, 16.0), span(t, t_smash + 0.5, T.start(1) + 1.4))
 
     kit.camera(path, focus_z=1.0)
     return cues

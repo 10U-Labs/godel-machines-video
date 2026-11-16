@@ -26,7 +26,7 @@ def build(T):
     t_strong = T.at(1, 0.8)
 
     parts.backdrop(seed=41)
-    kit.motes(n=18, seed=42, colour=parts.RED)
+    kit.motes(n=12, seed=42, colour=parts.ASH)
     far = kit.layer('far', -3.0)
     stage = kit.layer('stage', 1.0)
 
@@ -61,7 +61,7 @@ def build(T):
         lean = -1 if k < 2 else 1
         parts.work(m, t0, t_build, sh=(0, -12 * lean), el=(-8, 10), rate=0.8)
         parts.work(m, t_build, t_built + 0.5, sh=(-8 * lean, -36 * lean), el=(60 * lean, 12 * lean), rate=0.7 + 0.1 * k)
-    first = parts.outline('first', front, (stand[0] - 3.0, parts.FLOOR + 3.17), 0.8, parts.ASH, 0.6)
+    first = parts.outline('first', front, (stand[0] - 3.0, parts.FLOOR + 3.17), 0.8, parts.ASH)
     parts.visible(first['shapes'], [(t_built + 0.2, None)], 0.5)
     bot = parts.powerful('body', front, stand, scale)
     source = ((lab['rack_at'][0] - stand[0]) / scale, 1.2)
@@ -102,7 +102,7 @@ def build(T):
             return mix((-2.4, 0.5, 19.6), (0.2, 0.5, 19.0), span(t, 0.0, t_lab))
         pos = mix((-4.4, 0.5, 16.4), (0.0, 0.5, 20.0), span(t, t_lights - 0.3, t_lights + 1.3))
         pos = mix(pos, (0.8, 0.3, 18.2), span(t, t_build, t_built))
-        return mix(pos, (0.6, 0.9, 16.2), span(t, t_wake, end))
+        return mix(pos, (0.6, 0.6, 16.8), span(t, t_wake, end))
 
     kit.camera(path, focus_z=1.0)
     return cues

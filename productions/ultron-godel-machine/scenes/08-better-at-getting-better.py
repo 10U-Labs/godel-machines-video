@@ -36,7 +36,7 @@ def build(T):
     kit.motes(n=16, seed=92, colour=parts.ASH)
     far = kit.layer('far', -3.0)
     stage = kit.layer('stage', 1.0)
-    front = parts.room('hall', far, stage, lamps=(-3.9, 3.3), glow=0.1)[1]
+    front = parts.room('hall', far, stage, lamps=(-3.9, 3.3), glow=0.05)[1]
     for ob in (parts.spot('red-pool', front, (ULTRON[0], parts.FLOOR + 2.4), 3.2, parts.RED, 0.14),
                parts.spot('blue-pool', front, PAGE, 3.4, parts.ICE, 0.12)):
         alpha(ob, 1, 1.0)
@@ -45,14 +45,12 @@ def build(T):
     pg = parts.page('machine', front, PAGE, rows=8, seed=5)
     parts.blink(pg['eyes'], (t_one + 1.2, t_rounds[1] + 0.4, t_body + 0.6))
     for r in range(7):
-        lit = parts.band(pg, r, parts.FROST, 0.28)
+        bar = parts.band(pg, r, parts.FROST, 0.28)
         when = mix(t_many, t_one - 0.5, r / 6)
-        for dt, a in ((0.0, 0.0), (0.12, 1.0), (0.5, 0.0)):
-            alpha(lit, fr(when + dt), a)
+        parts.lit(bar, [(0.0, 0.0), (when, 0.0), (when + 0.12, 1.0), (when + 0.5, 0.0)])
         cues.append({'t': when, 'type': 'tick', 'pitch': 0.9 + 0.06 * r, 'gain': 0.35})
     own = parts.band(pg, 7, parts.BONE, 0.34)
-    for when, a in ((t_one, 0.0), (t_one + 0.25, 1.0), (end, 1.0)):
-        alpha(own, fr(when), a)
+    parts.lit(own, [(0.0, 0.0), (t_one, 0.0), (t_one + 0.25, 1.0)])
     quill = parts.pen('pen', pg['root'], (-pg['w'] / 2 - 0.4, pg['ys'][7]))
     kit.pop(quill, t_one + 0.15, 1.0)
     cues.append({'t': t_one + 0.15, 'type': 'pop', 'pitch': 1.3})

@@ -27,6 +27,13 @@ RUST, RUST_DEEP = '#8a5a44', '#5c3a2c'
 WARM, WARM_DEEP = '#ffcf8a', '#c98a3c'
 
 FLOOR = -2.7        # the height feet stand at, in screen units
+SOFT = 2.6          # how fast a pool of light falls away from its middle: enough that its edge cannot be seen
+
+# The kit sets each new shape a little closer to the camera than the last, and
+# a scene of this film has hundreds of shapes. At the kit's own step the last
+# of them would stand far enough forward to look bigger than they are drawn,
+# and lower than the floor they stand on. A smaller step keeps them in place.
+kit.state['zstep'] = 0.0008
 TINY = (0.001, 0.001, 0.001)
 
 
@@ -60,8 +67,9 @@ def move_in(p, t, a, b, s0, s1, dur=0.6):
     """
     root = p['root']
     step = _depth[root.name]
-    for f in every(1, fr(t), fr(t + dur)):
-        q = span(sec(f), t, t + dur)
+    last = fr(t + dur)
+    for f in every(1, fr(t), last):
+        q = 1.0 if f == last else span(sec(f), t, t + dur)
         size = mix(s0, s1, q)
         key(root, 'location', f, (mix(a[0], b[0], q), mix(a[1], b[1], q), step * (1 - size)))
         key(root, 'scale', f, (size, size, size))
@@ -74,7 +82,7 @@ def backdrop(seed=3, glow=RED_DEEP, strength=0.3):
     rnd = random.Random(seed)
     back = layer('back', -6.0)
     shape('sky', rrect_pts(30, 17, 0), material(NIGHT800, NIGHT900), back)
-    shape('sky-glow', circle_pts(9.0, ry=6.5), glow_material(glow, strength, power=1.2), back, (0, 0.5))
+    shape('sky-glow', circle_pts(11.0, ry=7.5), glow_material(glow, strength, power=SOFT), back, (0, 0.5))
     for i in range(45):
         z = -5.0 + rnd.random() * 5.5
         s = (kit.H0 - z) / kit.H0
@@ -87,7 +95,7 @@ def backdrop(seed=3, glow=RED_DEEP, strength=0.3):
     return back
 
 
-def room(name, far, stage, lamps=(-4.6, 0.0, 4.6), light=STEEL300, glow=0.16):
+def room(name, far, stage, lamps=(-4.6, 0.0, 4.6), light=STEEL300, glow=0.07):
     """A lab at night: wall panels and hanging lamps behind, and a floor to stand on.
 
     Returns the two roots that hold it, one on each layer, so that a scene can
@@ -101,7 +109,7 @@ def room(name, far, stage, lamps=(-4.6, 0.0, 4.6), light=STEEL300, glow=0.16):
         shape(f'{name}-seam{i}', rrect_pts(2.6, 0.05, 0), material(STEEL800, alpha=0.7), behind, (x, 2.4))
     shape(f'{name}-rail', rrect_pts(30, 0.14, 0), material(STEEL800), behind, (0, 4.05))
     for i, x in enumerate(lamps):
-        shape(f'{name}-lamp-light{i}', circle_pts(2.6, ry=3.6), glow_material(light, glow, power=1.4), behind, (x, 1.5))
+        shape(f'{name}-lamp-light{i}', circle_pts(3.0, ry=4.2), glow_material(light, glow, power=SOFT), behind, (x, 1.6))
         shape(f'{name}-lamp{i}', rrect_pts(0.9, 0.16, 0.08), material(STEEL700), behind, (x, 3.95))
     shape(f'{name}-floor', rrect_pts(30, 3.2, 0), material(NIGHT600, NIGHT800), front, (0, FLOOR - 1.6))
     shape(f'{name}-floor-edge', rrect_pts(30, 0.05, 0), material(STEEL700, alpha=0.8), front, (0, FLOOR))
@@ -123,22 +131,30 @@ def cut(roots, t_in=None, t_out=None):
 
 
 def dip(times, dur=0.35, colour=NIGHT900):
-    """Go dark for a moment at each of the times: a sheet in front of everything fades in and out again."""
+    """Go dark for a moment at each of the times: a sheet in front of everything fades in and out again.
+
+    The dark lasts through the frame before each time and the frame after it,
+    so that what a scene changes at that time, with cut or with a jump of the
+    camera, is not seen changing.
+    """
     front = layer('dip', 12.4)
     sheet = shape('dip-sheet', rrect_pts(30, 18, 0), material(colour), front)
     alpha(sheet, 1, 0.0)
     for t in times:
-        alpha(sheet, max(1, fr(t - dur)), 0.0)
-        alpha(sheet, fr(t), 1.0)
-        alpha(sheet, fr(t + dur), 0.0)
+        f = fr(t)
+        alpha(sheet, max(1, min(f - 2, fr(t - dur))), 0.0)
+        alpha(sheet, max(1, f - 1), 1.0)
+        alpha(sheet, f + 1, 1.0)
+        alpha(sheet, max(f + 2, fr(t + dur)), 0.0)
     return sheet
 
 
 def slide(ob, t0, t1, a, b, ease=kit.smooth, step=1):
     """Move an object from point a to point b between t0 and t1, keeping its depth."""
     z = ob.location.z
-    for f in every(step, fr(t0), fr(t1)):
-        q = span(sec(f), t0, t1, ease)
+    last = fr(t1)
+    for f in every(step, fr(t0), last):
+        q = 1.0 if f == last else span(sec(f), t0, t1, ease)
         key(ob, 'location', f, (mix(a[0], b[0], q), mix(a[1], b[1], q), z))
 
 
@@ -150,7 +166,7 @@ def eyes(name, parent, loc=(0, 0), scale=1.0, colour=RED, hot=HOT, slant=True, g
     pair, shapes = [], []
     for side in (-1, 1):
         e = group(f'{name}-eye{side}', root, (side * gap, 0))
-        shapes.append(shape(f'{name}-glow{side}', circle_pts(0.42), glow_material(colour, 0.6), e))
+        shapes.append(shape(f'{name}-glow{side}', circle_pts(0.5), glow_material(colour, 0.75, power=2.2), e))
         if slant:
             pts = [(-0.2 * side, -0.03), (-0.03 * side, 0.1), (0.22 * side, 0.09), (0.05 * side, -0.08)]
         else:
@@ -180,7 +196,7 @@ def presence(name, parent, loc=(0, 0), scale=1.0, colour=RED, hot=HOT, slant=Tru
     """A program with no body: a pair of eyes in a glow, over a row of bars that jump when it talks."""
     root = group(name, parent, loc, scale)
     rig = empty(f'{name}-rig', root, (0, 0, 0))
-    halo = shape(f'{name}-halo', circle_pts(1.9), glow_material(colour, 0.32, power=1.8), rig)
+    halo = shape(f'{name}-halo', circle_pts(2.3), glow_material(colour, 0.42, power=SOFT), rig)
     e = eyes(f'{name}-eyes', rig, (0, 0.12), 1.0, colour, hot, slant)
     bars = []
     for i in range(9):
@@ -416,6 +432,14 @@ def stroll(who, t0, t1, x0, x1, y=FLOOR, step=1):
         key(body, 'location', f, (0, 4.3 + 0.07 * abs(math.sin((t - t0) * 7.0)) * go, 0))
 
 
+def turn(who, t):
+    """Turn a person to face the other way at t."""
+    root = who['root']
+    x, y, z = root.scale
+    key(root, 'scale', max(1, fr(t) - 1), (x, y, z))
+    key(root, 'scale', fr(t), (-x, y, z))
+
+
 def reach(who, t, deg, dur=0.3):
     """Turn a person's working arm to deg (0 hangs down, 90 points ahead) by t + dur."""
     arm = who['arm']
@@ -530,7 +554,7 @@ def page(name, parent, loc=(0, 0), rows=8, w=3.4, h=4.2, seed=1, colour=ICE, dee
     """
     rnd = random.Random(seed)
     root = group(name, parent, loc, scale)
-    glow = shape(f'{name}-glow', rrect_pts(w + 1.6, h + 1.6, 1.2), glow_material(colour, 0.22, power=1.0), root)
+    glow = shape(f'{name}-glow', circle_pts(w * 0.5 + 1.9, ry=h * 0.5 + 1.9), glow_material(colour, 0.3, power=SOFT), root)
     shape(f'{name}-sheet', rrect_pts(w, h, 0.18), material(NIGHT500, NIGHT600), root)
     shape(f'{name}-rule', rrect_pts(w - 0.5, 0.03, 0), material(STEEL700), root, (0, h / 2 - 0.62))
     e = eyes(f'{name}-eyes', root, (0, h / 2 - 0.32), 0.55, colour, hot, slant, gap=0.26) if face else None
@@ -623,10 +647,8 @@ def task(name, parent, loc=(0, 0), scale=1.0, seed=0):
 
 def fix(card, t, dur=0.15):
     """Fix a small program's mistake at t: its red line turns blue."""
-    alpha(card['bad'], fr(t), 1.0)
-    alpha(card['bad'], fr(t + dur), 0.0)
-    alpha(card['good'], fr(t), 0.0)
-    alpha(card['good'], fr(t + dur), 1.0)
+    lit(card['bad'], [(0.0, 1.0), (t, 1.0), (t + dur, 0.0)])
+    lit(card['good'], [(0.0, 0.0), (t, 0.0), (t + dur, 1.0)])
 
 
 def monitor(name, parent, loc=(0, FLOOR), w=4.4, h=3.3):
@@ -641,7 +663,7 @@ def monitor(name, parent, loc=(0, FLOOR), w=4.4, h=3.3):
 
 # ---------------------------------------------------------------- marks and moves
 
-def outline(name, parent, loc=(0, 0), scale=1.0, colour=RED, a=0.7):
+def outline(name, parent, loc=(0, 0), scale=1.0, colour=RED, a=1.0):
     """The dotted outline of a body that is not there: a head, shoulders, arms, and legs.
 
     The origin is between where its eyes would be. Hidden until the scene shows it.
@@ -666,15 +688,9 @@ def strike(name, parent, t, a, b, colour=BONE, dur=0.12):
     key(streak, 'scale', 1, (0.001, 1, 1))
     key(streak, 'scale', fr(t), (0.001, 1, 1))
     key(streak, 'scale', fr(t + dur), (1, 1, 1))
-    alpha(streak, 1, 0.0)
-    alpha(streak, fr(t), 1.0)
-    alpha(streak, fr(t + dur), 1.0)
-    alpha(streak, fr(t + dur + 0.15), 0.0)
-    flash = shape(f'{name}-flash', circle_pts(1.3), glow_material(colour, 0.95, power=1.0), parent, b, lift=0.31)
-    alpha(flash, 1, 0.0)
-    alpha(flash, fr(t + dur), 0.0)
-    alpha(flash, fr(t + dur) + 1, 1.0)
-    alpha(flash, fr(t + dur + 0.35), 0.0)
+    lit(streak, [(0.0, 0.0), (t - 0.04, 0.0), (t, 1.0), (t + dur, 1.0), (t + dur + 0.15, 0.0)])
+    flash = shape(f'{name}-flash', circle_pts(1.3), glow_material(colour, 0.95, power=1.6), parent, b, lift=0.31)
+    lit(flash, [(0.0, 0.0), (t + dur, 0.0), (t + dur + 0.04, 1.0), (t + dur + 0.35, 0.0)])
     return streak, flash
 
 
@@ -682,12 +698,13 @@ def pulse(name, parent, loc, t, r=0.7, colour=BONE, dur=0.8, width=0.07):
     """A ring of light that swells and fades at t."""
     ob = kit.ring(name, parent, loc, r, colour, width, lift=0.25)
     kit.flash(ob, t, dur)
+    alpha(ob, fr(t + dur), 0.0)
     return ob
 
 
 def spot(name, parent, loc, r=2.4, colour=BONE, a=0.14):
     """A soft pool of light behind something, hidden until the scene shows it."""
-    ob = shape(name, circle_pts(r), glow_material(colour, a, power=1.0), parent, loc)
+    ob = shape(name, circle_pts(r), glow_material(colour, a, power=SOFT), parent, loc)
     alpha(ob, 1, 0.0)
     return ob
 
@@ -707,7 +724,7 @@ def first_lab(far, stage, name='lab'):
 
 def second_lab(far, stage, name='works'):
     """The lab Ultron goes to: four machines made for building robots, and racks of new parts."""
-    roots = room(name, far, stage, lamps=(-6.0, -2.0, 2.0, 6.0), light=STEEL100, glow=0.2)
+    roots = room(name, far, stage, lamps=(-6.0, -2.0, 2.0, 6.0), light=STEEL100, glow=0.06)
     front = roots[1]
     for i, x in enumerate((6.0, 7.3)):
         for j in range(4):
@@ -718,21 +735,38 @@ def second_lab(far, stage, name='works'):
             'spot': (-6.2, FLOOR + 3.2 * 0.85), 'stand': (1.0, FLOOR), 'rack_at': (6.6, FLOOR + 1.0)}
 
 
+def lit(ob, steps):
+    """Set how much a shape shows at each (time, share) step, in turn.
+
+    Two steps that are closer together than one frame are still keyed on two
+    frames, one after the other, so that neither is lost and a shape meant to
+    be hidden until a moment does not show before it.
+    """
+    last = 0
+    for t, a in steps:
+        last = max(fr(t), last + 1)
+        alpha(ob, last, a)
+
+
 def visible(shapes, spans, dur=0.3):
-    """Show a group of shapes during each (t_in, t_out) span, and hide it between them. A t_out of None lasts to the end."""
+    """Show a group of shapes during each (t_in, t_out) span, and hide it between them.
+
+    A t_out of None lasts to the end, and a span that begins before the scene
+    does is showing from the first frame.
+    """
     for ob in shapes:
-        alpha(ob, 1, 0.0)
+        steps = [(0.0, 0.0)]
         for t_in, t_out in spans:
-            alpha(ob, fr(t_in), 0.0)
-            alpha(ob, fr(t_in + dur), 1.0)
+            steps = [(0.0, 1.0)] if t_in + dur <= 0 else steps + [(t_in, 0.0), (t_in + dur, 1.0)]
             if t_out is not None:
-                alpha(ob, fr(t_out), 1.0)
-                alpha(ob, fr(t_out + dur), 0.0)
+                steps += [(t_out, 1.0), (t_out + dur, 0.0)]
+        lit(ob, steps)
 
 
 def open_eyes(e, t, dur=0.4):
     """Open a pair of eyes at t: they are slits before it."""
     for ob in e['pair']:
+        key(ob, 'scale', max(1, fr(t - 0.5)), (1, 1, 1))
         key(ob, 'scale', max(1, fr(t) - 1), (1, 0.08, 1))
         key(ob, 'scale', fr(t + dur), (1, 1, 1))
 
@@ -773,9 +807,7 @@ def draw(dots, t0, t1):
 def hide(shapes, t, dur=0.3):
     """Fade out, at t, a group of shapes that has been showing since the scene began."""
     for ob in shapes:
-        alpha(ob, 1, 1.0)
-        alpha(ob, fr(t), 1.0)
-        alpha(ob, fr(t + dur), 0.0)
+        lit(ob, [(0.0, 1.0), (t, 1.0), (t + dur, 0.0)])
 
 
 def drift(ob, t0=0.0, t1=None, amount=0.08, phase=0.0, step=2):

@@ -32,7 +32,7 @@ def build(T):
     kit.motes(n=16, seed=82, colour=parts.ASH)
     far = kit.layer('far', -3.0)
     stage = kit.layer('stage', 1.0)
-    front = parts.room('hall', far, stage, lamps=(-4.6, 3.8), glow=0.1)[1]
+    front = parts.room('hall', far, stage, lamps=(-4.6, 3.8), glow=0.05)[1]
     for ob in (parts.spot('red-pool', front, (-4.6, parts.FLOOR + 2.4), 3.8, parts.RED, 0.13),
                parts.spot('blue-pool', front, PAGE, 3.4, parts.ICE, 0.12)):
         alpha(ob, 1, 1.0)
@@ -99,10 +99,10 @@ def build(T):
 
     # ------------------------------------------------------------ camera
     def path(t):
-        pos = mix((-0.6, 0.3, 20.4), (-0.6, 0.3, 19.6), span(t, 0.0, T.end(0)))
+        pos = mix((0.4, 0.3, 20.6), (0.4, 0.3, 20.2), span(t, 0.0, T.end(0)))
         pos = mix(pos, (-3.7, 0.7, 15.6), span(t, t_body - 0.3, t_body + 1.2))
         pos = mix(pos, (3.3, 0.5, 15.6), span(t, t_code - 0.4, t_code + 1.0))
-        return mix(pos, (-0.3, 0.3, 20.2), span(t, t_ultron - 0.4, t_ultron + 1.0))
+        return mix(pos, (0.4, 0.3, 20.4), span(t, t_ultron - 0.4, t_ultron + 1.0))
 
     kit.camera(path, focus_z=1.0)
     return cues

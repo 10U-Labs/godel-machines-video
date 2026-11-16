@@ -30,7 +30,7 @@ def build(T):
     kit.motes(n=16, seed=72, colour=parts.ASH)
     far = kit.layer('far', -3.0)
     stage = kit.layer('stage', 1.0)
-    front = parts.room('hall', far, stage, lamps=(-3.4, 3.6), glow=0.1)[1]
+    front = parts.room('hall', far, stage, lamps=(-3.4, 3.6), glow=0.05)[1]
     for ob in (parts.spot('red-pool', front, (ULTRON[0], parts.FLOOR + 2.4), 3.2, parts.RED, 0.14),
                parts.spot('blue-pool', front, PAGE, 3.4, parts.ICE, 0.12)):
         alpha(ob, 1, 1.0)
@@ -85,7 +85,7 @@ def build(T):
     def path(t):
         pos = mix((0.0, 0.3, 20.0), (0.2, 0.3, 19.2), span(t, 0.0, T.end(0)))
         pos = mix(pos, (1.9, 0.4, 17.0), span(t, T.start(1) - 0.3, T.start(1) + 1.0))
-        pos = mix(pos, (-1.7, 0.4, 17.0), span(t, t_same - 0.3, t_same + 1.1))
+        pos = mix(pos, (-1.2, 0.4, 18.2), span(t, t_same - 0.3, t_same + 1.1))
         return mix(pos, (-0.6, 0.3, 18.6), span(t, t_he + 0.6, end))
 
     kit.camera(path, focus_z=1.0)

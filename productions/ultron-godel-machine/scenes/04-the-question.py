@@ -1,10 +1,11 @@
 """Scene 04: The question.
 
-Ultron's three forms stand in a row: the eyes with no body, the feeble robot,
-and the powerful one. A red light passes from each to the next, since each
-change was his own doing. Then the row moves aside, and a computer scientist
-walks in to a board with a design drawn on it: a program, with eyes. It is
-named the Gödel Machine. Ultron turns to look at it.
+Three pools of red light, and into them come Ultron's three forms, in a row:
+the eyes with no body, the feeble robot, and the powerful one. A red light
+passes from each to the next, since each change was his own doing. Then the
+row moves aside, and a computer scientist walks in to a board with a design
+drawn on it: a program, with eyes. It is named the Gödel Machine. Ultron
+turns to look at it.
 """
 import math
 
@@ -21,6 +22,7 @@ BOARD = (4.6, parts.FLOOR + 3.4)
 def build(T):
     cues = []
     end = sec(kit.frames())
+    t_three = T.at(0, 0.02)
     t_forms = [T.at(0, 0.28), T.at(0, 0.58), T.at(0, 0.82)]
     t_made = T.start(1)
     t_better = T.start(2)
@@ -29,17 +31,18 @@ def build(T):
     t_ask = T.at(3, 0.35)
 
     parts.backdrop(seed=51)
-    kit.motes(n=16, seed=52, colour=parts.RED)
+    kit.motes(n=12, seed=52, colour=parts.ASH)
     far = kit.layer('far', -3.0)
     stage = kit.layer('stage', 1.0)
-    front = parts.room('hall', far, stage, lamps=(-5.4, -1.9, 2.4), glow=0.1)[1]
+    front = parts.room('hall', far, stage, lamps=(-5.4, -1.9, 2.4), glow=0.05)[1]
 
     # ------------------------------------------------------------ the three forms
     row = kit.empty('row', front)
     heads = [AT[0], (AT[1][0] + 0.04 * SCALE, parts.FLOOR + 3.52 * SCALE), (AT[2][0], parts.FLOOR + 4.98 * SCALE)]
     for k, (x, y) in enumerate(AT):
-        pool = parts.spot(f'pool{k}', row, (x, parts.FLOOR + 2.2), 2.6, parts.RED, 0.16)
-        parts.visible([pool], [(t_forms[k] - 0.2, None)], 0.5)
+        pool = parts.spot(f'pool{k}', row, (x, parts.FLOOR + 2.2), 2.8, parts.RED, 0.2)
+        parts.visible([pool], [(t_three + 0.25 * k, None)], 0.5)
+        cues.append({'t': t_three + 0.25 * k, 'type': 'tick', 'pitch': 0.7 + 0.1 * k, 'gain': 0.4})
         cues.append({'t': t_forms[k], 'type': 'pop', 'pitch': 1.0 - 0.2 * k})
     parts.console('stand', row, (AT[0][0], parts.FLOOR), 0.9)
     u = parts.presence('no-body', row, AT[0], 0.9)
@@ -71,8 +74,8 @@ def build(T):
         parts.pulse(f'own{k}', row, heads[k], when, 0.5, parts.RED, 0.8)
         cues.append({'t': when, 'type': 'blip', 'pitch': 0.8 + 0.2 * k, 'gain': 0.6})
     cues.append({'t': t0, 'type': 'rise', 'dur': t1 - t0, 'pitch': 0.7, 'gain': 0.4})
-    parts.slide(row, t_better, t_better + 1.2, (0, 0), (SHIFT, 0))
-    cues.append({'t': t_better, 'type': 'swoosh', 'gain': 0.5})
+    parts.slide(row, t_design - 0.9, t_design + 0.3, (0, 0), (SHIFT, 0))
+    cues.append({'t': t_design - 0.9, 'type': 'swoosh', 'gain': 0.5})
 
     # ------------------------------------------------------------ the design, and the one who shows it
     cool = parts.spot('cool', front, (BOARD[0] + 0.6, parts.FLOOR + 2.6), 3.6, parts.ICE, 0.14)
@@ -105,8 +108,8 @@ def build(T):
     # ------------------------------------------------------------ camera
     def path(t):
         pos = mix((-1.8, 0.3, 20.0), (-1.3, 0.3, 19.2), span(t, 0.0, t_better))
-        pos = mix(pos, (1.2, 0.3, 19.4), span(t, t_better, t_design + 0.6))
-        return mix(pos, (1.7, 0.6, 17.4), span(t, T.start(3), end))
+        pos = mix(pos, (0.4, 0.3, 20.0), span(t, t_design - 0.9, t_design + 0.6))
+        return mix(pos, (3.0, 0.5, 15.8), span(t, T.start(3), end))
 
     kit.camera(path, focus_z=1.0)
     return cues
