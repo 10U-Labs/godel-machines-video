@@ -64,8 +64,8 @@ def build(T):
         parts.pulse(f'machine{k}', front, (x, 3.2), t_machines + 0.5 * k, 1.2, parts.BONE, 0.9, 0.05)
         cues.append({'t': t_machines + 0.5 * k, 'type': 'blip', 'pitch': 0.7 + 0.1 * k, 'gain': 0.5})
     for k in range(5):
-        dot = kit.shape(f'signal{k}', kit.circle_pts(0.09, n=12), kit.material(parts.HOT, parts.RED), front, lift=0.2)
-        halo = parts.glow(f'signal-glow{k}', front, (0, 0), 0.3, parts.RED, 0.8, lift=0.19)
+        dot = kit.shape(f'signal{k}', kit.circle_pts(0.11, n=12), kit.material(parts.HOT, parts.RED), front, lift=0.2)
+        halo = parts.glow(f'signal-glow{k}', front, (0, 0), 0.4, parts.RED, 0.9, lift=0.19)
         t0 = t_wire + 0.25 * k
         for ob in (dot, halo):
             z = ob.location.z

@@ -166,21 +166,25 @@ def dip(times, dur=0.35, colour=NIGHT900):
 # ---------------------------------------------------------------- eyes, and a program with no body
 
 def eyes(name, parent, loc=(0, 0), scale=1.0, colour=RED, hot=HOT, slant=True, gap=0.3):
-    """A pair of glowing eyes. Ultron's slant inward; a round pair is for other programs."""
+    """A pair of glowing eyes. Ultron's slant inward; a round pair is for other programs.
+
+    Each eye is a lens in a light. 'pair' holds the two lenses, each in a
+    group that a blink flattens, and 'glows' the two lights, which a blink
+    leaves as they are.
+    """
     root = group(name, parent, loc, scale)
-    pair, shapes = [], []
+    # Both lights are made before either lens, so that neither light lies over the other eye's lens.
+    glows = [glow(f'{name}-glow{side}', root, (side * gap, 0), 0.7, colour, 0.9) for side in (-1, 1)]
+    pair, lenses = [], []
     for side in (-1, 1):
         e = group(f'{name}-eye{side}', root, (side * gap, 0))
-        shapes.append(glow(f'{name}-glow{side}', e, (0, 0), 0.7, colour, 0.9))
-        pair.append(e)
-    # Both lights are made before either lens, so that neither light lies over the other eye's lens.
-    for side, e in zip((-1, 1), pair):
         if slant:
             pts = [(-0.2 * side, -0.03), (-0.03 * side, 0.1), (0.22 * side, 0.09), (0.05 * side, -0.08)]
         else:
             pts = circle_pts(0.12, ry=0.15, n=20)
-        shapes.append(shape(f'{name}-lens{side}', pts, material(hot, colour), e, smooth=slant))
-    return {'root': root, 'pair': pair, 'shapes': shapes, 'home': (loc[0], loc[1])}
+        lenses.append(shape(f'{name}-lens{side}', pts, material(hot, colour), e, smooth=slant))
+        pair.append(e)
+    return {'root': root, 'pair': pair, 'glows': glows, 'shapes': glows + lenses, 'home': (loc[0], loc[1])}
 
 
 def blink(e, times):
@@ -236,8 +240,8 @@ def talk(p, t0, t1, seed=0, step=2):
 def spark(name, parent, colour=RED, hot=HOT):
     """A point of light: Ultron on his way from one computer to another. Hidden until the scene shows it."""
     root = empty(name, parent)
-    shapes = [glow(f'{name}-glow', root, (0, 0), 0.55, colour, 0.9),
-              shape(f'{name}-core', circle_pts(0.1), material(hot, colour), root)]
+    shapes = [glow(f'{name}-glow', root, (0, 0), 0.8, colour, 1.0),
+              shape(f'{name}-core', circle_pts(0.14), material(hot, colour), root)]
     for ob in shapes:
         alpha(ob, 1, 0.0)
     return {'root': root, 'shapes': shapes}
@@ -933,8 +937,8 @@ def visible(shapes, spans, dur=0.3):
 
 
 def open_eyes(e, t, dur=0.4):
-    """Open a pair of eyes at t: they are slits before it."""
-    for ob in e['pair']:
+    """Open a pair of eyes at t: they are slits before it, and so are the lights around them."""
+    for ob in e['pair'] + e['glows']:
         key(ob, 'scale', max(1, fr(t - 0.5)), (1, 1, 1))
         key(ob, 'scale', max(1, fr(t) - 1), (1, 0.08, 1))
         key(ob, 'scale', fr(t + dur), (1, 1, 1))
