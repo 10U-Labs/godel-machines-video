@@ -35,3 +35,8 @@
 - [Video production decisions](video-production-decisions.md) — original look with a Kurzgesagt feel, voice Kokoro af_heart (no credit owed), synthesized music, no length limit, general-public audience
 - [The Gödel film's subject and order](godel-film-subject-and-order.md) — RSI → Gödel → DGM → HGM, not verification; Gödel improves itself, DGM through children, HGM through clades; made-up stories allowed
 - [Only the four concepts](only-the-four-concepts.md) — RSI, Gödel, DGM, HGM at concept level; no history, mechanism details, or name origins
+
+## The Ultron film
+
+- [The Ultron film's production decisions](ultron-film-production-decisions.md) — general public, no length limit, a darker palette of its own with an original Ultron, voice Kokoro af_heart, a new darker tune
+- [The Ultron film's subject](ultron-film-subject.md) — the 2015 film's Ultron; only three steps of the plot matter: no body, then a feeble robot, then a powerful one
