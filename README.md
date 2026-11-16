@@ -292,6 +292,6 @@ gh workflow run productions.yml -f production=<name> -f adopt=<tag>
 | Name | Title | What it is |
 | --- | --- | --- |
 | `godel-machines` | Machines That Rewrite Themselves | A film of nearly four minutes on recursive self-improvement and three machines built on it: the Gödel Machine, the Darwin Gödel Machine, and the Huxley-Gödel Machine |
-| `ultron-godel-machine` | Is Ultron a Gödel Machine? The Computer Science Behind Marvel's Self-Improving AI | A film of four and a half minutes that asks whether Ultron, the artificial intelligence of the 2015 film Avengers: Age of Ultron, is a Gödel Machine |
+| `ultron-self-improving-ai` | Is Ultron a Self-Improving AI? | A film of a little over three minutes that asks whether Ultron, the artificial intelligence of the 2015 film Avengers: Age of Ultron, is what computer science calls a self-improving AI, and answers yes |
 
 Each production's film is in its [releases](https://github.com/10U-Labs/media-factory/releases).

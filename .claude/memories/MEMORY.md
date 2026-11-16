@@ -38,5 +38,5 @@
 
 ## The Ultron film
 
-- [The Ultron film's production decisions](ultron-film-production-decisions.md) — general public, no length limit, a darker palette of its own with an original Ultron, voice Kokoro af_heart, a new darker tune
-- [The Ultron film's subject](ultron-film-subject.md) — the 2015 film's Ultron; only three steps of the plot matter: no body, then a feeble robot, then a powerful one
+- [The Ultron film's production decisions](ultron-film-production-decisions.md) — general public, no length limit, a darker palette of its own with an original Ultron, voice Kokoro af_heart, a new darker tune, and an ending on his red eyes opening in the dark
+- [The Ultron film's subject](ultron-film-subject.md) — the 2015 film's Ultron; three steps of the plot, told briefly: no body, then a feeble robot, then a powerful one; the question is whether he is a self-improving AI, the answer is yes with the reasons, and the Gödel Machine is not in the script

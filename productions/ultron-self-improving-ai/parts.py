@@ -7,7 +7,7 @@ machines that build a body, a program drawn as a page of its code, and the
 moves the scenes share.
 
 The film's colours are steel greys and reds on near-black, with a cold blue
-for the Gödel Machine and for real programs.
+for the computer scientist's study and for a program that is not Ultron.
 """
 import math
 import random
@@ -24,7 +24,6 @@ RED, RED_DEEP, BLOOD, HOT = '#ff3d3d', '#b3161f', '#4a0d14', '#ffd9d2'
 ICE, ICE_DEEP, FROST = '#9fdcec', '#4a9fb5', '#e6f8fc'
 BONE, ASH = '#efe9df', '#8b8e99'
 RUST, RUST_DEEP = '#8a5a44', '#5c3a2c'
-WARM, WARM_DEEP = '#ffcf8a', '#c98a3c'
 
 FLOOR = -2.7        # the height feet stand at, in screen units
 SOFT = 2.6          # how fast a pool of light falls away from its middle: enough that its edge cannot be seen
@@ -147,15 +146,6 @@ def dip(times, dur=0.35, colour=NIGHT900):
         alpha(sheet, f + 1, 1.0)
         alpha(sheet, max(f + 2, fr(t + dur)), 0.0)
     return sheet
-
-
-def slide(ob, t0, t1, a, b, ease=kit.smooth, step=1):
-    """Move an object from point a to point b between t0 and t1, keeping its depth."""
-    z = ob.location.z
-    last = fr(t1)
-    for f in every(step, fr(t0), last):
-        q = 1.0 if f == last else span(sec(f), t0, t1, ease)
-        key(ob, 'location', f, (mix(a[0], b[0], q), mix(a[1], b[1], q), z))
 
 
 # ---------------------------------------------------------------- eyes, and a program with no body
@@ -372,22 +362,6 @@ def sway(bot, t0=0.0, t1=None, phase=0.0, amount=1.0, step=3):
         key(bot['arms']['right'], 'rotation_euler', f, (0, 0, -0.04 * amount * math.sin(t * 1.3 + 0.7)))
 
 
-def scatter(bot, t, seed=1, dur=0.8, spread=2.6, floor=0.2):
-    """Break a robot into its parts at t: each flies off on an arc, turning, and comes to rest on the ground."""
-    rnd = random.Random(seed)
-    for part in bot['parts']:
-        x0, y0, z0 = part.location
-        r0 = part.rotation_euler[2]
-        dx = spread * (rnd.random() * 2 - 1)
-        turn = math.copysign(math.pi / 2, dx) + rnd.uniform(-0.3, 0.3)
-        up = 0.8 + 1.4 * rnd.random()
-        rest = floor + 0.2 * rnd.random()
-        for f in every(1, fr(t), fr(t + dur)):
-            q = span(sec(f), t, t + dur, lambda v: v)
-            key(part, 'location', f, (x0 + dx * q, mix(y0, rest, q) + up * math.sin(math.pi * q), z0))
-            key(part, 'rotation_euler', f, (0, 0, mix(r0, turn, q)))
-
-
 # ---------------------------------------------------------------- people
 
 def figure(name, parent, loc=(0, FLOOR), scale=0.62, coat=STEEL500, coat_deep=STEEL700, hair='#2a2320',
@@ -430,14 +404,6 @@ def stroll(who, t0, t1, x0, x1, y=FLOOR, step=1):
         go = kit.clamp(min((t - t0) / 0.25, (t1 - t) / 0.25))
         key(root, 'location', f, (mix(x0, x1, q), y, z))
         key(body, 'location', f, (0, 4.3 + 0.07 * abs(math.sin((t - t0) * 7.0)) * go, 0))
-
-
-def turn(who, t):
-    """Turn a person to face the other way at t."""
-    root = who['root']
-    x, y, z = root.scale
-    key(root, 'scale', max(1, fr(t) - 1), (x, y, z))
-    key(root, 'scale', fr(t), (-x, y, z))
 
 
 def reach(who, t, deg, dur=0.3):
@@ -513,6 +479,13 @@ def work(m, t0, t1, sh=(10, 50), el=(-75, -15), rate=1.2, step=2):
         w = 0.5 + 0.5 * math.sin((t - t0) * rate * math.tau)
         key(m['shoulder'], 'rotation_euler', f, (0, 0, math.radians(mix(sh[0], sh[1], w)) * on))
         key(m['elbow'], 'rotation_euler', f, (0, 0, math.radians(mix(el[0], el[1], w * w)) * on))
+
+
+def fold(m, t, sh=35, el=80, dur=0.7):
+    """Fold a machine's arm up and out of the way at t, once its work is done. The angles are in degrees."""
+    for when, a, b in ((t, 0, 0), (t + dur, sh, el)):
+        key(m['shoulder'], 'rotation_euler', fr(when), (0, 0, math.radians(a)))
+        key(m['elbow'], 'rotation_euler', fr(when), (0, 0, math.radians(b)))
 
 
 def heap(name, parent, loc=(0, FLOOR), seed=4, n=9):
@@ -651,16 +624,6 @@ def fix(card, t, dur=0.15):
     lit(card['good'], [(0.0, 0.0), (t, 0.0), (t + dur, 1.0)])
 
 
-def monitor(name, parent, loc=(0, FLOOR), w=4.4, h=3.3):
-    """A computer screen on a desk. The origin is on the ground; 'centre' is the middle of the screen, in its own units."""
-    root = group(name, parent, loc)
-    desk(f'{name}-desk', root, (0, 0), w + 1.2)
-    shape(f'{name}-neck', rrect_pts(0.3, 0.5, 0.05), material(STEEL800), root, (0, 1.7))
-    shape(f'{name}-frame', rrect_pts(w, h, 0.2), material(STEEL700, STEEL800), root, (0, 1.9 + h / 2))
-    shape(f'{name}-face', rrect_pts(w - 0.3, h - 0.3, 0.12), material(NIGHT700, NIGHT800), root, (0, 1.9 + h / 2))
-    return {'root': root, 'centre': (0, 1.9 + h / 2)}
-
-
 # ---------------------------------------------------------------- marks and moves
 
 def outline(name, parent, loc=(0, 0), scale=1.0, colour=RED, a=1.0):
@@ -687,9 +650,9 @@ def strike(name, parent, t, a, b, colour=BONE, dur=0.12):
                    lift=0.3, rot=math.atan2(b[1] - a[1], b[0] - a[0]))
     key(streak, 'scale', 1, (0.001, 1, 1))
     key(streak, 'scale', fr(t), (0.001, 1, 1))
-    key(streak, 'scale', fr(t + dur), (1, 1, 1))
+    key(streak, 'scale', max(fr(t) + 1, fr(t + dur)), (1, 1, 1))
     lit(streak, [(0.0, 0.0), (t - 0.04, 0.0), (t, 1.0), (t + dur, 1.0), (t + dur + 0.15, 0.0)])
-    flash = shape(f'{name}-flash', circle_pts(1.3), glow_material(colour, 0.95, power=1.6), parent, b, lift=0.31)
+    flash = shape(f'{name}-flash', circle_pts(1.1), glow_material(colour, 0.9, power=2.2), parent, b, lift=0.31)
     lit(flash, [(0.0, 0.0), (t + dur, 0.0), (t + dur + 0.04, 1.0), (t + dur + 0.35, 0.0)])
     return streak, flash
 
@@ -735,6 +698,196 @@ def second_lab(far, stage, name='works'):
             'spot': (-6.2, FLOOR + 3.2 * 0.85), 'stand': (1.0, FLOOR), 'rack_at': (6.6, FLOOR + 1.0)}
 
 
+# ---------------------------------------------------------------- the study, and an AI that is not Ultron
+
+def scientist(name, parent, loc=(0, FLOOR), facing=1):
+    """The computer scientist: a person in a grey-blue coat, with grey hair. Nobody's likeness."""
+    return figure(name, parent, loc, coat='#56707e', coat_deep='#3b505c', hair='#c9c2b8', facing=facing)
+
+
+def paper(who, name='paper'):
+    """A sheet of paper in a person's working hand. It hangs at their side until the arm is raised."""
+    root = group(name, who['arm'], (0, -1.95))
+    shape(f'{name}-sheet', rrect_pts(0.7, 0.9, 0.04), material(BONE, STEEL100), root)
+    for i in range(4):
+        shape(f'{name}-line{i}', bar_pts(0.46 - 0.1 * (i % 2), 0.05), material(STEEL500), root, (-0.24, 0.27 - 0.18 * i))
+    return root
+
+
+def write(who, t0, t1, deg=36):
+    """Have a person write at a desk between t0 and t1: the working arm reaches down to the paper, and the hand moves."""
+    reach(who, t0 - 0.4, deg)
+    for f in every(2, fr(t0), fr(t1)):
+        key(who['arm'], 'rotation_euler', f, (0, 0, who['facing'] * math.radians(deg + 5 * math.sin(sec(f) * 7.0))))
+    reach(who, t1 + 0.1, 8, 0.5)
+
+
+def thinker(name, parent, loc=(0, FLOOR), scale=0.72, seed=5):
+    """An AI that is not Ultron: a computer, and above it the program that runs on it, a sheet of its code with eyes.
+
+    'at' is where the computer stands, and 'bench' is the point small
+    programs are brought to, for the program to work on.
+    """
+    box = console(f'{name}-computer', parent, loc, 1.0, ICE)
+    pg = page(f'{name}-program', parent, (loc[0], loc[1] + 4.3), rows=6, w=3.0, h=3.4, seed=seed, scale=scale)
+    return {'computer': box, 'program': pg, 'size': scale, 'at': loc, 'bench': (loc[0] + 2.9, loc[1] + 4.3)}
+
+
+def arms(name, box, at, parent, t, gap=0.5, source=None, t1=None):
+    """Fit a computer with a pair of arms, the first at t and the second gap seconds later.
+
+    box is the console, and at is where it stands, in parent's units. With a
+    source, each arm is carried to its place from that point, as if by a
+    hand; without one it grows where it is. Once an arm is on, it lifts and
+    waves. Returns the times the two are on.
+    """
+    t1 = scene_end() if t1 is None else t1
+    times = []
+    for k, side in enumerate((-1, 1)):
+        when = t + gap * k
+        home = (side * 1.5, 1.2)
+        arm = group(f'{name}{side}', box['root'], home)
+        shape(f'{name}{side}-bar', capsule_pts(1.1, 0.22), material(STEEL300, STEEL500), arm)
+        for tip in (-1, 1):
+            shape(f'{name}{side}-claw{tip}', [(0, 0.04), (tip * 0.2, -0.1), (tip * 0.14, -0.42), (tip * 0.05, -0.28)],
+                  material(STEEL500), arm, (0, -1.1))
+        shape(f'{name}{side}-hub', circle_pts(0.17, n=20), material(ICE, ICE_DEEP), arm)
+        z = arm.location.z
+        if source is None:
+            kit.pop(arm, when, 1.0, 0.35)
+        else:
+            start = (source[0] - at[0], source[1] - at[1])
+            kit.pop(arm, when - 0.7, 1.0, 0.2)
+            key(arm, 'location', 1, (start[0], start[1], z))
+            last = fr(when)
+            for f in every(1, fr(when - 0.45), last):
+                q = 1.0 if f == last else span(sec(f), when - 0.45, when)
+                x, y = mix(start, home, q)
+                key(arm, 'location', f, (x, y + 0.6 * math.sin(math.pi * q), z))
+        for f in every(2, fr(when), fr(t1)):
+            s = sec(f)
+            up = 2.2 * (1.0 if source is None else span(s, when, when + 0.4))
+            wave = 0.35 * math.sin((s - when) * 2.6 + k) * (1 - span(s, when + 2.2, when + 3.0))
+            key(arm, 'rotation_euler', f, (0, 0, side * (up + wave)))
+        pulse(f'{name}-ring{side}', parent, (at[0] + side * 1.9, at[1] + 1.9), when + 0.1, 0.8, ICE, 0.7, 0.05)
+        times.append(when)
+    return times
+
+
+def dotted_sheet(name, parent, loc=(0, 0), w=3.0, h=3.4, scale=1.0, colour=FROST):
+    """The dotted outline of a sheet of code: a program that is not there yet. Hidden until the scene shows it."""
+    root = group(name, parent, loc, scale)
+    edge = rrect_pts(w, h, 0.18, n=3)
+    pts = []
+    for (x0, y0), (x1, y1) in zip(edge, edge[1:] + edge[:1]):
+        n = max(1, int(math.hypot(x1 - x0, y1 - y0) / 0.2))
+        pts += [(x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n) for i in range(n)]
+    dots = [shape(f'{name}-dot{i}', circle_pts(0.045, n=8), material(colour), root, p) for i, p in enumerate(pts)]
+    for ob in dots:
+        alpha(ob, 1, 0.0)
+    return {'root': root, 'shapes': dots}
+
+
+def study(far, stage, name='study'):
+    """The computer scientist's study, in cold light.
+
+    On the left he stands at the desk he writes at. On the right is the AI
+    he writes about: a computer, and above it the program that runs on it.
+    """
+    roots = room(name, far, stage, lamps=(-5.4, 1.6), light=ICE, glow=0.06)
+    front = roots[1]
+    desk(f'{name}-desk', front, (-5.3, FLOOR), 2.6)
+    shape(f'{name}-paper', rrect_pts(0.9, 0.06, 0.02), material(BONE), front, (-6.1, FLOOR + 1.53))
+    who = scientist(f'{name}-scientist', front, (-7.4, FLOOR))
+    return {'roots': roots, 'front': front, 'who': who, 'ai': thinker(name, front, (1.6, FLOOR))}
+
+
+def dark(parent, t, dur=0.25, name='dark'):
+    """Put out every light at t: a black sheet in front of all that was made before it.
+
+    Returns an empty set in front of the sheet. What hangs from it shows in
+    the dark.
+    """
+    sheet = shape(f'{name}-sheet', rrect_pts(40, 24, 0), material('#000000'), parent, lift=0.3)
+    lit(sheet, [(0.0, 0.0), (t, 0.0), (t + dur, 1.0)])
+    return empty(f'{name}-front', parent, (0, 0, 0.35))
+
+
+# ---------------------------------------------------------------- what the scenes share
+
+FORMS = [(-5.4, FLOOR + 3.0), (-1.9, FLOOR), (2.4, FLOOR)]
+FORM_SCALE = 0.82
+
+
+def three_forms(parent, name='forms'):
+    """Ultron's three forms in a row: the program with no body over its computer, the feeble robot, and the powerful one.
+
+    'heads' is where his eyes are in each.
+    """
+    row = empty(name, parent)
+    stand = console(f'{name}-stand', row, (FORMS[0][0], FLOOR), 0.9)
+    alpha(stand['beam'], 1, 1.0)
+    first = presence(f'{name}-first', row, FORMS[0], 0.9)
+    second = feeble(f'{name}-second', row, FORMS[1], FORM_SCALE)
+    third = powerful(f'{name}-third', row, FORMS[2], FORM_SCALE)
+    heads = [FORMS[0], (FORMS[1][0] + 0.04 * FORM_SCALE, FLOOR + 3.52 * FORM_SCALE), (FORMS[2][0], FLOOR + 4.98 * FORM_SCALE)]
+    return {'root': row, 'first': first, 'second': second, 'third': third, 'heads': heads}
+
+
+def tally(name, parent, loc, t_show, times, gap=0.7):
+    """Three lamps in a row, one for each reason the film gives. They show from t_show.
+
+    Lamp k lights at times[k]. A time of None leaves it dark, and a time
+    before t_show has it lit when the lamps first show.
+    """
+    root = group(name, parent, loc)
+    for k, t in enumerate(times):
+        x = (k - 1) * gap
+        off = [shape(f'{name}-rim{k}', circle_pts(0.2, n=24), material(STEEL500), root, (x, 0)),
+               shape(f'{name}-well{k}', circle_pts(0.14, n=24), material(NIGHT800), root, (x, 0))]
+        visible(off, [(t_show, None)], 0.3)
+        if t is not None:
+            on = [shape(f'{name}-glow{k}', circle_pts(0.75), glow_material(RED, 0.8, power=2.2), root, (x, 0)),
+                  shape(f'{name}-lamp{k}', circle_pts(0.14, n=24), material(HOT, RED), root, (x, 0))]
+            visible(on, [(max(t_show, t), None)], 0.2)
+    return root
+
+
+def errand(name, parent, t, at, fixed=True, pace=1.0, seed=0, scale=0.7, away=12.5):
+    """Bring a small program with a mistake in it from the right to the point at, at t, and take it back out.
+
+    With fixed, its red line has turned blue before it leaves: the program
+    it was brought to did its job. A pace above 1 is a quicker turn. Returns
+    the time the mistake is fixed, or would have been.
+    """
+    card = task(name, parent, (away, at[1]), scale, seed)
+    root = card['root']
+    z = root.location.z
+    t_fix, t_go, t_gone = t + 0.75 / pace, t + 1.05 / pace, t + 1.6 / pace
+    key(root, 'location', max(1, fr(t) - 1), (away, at[1], z))
+    for f in every(1, fr(t), fr(t_gone) + 1):
+        s = sec(f)
+        x = mix(away, at[0], span(s, t, t + 0.5 / pace, kit.ease_out))
+        x = mix(x, away, span(s, t_go, t_gone, lambda v: v * v))
+        key(root, 'location', f, (x, at[1], z))
+    if fixed:
+        fix(card, t_fix)
+    return t_fix
+
+
+def hop(sp, points, t0, t1, lift=1.3):
+    """Send a point of light from each point to the next in an arc, between t0 and t1."""
+    root = sp['root']
+    z = root.location.z
+    hops = len(points) - 1
+    for f in every(1, fr(t0), fr(t1) + 1):
+        along = span(sec(f), t0, t1, lambda v: v) * hops
+        i = min(hops - 1, int(along))
+        q = kit.smooth(along - i)
+        x, y = mix(points[i], points[i + 1], q)
+        key(root, 'location', f, (x, y + lift * math.sin(math.pi * q), z))
+
+
 def lit(ob, steps):
     """Set how much a shape shows at each (time, share) step, in turn.
 
@@ -771,39 +924,6 @@ def open_eyes(e, t, dur=0.4):
         key(ob, 'scale', fr(t + dur), (1, 1, 1))
 
 
-def blueprint(name, parent, loc=(0, FLOOR + 3.4), scale=1.0):
-    """A design on paper: a sheet pinned to a board on legs, with a program and its eyes drawn on it in dots.
-
-    Returns the root and the dots, in the order a hand would draw them. The dots are hidden until the scene shows them.
-    """
-    root = group(name, parent, loc, scale)
-    for side in (-1, 1):
-        shape(f'{name}-leg{side}', rrect_pts(0.1, loc[1] - FLOOR - 2.1, 0), material(STEEL800), root, (side * 1.2, -2.1 - (loc[1] - FLOOR - 2.1) / 2))
-    shape(f'{name}-board', rrect_pts(3.3, 4.2, 0.1), material(STEEL700, STEEL800), root)
-    shape(f'{name}-paper', rrect_pts(2.9, 3.8, 0.06), material('#16283a', '#101d2b'), root)
-    edge = rrect_pts(2.1, 2.9, 0.2, n=3)
-    pts = []
-    for (x0, y0), (x1, y1) in zip(edge, edge[1:] + edge[:1]):
-        n = max(1, int(math.hypot(x1 - x0, y1 - y0) / 0.2))
-        pts += [(x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n) for i in range(n)]
-    for side in (-1, 1):
-        pts += [(side * 0.3 + 0.13 * math.cos(math.tau * i / 7), 1.0 + 0.13 * math.sin(math.tau * i / 7)) for i in range(7)]
-    for r in range(5):
-        pts += [(-0.75 + 0.2 * i, 0.4 - 0.42 * r) for i in range(8 - (r * 3) % 4)]
-    dots = [shape(f'{name}-dot{i}', circle_pts(0.04, n=8), material(ICE), root, p) for i, p in enumerate(pts)]
-    for ob in dots:
-        alpha(ob, 1, 0.0)
-    return {'root': root, 'dots': dots}
-
-
-def draw(dots, t0, t1):
-    """Show a design's dots one after another between t0 and t1, as if a hand were drawing them."""
-    for i, ob in enumerate(dots):
-        t = mix(t0, t1, i / max(1, len(dots) - 1))
-        alpha(ob, fr(t), 0.0)
-        alpha(ob, fr(t) + 2, 1.0)
-
-
 def hide(shapes, t, dur=0.3):
     """Fade out, at t, a group of shapes that has been showing since the scene began."""
     for ob in shapes:
@@ -824,46 +944,9 @@ def resize(ob, t, s0, s1, dur=0.3):
     key(ob, 'scale', fr(t + dur), (s1, s1, s1))
 
 
-def dotted_ring(name, parent, loc=(0, 0), r=0.5, colour=ASH, n=14):
-    """A ring of dots: the place where something would be, with nothing in it. Hidden until the scene shows it."""
-    root = group(name, parent, loc)
-    dots = [shape(f'{name}-dot{i}', circle_pts(0.045, n=8), material(colour), root,
-                  (r * math.cos(math.tau * i / n), r * math.sin(math.tau * i / n))) for i in range(n)]
-    for ob in dots:
-        alpha(ob, 1, 0.0)
-    return {'root': root, 'shapes': dots}
-
-
 def own_program(name, parent, loc=(0, 0), scale=0.5):
     """Ultron's program, drawn as its code: a small red sheet with his eyes at the top."""
     return page(name, parent, loc, rows=6, w=2.6, h=3.0, seed=9, colour=RED, deep=RED_DEEP, hot=HOT, scale=scale, slant=True)
-
-
-MASTS = [(-10.5, 2.6), (-6.4, 1.9), (-2.6, 2.5), (1.2, 1.8), (5.0, 2.4), (10.5, 2.9)]
-
-
-def city(name, parent, seed=7):
-    """A city at night: dark towers with a few lit windows, and a wire strung from mast to mast above them.
-
-    Returns the root and the points the wire hangs from, left to right.
-    """
-    rnd = random.Random(seed)
-    root = empty(name, parent)
-    x, i = -11.0, 0
-    while x < 11.0:
-        w, h = 0.9 + rnd.random() * 1.3, 1.0 + rnd.random() * 2.6
-        shape(f'{name}-tower{i}', rrect_pts(w, h, 0.04), material(NIGHT600, NIGHT700), root, (x + w / 2, -4.9 + h / 2))
-        for k in range(rnd.randrange(4)):
-            shape(f'{name}-window{i}-{k}', rrect_pts(0.14, 0.18, 0), material(WARM, alpha=0.6), root,
-                  (x + 0.2 + rnd.random() * (w - 0.4), -4.3 + rnd.random() * (h - 0.8)))
-        x += w + 0.1
-        i += 1
-    for k, (mx, my) in enumerate(MASTS):
-        shape(f'{name}-mast{k}', rrect_pts(0.1, my + 4.9, 0), material(STEEL800), root, (mx, (my - 4.9) / 2))
-        shape(f'{name}-mast-top{k}', circle_pts(0.1, n=12), material(STEEL500), root, (mx, my))
-    for k, (a, b) in enumerate(zip(MASTS, MASTS[1:])):
-        kit.branch(f'{name}-wire{k}', root, a, b, STEEL700, 0.045, 0.9)
-    return {'root': root, 'masts': list(MASTS)}
 
 
 def run(sp, points, t0, t1):
