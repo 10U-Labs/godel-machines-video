@@ -831,7 +831,7 @@ const kit = (() => {
   function draw(made, defs, ids) {
     let root = made;
     while (root.parent) root = root.parent;
-    const shown = { made, sharp: root.sharp === true, el: null, top: null, was: {}, window: null, depth: 0, blur: 0 };
+    const shown = { made, root, el: null, top: null, was: {}, window: null, depth: 0, blur: 0 };
     if (made.kind === 'text') {
       shown.el = element('text', {
         'data-name': made.name, 'font-family': made.face.family, 'font-weight': made.face.weight, 'font-size': 100, 'text-anchor': made.anchor,
@@ -872,17 +872,19 @@ const kit = (() => {
 
   /* Put every shape in the page in order of its depth, far to near, and blur each by its depth.
 
-     Shapes that follow one another in depth and are blurred alike share a group, and the group is
-     blurred as one. Two shapes can come out at one depth, and then the one nested deeper is in
-     front. The camera blurs a point into a disc; a Gaussian blur a quarter as wide spreads light
-     as far, and it is taken to the nearest quarter of a pixel. */
+     Shapes that follow one another in depth, hang on one top-level shape or layer, and are blurred
+     alike share a group, and the group is blurred as one. A group keeps to one layer because the
+     browser blurs the whole box around a group: specks scattered over the frame, blurred as one
+     group, would cost a blur of the whole frame. Two shapes can come out at one depth, and then
+     the one nested deeper is in front. The camera blurs a point into a disc; a Gaussian blur a
+     quarter as wide spreads light as far, and it is taken to the nearest quarter of a pixel. */
   function arrange(cz) {
     const focus = cz - view.focusZ;
     const spread = LENS * LENS / (view.fstop * (focus - LENS)) / SENSOR * state.width;
     for (const shown of drawn) {
       const z = shown.made.world.z;
       const far = Math.max(cz - z, CLIP);
-      const sigma = shown.sharp ? 0 : spread * Math.abs(far - focus) / far / 4;
+      const sigma = shown.root.sharp ? 0 : spread * Math.abs(far - focus) / far / 4;
       shown.depth = Math.round(z * 1e7);
       shown.blur = sigma < 0.3 ? 0 : Math.round(sigma * 4);
     }
@@ -890,7 +892,7 @@ const kit = (() => {
     let used = 0;
     let from = 0;
     for (let i = 1; i <= drawn.length; i++) {
-      if (i < drawn.length && drawn[i].blur === drawn[from].blur) continue;
+      if (i < drawn.length && drawn[i].blur === drawn[from].blur && drawn[i].root === drawn[from].root) continue;
       if (used === groups.length) groups.push({ el: element('g', {}, canvas), order: '', blur: 0 });
       const group = groups[used];
       const blur = drawn[from].blur;
