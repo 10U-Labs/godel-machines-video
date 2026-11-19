@@ -36,7 +36,7 @@ const parts = (() => {
     const bulbGlow = shape(`${name}-bulb-glow`, circlePts(0.45), glowMaterial(AMBER, 0.55), antenna, [0, 0.38]);
     shape(`${name}-bulb`, circlePts(0.11), material('#fff2c4', AMBER), antenna, [0, 0.38]);
     shape(`${name}-body`, rrectPts(1.7, 1.5, 0.62), material(body, bodyDeep), rig);
-    shape(`${name}-shine`, circlePts(0.2, null, 0.1), material(PAPER, null, 0.45), rig, [-0.48, 0.5], { rot: 0.5 });
+    shape(`${name}-shine`, circlePts(0.2, null, 0.1), material(PAPER, null, 0.45, body), rig, [-0.48, 0.5], { rot: 0.5 });
     shape(`${name}-screen`, rrectPts(1.28, 0.86, 0.34), material(INK800, INK900), rig, [0, 0.06]);
     const face = empty(`${name}-face`, rig, [0, 0.06, nextZ(rig)]);
     const eyes = empty(`${name}-eyes`, face, [0, 0.08, nextZ(face)]);
@@ -170,7 +170,7 @@ const parts = (() => {
       });
       if (r === mistake) {
         const spanW = x - 0.15 - x0;
-        const ring = shape(`${name}-ring`, rrectPts(spanW + 0.3, 0.42, 0.21), material(CORAL, null, 0.25), root,
+        const ring = shape(`${name}-ring`, rrectPts(spanW + 0.3, 0.42, 0.21), material(CORAL, null, 0.25, INK700), root,
           [x0 + spanW / 2, y], { lift: -0.0015 });
         ring.alpha = 0.0;
         bad = { bars: row, ring, y, x: x0 + spanW / 2 };

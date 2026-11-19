@@ -265,42 +265,47 @@ const kit = (() => {
     return out;
   }
 
-  function hex(rgb) {
-    return '#' + rgb.map((c) => {
-      const v = c <= 0.0031308 ? c * 12.92 : 1.055 * c ** (1 / 2.4) - 0.055;
-      return Math.round(255 * clamp(v)).toString(16).padStart(2, '0');
-    }).join('');
-  }
+  const encode = (c) => (c <= 0.0031308 ? c * 12.92 : 1.055 * c ** (1 / 2.4) - 0.055);
+
+  const hex = (encoded) => '#' + encoded.map((c) => Math.round(255 * clamp(c)).toString(16).padStart(2, '0')).join('');
+
+  // What most see-through shapes lie over: the middle of the backdrop's sky.
+  const SKY_BEHIND = hex(linear(palette.INK900).map((v, c) => encode(mix(v, linear(palette.INK800)[c], 0.5))));
 
   /* A flat colour, or a gradient from bottom to top of the shape, with alpha.
-     Blender mixes the two colours as light, so the steps between are worked out that way. */
-  function material(top, bottom = null, alpha = 1.0) {
-    const id = ['flat', top, bottom, alpha].join('|');
-    if (!materials.has(id)) {
-      const mat = { alpha, colour: top, stops: null };
-      if (bottom !== null) {
-        const a = linear(bottom);
-        const b = linear(top);
-        mat.kind = 'linear';
-        mat.stops = [];
-        for (let i = 0; i <= 8; i++) {
-          mat.stops.push([i / 8, hex(a.map((v, c) => mix(v, b[c], i / 8))), 1]);
-        }
-      }
-      materials.set(id, mat);
-    }
+     over is the colour a see-through shape mostly lies over; the sky if none is given. */
+  function material(top, bottom = null, alpha = 1.0, over = null) {
+    const id = ['flat', top, bottom, alpha, over].join('|');
+    if (!materials.has(id)) materials.set(id, { kind: bottom === null ? 'flat' : 'linear', top, bottom, alpha, over: over || SKY_BEHIND });
     return materials.get(id);
   }
 
-  /* A soft round glow: bright in the middle, gone at the edge. */
-  function glowMaterial(colour, alpha = 0.5, power = 1.6) {
-    const id = ['glow', colour, alpha, power].join('|');
-    if (!materials.has(id)) {
-      const stops = [];
-      for (let i = 0; i <= 16; i++) stops.push([i / 16, colour, alpha * (1 - i / 16) ** power]);
-      materials.set(id, { alpha: 1.0, colour, kind: 'radial', stops });
-    }
+  /* A soft round glow: bright in the middle, fading toward the edge. */
+  function glowMaterial(colour, alpha = 0.5, power = 1.6, over = null) {
+    const id = ['glow', colour, alpha, power, over].join('|');
+    if (!materials.has(id)) materials.set(id, { kind: 'radial', top: colour, alpha, power, over: over || SKY_BEHIND });
     return materials.get(id);
+  }
+
+  /* The colour and alpha to draw so that a see-through shape looks as it does in Blender.
+
+     Blender lays a see-through colour over what is behind it by mixing the two
+     as light. A browser mixes the two colours' sRGB numbers, which leaves a
+     light colour over a dark one much darker. So the mix is worked out here as
+     light, over the colour the shape mostly lies over, and the browser is given
+     the colour and alpha that bring it to that result. */
+  function seeThrough(colour, alpha, over) {
+    if (alpha >= 1) return [colour, 1];
+    if (alpha <= 0) return [colour, 0];
+    const back = linear(over);
+    const front = linear(colour);
+    const behind = back.map(encode);
+    const wanted = back.map((b, c) => encode(b * (1 - alpha) + front[c] * alpha));
+    let drawn = alpha;
+    wanted.forEach((w, c) => {
+      drawn = Math.max(drawn, w >= behind[c] ? (w - behind[c]) / (1 - behind[c]) : (behind[c] - w) / behind[c]);
+    });
+    return [hex(wanted.map((w, c) => behind[c] + (w - behind[c]) / drawn)), drawn];
   }
 
   // ---------------------------------------------------------------- shapes
@@ -515,18 +520,48 @@ const kit = (() => {
     return made;
   }
 
-  function paint(mat, defs, ids) {
-    if (!mat.stops) return mat.colour;
-    if (!ids.has(mat)) {
-      const id = `paint${ids.size}`;
-      const box = mat.kind === 'radial' ? { cx: 0.5, cy: 0.5, r: 0.5 } : { x1: 0, y1: 0, x2: 0, y2: 1 };
-      const gradient = element(mat.kind === 'radial' ? 'radialGradient' : 'linearGradient', { id, ...box }, defs);
-      for (const [offset, colour, opacity] of mat.stops) {
-        element('stop', { offset, 'stop-color': colour, 'stop-opacity': opacity.toFixed(4) }, gradient);
-      }
-      ids.set(mat, id);
+  /* A shape's fill, and the alpha to draw the whole shape with.
+
+     Blender runs a gradient across a box that is one unit larger on every side
+     than the shape's points. So a shape shows only the middle of its gradient:
+     a small glow is nearly even and ends in a hard edge, and a thin bar is
+     nearly one colour. The gradients here are laid over the same box. */
+  function paint(made, defs, ids) {
+    const mat = made.mat;
+    if (mat.kind === 'flat') {
+      const [colour, alpha] = seeThrough(mat.top, mat.alpha, mat.over);
+      return { fill: colour, alpha };
     }
-    return `url(#${ids.get(mat)})`;
+    const xs = made.pts.map((pt) => pt[0]);
+    const ys = made.pts.map((pt) => pt[1]);
+    const mid = [(Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...ys) + Math.max(...ys)) / 2];
+    const half = [(Math.max(...xs) - Math.min(...xs)) / 2 + 1, (Math.max(...ys) - Math.min(...ys)) / 2 + 1];
+    const key = [mat.kind, mat.top, mat.bottom, mat.alpha, mat.power, mat.over, ...mid, ...half].join('|');
+    if (!ids.has(key)) {
+      const id = `paint${ids.size}`;
+      const units = { id, gradientUnits: 'userSpaceOnUse' };
+      let gradient;
+      const stops = [];
+      if (mat.kind === 'radial') {
+        gradient = element('radialGradient', {
+          ...units, cx: 0, cy: 0, r: 1, gradientTransform: `translate(${mid[0]} ${mid[1]}) scale(${half[0]} ${half[1]})`,
+        }, defs);
+        for (let i = 0; i <= 24; i++) stops.push([i / 24, ...seeThrough(mat.top, mat.alpha * (1 - i / 24) ** mat.power, mat.over)]);
+      } else {
+        gradient = element('linearGradient', { ...units, x1: 0, y1: mid[1] - half[1], x2: 0, y2: mid[1] + half[1] }, defs);
+        const low = linear(mat.bottom);
+        const high = linear(mat.top);
+        for (let i = 0; i <= 12; i++) {
+          const colour = hex(low.map((v, c) => encode(mix(v, high[c], i / 12))));
+          stops.push([i / 12, ...seeThrough(colour, mat.alpha, mat.over)]);
+        }
+      }
+      for (const [offset, colour, opacity] of stops) {
+        element('stop', { offset: offset.toFixed(4), 'stop-color': colour, 'stop-opacity': opacity.toFixed(4) }, gradient);
+      }
+      ids.set(key, id);
+    }
+    return { fill: `url(#${ids.get(key)})`, alpha: 1 };
   }
 
   /* Build the page's SVG once: a group for each depth layer, far to near,
@@ -554,7 +589,8 @@ const kit = (() => {
       const group = element('g', {}, svg);
       const members = groups.get(root).map((made) => [rest(made), made]).sort((a, b) => a[0] - b[0] || a[1].index - b[1].index);
       const shapes = members.map(([, made]) => {
-        const fill = paint(made.mat, defs, ids);
+        const { fill, alpha } = made.kind === 'text' ? { fill: made.mat.top, alpha: made.mat.alpha } : paint(made, defs, ids);
+        made.drawnAlpha = alpha;
         let el;
         if (made.kind === 'text') {
           el = element('text', {
@@ -593,7 +629,7 @@ const kit = (() => {
       }
       for (const shown of entry.shapes) {
         const w = shown.made.world;
-        const alpha = clamp(w.alpha) * shown.made.mat.alpha;
+        const alpha = clamp(w.alpha) * shown.made.drawnAlpha;
         const k = UNIT * H0 / (cz - w.z);
         const size = Math.hypot(w.m[0], w.m[1]) * k;
         if (alpha <= 0.002 || size < 0.5) {     // faded out, or shrunk to less than a pixel
