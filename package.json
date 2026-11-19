@@ -1,0 +1,11 @@
+{
+  "name": "media-factory",
+  "private": true,
+  "description": "The tools that render the factory's scenes. npm ci installs them at the versions that package-lock.json gives.",
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "hyperframes": "0.9.16"
+  }
+}

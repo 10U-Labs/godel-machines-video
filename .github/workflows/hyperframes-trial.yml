@@ -3,17 +3,30 @@ concurrency:
   cancel-in-progress: true
   group: ${{ github.workflow }}-${{ github.ref }}
 env:
-  BLENDER_MINUTES: "414"
   DO_NOT_TRACK: "1"
-  HYPERFRAMES: hyperframes@0.9.16
   HYPERFRAMES_NO_TELEMETRY: "1"
   HYPERFRAMES_NO_UPDATE_CHECK: "1"
-  PRODUCTION: godel-machines
-  RELEASE: godel-machines-v20261115233441
-  SCENE: 00-pip
+  RELEASES: '{"godel-machines": "godel-machines-v20261115233441", "ultron-self-improving-ai": "ultron-self-improving-ai-v20261116093245"}'
 jobs:
-  render:
+  find:
     needs: yamllint
+    outputs:
+      scenes: ${{ steps.find.outputs.scenes }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+      - id: find
+        name: Find the ported scenes
+        run: |
+          cd trials/hyperframes/productions
+          scenes=$(ls */scenes/*.js | sed 's/\.js$//' | jq -Rnc '[inputs | split("/") | {production: .[0], scene: .[2]}]')
+          echo "scenes=$scenes" >> "$GITHUB_OUTPUT"
+  render:
+    env:
+      PRODUCTION: ${{ matrix.production }}
+      SCENE: ${{ matrix.scene }}
+    needs: find
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -23,50 +36,52 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v7
         with:
+          cache: npm
           node-version: "22"
       - name: Install ffmpeg
         run: sudo apt-get update && sudo apt-get install --yes ffmpeg
+      - name: Install Hyperframes
+        run: npm ci --ignore-scripts
+      - name: Put the ported files in place
+        run: |
+          cp -R trials/hyperframes/src/. src/
+          cp -R trials/hyperframes/productions/. productions/
       - env:
           GH_TOKEN: ${{ github.token }}
         name: Fetch the scene's Blender clip
         run: |
-          mkdir -p out/trial/blender
-          gh release download "$RELEASE" --pattern "scene-$PRODUCTION-$SCENE-*.zip" --dir out/trial
+          mkdir -p out/trial/blender "out/$PRODUCTION/voice"
+          tag=$(jq -r --arg name "$PRODUCTION" '.[$name]' <<< "$RELEASES")
+          gh release download "$tag" --pattern "scene-$PRODUCTION-$SCENE-*.zip" --dir out/trial
           unzip -q out/trial/scene-*.zip -d out/trial/blender
+          jq '{scenes: [.]}' "out/trial/blender/$SCENE.timings.json" > "out/$PRODUCTION/voice/timings.json"
       - name: Build the page
-        run: |
-          python3 trials/hyperframes/build.py "$PRODUCTION" "$SCENE" \
-            --timings "out/trial/blender/$SCENE.timings.json" --out out/trial/page
+        run: python3 src/hyperframes/page.py "$PRODUCTION" "$SCENE"
       - name: Fetch the browser
-        run: npx --yes "$HYPERFRAMES" browser ensure
-      - continue-on-error: true
-        name: Check the machine
-        run: nproc && free -g && npx --yes "$HYPERFRAMES" doctor
-      - continue-on-error: true
-        name: Check the page
-        run: npx --yes "$HYPERFRAMES" lint out/trial/page
+        run: npx hyperframes browser ensure
       - name: Render the scene
         run: |
           start=$(date +%s.%N)
-          npx --yes "$HYPERFRAMES" render out/trial/page --output out/trial/hyperframes.mp4
+          npx hyperframes render "out/$PRODUCTION/pages/$SCENE" --output out/trial/hyperframes.mp4 --crf 18
           end=$(date +%s.%N)
           echo "SECONDS_TAKEN=$(echo "$end - $start" | bc)" >> "$GITHUB_ENV"
       - name: Set it beside the Blender clip
         run: |
-          python3 trials/hyperframes/compare.py --blender "out/trial/blender/$SCENE.mp4" \
-            --hyperframes out/trial/hyperframes.mp4 --narration "out/trial/blender/$SCENE.wav" \
-            --seconds "$SECONDS_TAKEN" --blender-minutes "$BLENDER_MINUTES" --out out/trial/compare
+          python3 trials/hyperframes/compare.py --blender "out/trial/blender/$SCENE.mp4" --hyperframes out/trial/hyperframes.mp4 \
+            --seconds "$SECONDS_TAKEN" --cues "out/$PRODUCTION/scenes/$SCENE.sfx.json" "out/trial/blender/$SCENE.sfx.json" \
+            --title "$PRODUCTION $SCENE" --out out/trial/compare
           cat out/trial/compare/summary.md >> "$GITHUB_STEP_SUMMARY"
-      - name: Keep the clip
-        uses: actions/upload-artifact@v7
-        with:
-          name: hyperframes-trial-clip
-          path: out/trial/hyperframes.mp4
+          ffprobe -v error -show_entries stream=codec_name,codec_type,pix_fmt,profile,color_space,r_frame_rate -of compact out/trial/hyperframes.mp4
       - name: Keep the comparison
         uses: actions/upload-artifact@v7
         with:
-          name: hyperframes-trial-compare
+          name: compare-${{ matrix.production }}-${{ matrix.scene }}
           path: out/trial/compare
+          retention-days: 7
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.find.outputs.scenes) }}
   yamllint:
     runs-on: ubuntu-latest
     steps:
