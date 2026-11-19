@@ -52,7 +52,15 @@ jobs:
       - name: Install Python packages
         run: pip install -r requirements.txt
       - name: Install ffmpeg
-        run: sudo apt-get update && sudo apt-get install --yes ffmpeg
+        run: |
+          for attempt in 1 2 3; do
+            sudo timeout --kill-after=15 120 apt-get --option Acquire::http::Timeout=20 update \
+              && sudo timeout --kill-after=15 180 apt-get --option Acquire::http::Timeout=20 install --yes ffmpeg \
+              && exit 0
+            echo "::warning::Attempt $attempt to install ffmpeg failed or ran past its time limit, as it does when the runner's package mirror is slow"
+            sudo dpkg --configure --pending || true
+          done
+          exit 1
       - name: Download narration
         uses: actions/download-artifact@v8
         with:
@@ -179,7 +187,15 @@ jobs:
           cache: npm
           node-version: "22"
       - name: Install ffmpeg
-        run: sudo apt-get update && sudo apt-get install --yes ffmpeg
+        run: |
+          for attempt in 1 2 3; do
+            sudo timeout --kill-after=15 120 apt-get --option Acquire::http::Timeout=20 update \
+              && sudo timeout --kill-after=15 180 apt-get --option Acquire::http::Timeout=20 install --yes ffmpeg \
+              && exit 0
+            echo "::warning::Attempt $attempt to install ffmpeg failed or ran past its time limit, as it does when the runner's package mirror is slow"
+            sudo dpkg --configure --pending || true
+          done
+          exit 1
       - name: Install Hyperframes
         run: npm ci --ignore-scripts
       - name: Download narration
