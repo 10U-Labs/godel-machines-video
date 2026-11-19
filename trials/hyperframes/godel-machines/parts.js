@@ -5,8 +5,8 @@
 
 const parts = (() => {
   const {
-    AMBER, CORAL, INK600, INK700, INK800, INK900, MINT, MINT_DEEP, MIST, PAPER, SKY, VIOLET,
-    Random, Track, arcPts, barPts, capsulePts, circlePts, empty, every, fr, frames, glowMaterial,
+    AMBER, CORAL, DEEP_BEHIND, INK600, INK700, INK800, INK900, MINT, MINT_DEEP, MIST, PAPER, SKY, SKY_BEHIND, VIOLET,
+    Random, Track, arcPts, barPts, capsulePts, circlePts, empty, every, fr, frames, glowMaterial, laid,
     material, nextZ, rrectPts, sec, shape, within,
   } = kit;
 
@@ -33,7 +33,9 @@ const parts = (() => {
     }
     const antenna = empty(`${name}-antenna`, rig, [0, 0.72, nextZ(rig)]);
     shape(`${name}-stem`, capsulePts(0.34, 0.07), material(bodyDeep), antenna, [0, 0.34]);
-    const bulbGlow = shape(`${name}-bulb-glow`, circlePts(0.45), glowMaterial(AMBER, 0.55), antenna, [0, 0.38]);
+    // The bulb's glow lies over the halo, a third of the way out from the halo's middle.
+    const haloBehind = laid(body, 0.3 * (2 / 3) ** 2.2, SKY_BEHIND);
+    const bulbGlow = shape(`${name}-bulb-glow`, circlePts(0.45), glowMaterial(AMBER, 0.55, 1.6, haloBehind), antenna, [0, 0.38]);
     shape(`${name}-bulb`, circlePts(0.11), material('#fff2c4', AMBER), antenna, [0, 0.38]);
     shape(`${name}-body`, rrectPts(1.7, 1.5, 0.62), material(body, bodyDeep), rig);
     shape(`${name}-shine`, circlePts(0.2, null, 0.1), material(PAPER, null, 0.45, body), rig, [-0.48, 0.5], { rot: 0.5 });
@@ -43,7 +45,7 @@ const parts = (() => {
     const eyeList = [];
     for (const side of [-1, 1]) {
       const e = empty(`${name}-eye${side}`, eyes, [side * 0.27, 0, nextZ(face)]);
-      shape(`${name}-eyeglow${side}`, circlePts(0.3), glowMaterial(body, 0.4), e);
+      shape(`${name}-eyeglow${side}`, circlePts(0.3), glowMaterial(body, 0.4, 1.6, DEEP_BEHIND), e);
       shape(`${name}-eyeball${side}`, circlePts(0.12, null, 0.16), material('#d9fff5', body), e);
       shape(`${name}-spark${side}`, circlePts(0.035), material(PAPER), e, [0.04, 0.06]);
       eyeList.push(e);

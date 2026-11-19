@@ -269,8 +269,16 @@ const kit = (() => {
 
   const hex = (encoded) => '#' + encoded.map((c) => Math.round(255 * clamp(c)).toString(16).padStart(2, '0')).join('');
 
-  // What most see-through shapes lie over: the middle of the backdrop's sky.
-  const SKY_BEHIND = hex(linear(palette.INK900).map((v, c) => encode(mix(v, linear(palette.INK800)[c], 0.5))));
+  /* The colour that a see-through colour gives over another, mixed as light, which is how Blender mixes them. */
+  function laid(colour, alpha, over) {
+    const back = linear(over);
+    const front = linear(colour);
+    return hex(back.map((b, c) => encode(b * (1 - alpha) + front[c] * alpha)));
+  }
+
+  // What see-through shapes mostly lie over: the middle of the backdrop's sky, bare and with its glow.
+  const DEEP_BEHIND = laid(palette.INK800, 0.5, palette.INK900);
+  const SKY_BEHIND = laid(palette.VIOLET_DEEP, 0.35 * 0.6 ** 1.2, DEEP_BEHIND);
 
   /* A flat colour, or a gradient from bottom to top of the shape, with alpha.
      over is the colour a see-through shape mostly lies over; the sky if none is given. */
@@ -404,7 +412,15 @@ const kit = (() => {
     return out;
   }
 
-  const FACES = { Figtree: 'Figtree', JetBrainsMono: 'JetBrains Mono' };
+  /* Blender draws a font at its own size and weight, and the page follows it. It scales a font so
+     that the box around all its glyphs is one unit tall, where a browser makes the em one unit:
+     scale is the em over that box. It puts the middle of that box on the text's origin, which
+     leaves the baseline drop ems below it. And it draws a font of many weights at the weight the
+     file names as its default. The numbers are read from the files in src/fonts/. */
+  const FACES = {
+    Figtree: { family: 'Figtree', scale: 1000 / 1132, drop: 0.346, weight: 300 },
+    JetBrainsMono: { family: 'JetBrains Mono', scale: 1000 / 1320, drop: 0.36, weight: 400 },
+  };
 
   function text(name, body, size, mat, parent, loc, face = 'Figtree') {
     const made = node('text', name, parent, [loc[0], loc[1], nextZ(parent)], 1.0, 0.0);
@@ -432,7 +448,7 @@ const kit = (() => {
     const rnd = new Random(seed);
     const back = layer('back', -6.0, { sharp: true });
     shape('sky', rrectPts(28, 16, 0), material(palette.INK800, palette.INK900), back);
-    shape('sky-glow', circlePts(9.0, null, 6.5), glowMaterial(glow, 0.35, 1.2), back, [0, 0.5]);
+    shape('sky-glow', circlePts(9.0, null, 6.5), glowMaterial(glow, 0.35, 1.2, DEEP_BEHIND), back, [0, 0.5]);
     for (let i = 0; i < 70; i++) {
       const z = -5.0 + rnd.random() * 5.5;
       const s = (H0 - z) / H0;
@@ -546,7 +562,7 @@ const kit = (() => {
         gradient = element('radialGradient', {
           ...units, cx: 0, cy: 0, r: 1, gradientTransform: `translate(${mid[0]} ${mid[1]}) scale(${half[0]} ${half[1]})`,
         }, defs);
-        for (let i = 0; i <= 24; i++) stops.push([i / 24, ...seeThrough(mat.top, mat.alpha * (1 - i / 24) ** mat.power, mat.over)]);
+        for (let i = 0; i <= 48; i++) stops.push([i / 48, ...seeThrough(mat.top, mat.alpha * (1 - i / 48) ** mat.power, mat.over)]);
       } else {
         gradient = element('linearGradient', { ...units, x1: 0, y1: mid[1] - half[1], x2: 0, y2: mid[1] + half[1] }, defs);
         const low = linear(mat.bottom);
@@ -580,21 +596,29 @@ const kit = (() => {
     }
     const rest = (made) => {             // depth with every scale as it was made, not as a pop-in leaves it at time 0
       let z = made.z;
-      for (let up = made.parent; up; up = up.parent) z = up.z + up.sz * z;
-      return z;
+      let nest = 0;
+      for (let up = made.parent; up; up = up.parent) {
+        z = up.z + up.sz * z;
+        nest += 1;
+      }
+      return [z, nest];
     };
+    // Two shapes can come out at one depth, and then Blender's rounding says which is in front. In
+    // this scene that is Pip's right arm and its body, and the arm, which is nested deeper, is in front.
+    const behind = (a, b) => (Math.abs(a[0][0] - b[0][0]) > 1e-9 ? a[0][0] - b[0][0] : a[0][1] - b[0][1] || a[1].index - b[1].index);
     drawn = [];
     const roots = [...groups.keys()].sort((a, b) => a.z - b.z || a.index - b.index);
     for (const root of roots) {
       const group = element('g', {}, svg);
-      const members = groups.get(root).map((made) => [rest(made), made]).sort((a, b) => a[0] - b[0] || a[1].index - b[1].index);
+      const members = groups.get(root).map((made) => [rest(made), made]).sort(behind);
       const shapes = members.map(([, made]) => {
         const { fill, alpha } = made.kind === 'text' ? { fill: made.mat.top, alpha: made.mat.alpha } : paint(made, defs, ids);
         made.drawnAlpha = alpha;
         let el;
         if (made.kind === 'text') {
           el = element('text', {
-            fill, 'font-family': made.face, 'font-size': 100, 'text-anchor': 'middle', 'dominant-baseline': 'central',
+            fill, 'font-family': made.face.family, 'font-weight': made.face.weight, 'font-size': 100, 'text-anchor': 'middle',
+            y: 100 * made.face.drop,
           }, group);
           el.textContent = made.body;
         } else {
@@ -638,8 +662,8 @@ const kit = (() => {
         }
         set(shown, 'display', 'inline');
         set(shown, 'opacity', alpha.toFixed(3));
-        const flip = shown.made.kind === 'text' ? -shown.made.size / 100 : 1;
-        const grow = shown.made.kind === 'text' ? shown.made.size / 100 : 1;
+        const grow = shown.made.kind === 'text' ? shown.made.size * shown.made.face.scale / 100 : 1;
+        const flip = shown.made.kind === 'text' ? -grow : 1;
         const m = [k * w.m[0] * grow, -k * w.m[1] * grow, k * w.m[2] * flip, -k * w.m[3] * flip,
           WIDTH / 2 + k * (w.m[4] - cx), HEIGHT / 2 - k * (w.m[5] - cy)];
         set(shown, 'transform', `matrix(${m.map((v) => v.toFixed(4)).join(' ')})`);
@@ -648,7 +672,7 @@ const kit = (() => {
   }
 
   return {
-    ...palette, H0, Random, Timing, Track, setup, state,
+    ...palette, DEEP_BEHIND, SKY_BEHIND, H0, Random, Timing, Track, setup, state, laid,
     frames, fr, sec, every, within, clamp, smooth, easeOut, backOut, span, mix,
     material, glowMaterial, nextZ, empty, layer, shape, text, fade,
     circlePts, rrectPts, barPts, capsulePts, arcPts, starPts,
