@@ -1,9 +1,9 @@
 """Name each scene's clip by what decides its pictures, and reuse the clips that exist.
 
-    python3 src/blender/clips.py encode godel-machines 00-pip
-    python3 src/blender/clips.py adopt godel-machines 00-pip --source 43741576538 \
+    python3 src/hyperframes/clips.py keep godel-machines 00-pip
+    python3 src/hyperframes/clips.py adopt godel-machines 00-pip --source 43741576538 \
         --artifact scene-00-pip-f2b80fbdaa2b5e32 --narration 43741576538
-    python3 src/blender/clips.py fetch godel-machines
+    python3 src/hyperframes/clips.py fetch godel-machines
 
 A scene's clip is its rendered video, out/<name>/scenes/<scene>.mp4. The
 render workflow keeps each clip as an artifact named
@@ -11,16 +11,16 @@ scene-<name>-<scene>-<hash>. The hash covers everything that decides the
 clip's pixels:
 
     the scene's file in productions/<name>/scenes/
-    the production's own modules, the Python files directly in
-        productions/<name>/, which its scenes import
-    kit.py and render_scene.py
+    the production's own scripts, the .js files directly in
+        productions/<name>/, which its scenes use
+    kit.js, page.html, page.py, and cues.js
     the fonts in src/fonts/
-    the production's [picture] settings: the frame size, the frame rate, the
-        render engine, and the sample count
+    the production's [picture] settings: the frame size and the frame rate
     the key of the scene's narration, which make_voice.py writes: what is
         spoken, but not the numbers in the timings
-    the Blender version
-    how the frames are encoded into the clip
+    package-lock.json, which gives the version of Hyperframes and of
+        everything it depends on
+    the options that Hyperframes renders the clip with
 
 A scene is rendered only when no artifact is left under its clip's name, so
 a change renders only the scenes it reaches. plan.py does that planning.
@@ -39,12 +39,15 @@ An artifact is deleted 90 days after its run. src/render/release.py keeps the
 same four files of each scene in a GitHub release, as an asset named
 <clip name>.zip.
 
-encode turns a scene's rendered frames into its clip, keeps the cues and the
-narration beside it, and keeps some of the frames as stills. adopt takes a
-clip that an earlier run or a release kept, under another name or the same
-one; --source is the run's id or the release's tag. fetch downloads the clip
-of every scene in the list that plan.py wrote, from whichever workflow run
-made it, and puts each clip's narration in place of the run's own.
+keep takes the clip that Hyperframes rendered from a scene's page (see
+page.py), checks that it has a frame for every frame of the scene, keeps the
+narration beside it and the cues that page.py wrote, and keeps some of its
+frames as stills. adopt takes a clip that an earlier run or a release kept,
+under another name or the same one; --source is the run's id or the release's
+tag. fetch downloads the clip of every scene in the list that plan.py wrote,
+from whichever workflow run made it, and puts each clip's narration in place
+of the run's own. render prints the options that Hyperframes renders a clip
+with, for the render workflow to pass on.
 """
 import argparse
 import hashlib
@@ -61,9 +64,10 @@ sys.path.insert(0, str(HERE.parent))
 import production  # noqa: E402
 
 FONTS = HERE.parent / 'fonts'
+LOCK = HERE.parents[1] / 'package-lock.json'
 
-ENCODE = ['-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18']
-STILL_EVERY = 60    # one frame in this many is kept as a still for review
+RENDER = ['--crf', '18']    # the options Hyperframes renders a clip with; the render workflow reads them from here
+STILL_EVERY = 60            # one frame in this many is kept as a still for review
 
 LFS_POINTER = b'version https://git-lfs.github.com/spec/v1\n'
 LFS_OID = re.compile(rb'^oid sha256:([0-9a-f]{64})$', re.M)
@@ -77,29 +81,28 @@ def digest(path):
     return hashlib.sha256(data).hexdigest()
 
 
-def name(scenes, entry, picture, blender):
+def name(scenes, entry, picture):
     """The artifact name of one scene's clip, from the scene's entry in the narration timings."""
     scene = entry['id']
     inputs = {
-        'scene': digest(scenes / f'{scene}.py'),
-        'own': {p.name: digest(p) for p in scenes.parent.glob('*.py')},
-        'kit': digest(HERE / 'kit.py'),
-        'render_scene': digest(HERE / 'render_scene.py'),
+        'scene': digest(scenes / f'{scene}.js'),
+        'own': {p.name: digest(p) for p in scenes.parent.glob('*.js')},
+        'page': {p: digest(HERE / p) for p in ('kit.js', 'page.html', 'page.py', 'cues.js')},
         'fonts': {p.name: digest(p) for p in FONTS.iterdir() if not p.name.startswith('.')},
         'picture': picture,
         'narration': entry['key'],
-        'blender': blender,
-        'encode': ENCODE,
+        'hyperframes': digest(LOCK),
+        'render': RENDER,
     }
     made_from = hashlib.sha256(json.dumps(inputs, sort_keys=True).encode()).hexdigest()[:16]
     return f'scene-{scenes.parent.name}-{scene}-{made_from}'
 
 
-def names(scenes, timings, picture, blender):
+def names(scenes, timings, picture):
     """{scene: clip name} for every scene in the timings that has a file in scenes/, in script order."""
     return {
-        s['id']: name(scenes, s, picture, blender)
-        for s in timings['scenes'] if (scenes / f"{s['id']}.py").exists()
+        s['id']: name(scenes, s, picture)
+        for s in timings['scenes'] if (scenes / f"{s['id']}.js").exists()
     }
 
 
@@ -138,21 +141,40 @@ def keep_narration(scene, voice, scenes):
     (scenes / f'{scene}.timings.json').write_text(json.dumps(entry, indent=1, ensure_ascii=False), encoding='utf-8')
 
 
-def encode(scene, out, fps):
-    """Turn a scene's frames into its clip, and keep its cues, its narration, and some stills."""
-    frames, scenes, stills = out / 'frames' / scene, out / 'scenes', out / 'stills'
-    scenes.mkdir(parents=True, exist_ok=True)
+def keep(scene, out, fps):
+    """Take the clip that Hyperframes rendered from a scene's page, and keep its narration and some stills beside it.
+
+    The clip is out/<name>/pages/<scene>.mp4. It has to hold one frame for
+    every frame of the scene, or the film's pictures would drift from its
+    sound, and it has to hold pictures alone.
+    """
+    scenes, stills = out / 'scenes', out / 'stills'
     stills.mkdir(parents=True, exist_ok=True)
-    subprocess.run(
-        ['ffmpeg', '-v', 'error', '-framerate', str(fps), '-i', str(frames / 'frame_%04d.png'),
-         *ENCODE, str(scenes / f'{scene}.mp4')],
-        check=True,
+    rendered, clip = out / 'pages' / f'{scene}.mp4', scenes / f'{scene}.mp4'
+    if not (scenes / f'{scene}.sfx.json').exists():
+        raise SystemExit(f'Scene {scene} has no cues: page.py writes them when it builds the page')
+    timings = json.loads((out / 'voice/timings.json').read_text(encoding='utf-8'))
+    entry = next(s for s in timings['scenes'] if s['id'] == scene)
+    wanted = int(round(entry['duration'] * fps))
+    probe = subprocess.run(
+        ['ffprobe', '-v', 'error', '-count_frames', '-show_entries', 'stream=codec_type,nb_read_frames', '-of', 'json', str(rendered)],
+        check=True, stdout=subprocess.PIPE, text=True,
     )
-    shutil.copy(frames / 'sfx.json', scenes / f'{scene}.sfx.json')
+    streams = json.loads(probe.stdout)['streams']
+    if [s['codec_type'] for s in streams] != ['video']:
+        raise SystemExit(f'{rendered} holds {[s["codec_type"] for s in streams]}, where a clip holds one video stream and nothing else')
+    if int(streams[0]['nb_read_frames']) != wanted:
+        raise SystemExit(f'{rendered} has {streams[0]["nb_read_frames"]} frames, and scene {scene} has {wanted}')
+    shutil.copy(rendered, clip)
     keep_narration(scene, out / 'voice', scenes)
-    for png in sorted(frames.glob('frame_*.png')):
-        if (int(png.stem.split('_')[1]) - 1) % STILL_EVERY == 0:
-            shutil.copy(png, stills / f'{scene}-{png.name}')
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run(
+            ['ffmpeg', '-v', 'error', '-i', str(clip), '-vf', f"select='not(mod(n,{STILL_EVERY}))'", '-fps_mode', 'vfr',
+             str(Path(tmp) / '%04d.png')],
+            check=True,
+        )
+        for k, png in enumerate(sorted(Path(tmp).glob('*.png'))):
+            shutil.copy(png, stills / f'{scene}-frame_{k * STILL_EVERY + 1:04d}.png')
 
 
 def adopt(scene, source, artifact, narration, scenes):
@@ -204,9 +226,10 @@ def fetch(out):
 def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest='command', required=True)
-    enc = sub.add_parser('encode')
-    enc.add_argument('production')
-    enc.add_argument('scene')
+    kee = sub.add_parser('keep')
+    kee.add_argument('production')
+    kee.add_argument('scene')
+    sub.add_parser('render')
     ado = sub.add_parser('adopt')
     ado.add_argument('production')
     ado.add_argument('scene')
@@ -216,9 +239,12 @@ def main():
     fet = sub.add_parser('fetch')
     fet.add_argument('production')
     a = ap.parse_args()
+    if a.command == 'render':
+        print(' '.join(RENDER))
+        return
     out = production.out(a.production)
-    if a.command == 'encode':
-        encode(a.scene, out, production.settings(a.production)['picture']['fps'])
+    if a.command == 'keep':
+        keep(a.scene, out, production.settings(a.production)['picture']['fps'])
     elif a.command == 'adopt':
         adopt(a.scene, a.source, a.artifact, a.narration, out / 'scenes')
     else:

@@ -18,8 +18,8 @@ property that is never keyed keeps the value it was made with. Frames count
 from 1. A scene is drawn for a time and for nothing else: render(t) gives the
 same picture whatever was drawn before it.
 
-The scenes of the first two films were first made for Blender, and their looks
-are kept here. Three things the kit does come from that:
+The scenes of the first film were first made for Blender, and its look is kept
+here. Three things the kit does come from that:
 
     A gradient runs across a box one unit larger on every side than its
     shape. So a shape shows only the middle of its gradient: a glow ends in a
@@ -75,8 +75,8 @@ const kit = (() => {
 
   // ---------------------------------------------------------------- random numbers
 
-  /* The Mersenne Twister as Python's random module runs it. The first two films
-     were laid out with Python's numbers, and a seed gives the same layout here. */
+  /* The Mersenne Twister as Python's random module runs it. The first film was
+     laid out with Python's numbers, and a seed gives the same layout here. */
   class Random {
     constructor(seed) {
       this.mt = new Uint32Array(624);
@@ -161,7 +161,7 @@ const kit = (() => {
     }
   }
 
-  /* Rounds a half to the even neighbour, which is how the frame counts of the first two films were rounded. */
+  /* Rounds a half to the even neighbour, as Python does. page.py counts a scene's frames with Python's rounding. */
   function round(x) {
     const low = Math.floor(x);
     const part = x - low;

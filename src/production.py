@@ -6,8 +6,8 @@ productions/<name>/:
     production.toml         its title, whether its script is ready, and any
                             settings it wants to set
     script.md               the narration script
-    scenes/<scene>.py       one Blender scene for each scene of the script
-    <module>.py             what its scenes share and no other production uses,
+    scenes/<scene>.js       the pictures of one scene of the script
+    <script>.js             what its scenes share and no other production uses,
                             such as its cast and props
     pronunciations.json     hand-written phonemes for words the voice gets wrong
     research/               source material; research/sources/ is not committed
@@ -71,8 +71,6 @@ DEFAULTS = {
         'width': 1920,          # the kit lays scenes out for a 16:9 frame
         'height': 1080,
         'fps': 30,
-        'engine': 'eevee',      # or 'cycles'
-        'samples': 24,
     },
     'sound': {
         'voice_peak': 0.6,      # narration peaks sit near -4 dBFS

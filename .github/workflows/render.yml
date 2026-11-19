@@ -3,7 +3,9 @@ concurrency:
   cancel-in-progress: true
   group: render-${{ inputs.production }}-${{ github.ref }}
 env:
-  BLENDER: blender-4.5.16-linux-x64
+  DO_NOT_TRACK: "1"
+  HYPERFRAMES_NO_TELEMETRY: "1"
+  HYPERFRAMES_NO_UPDATE_CHECK: "1"
   PRODUCTION: ${{ inputs.production }}
 jobs:
   adopt:
@@ -17,7 +19,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         name: Download the clip and its narration
         run: |
-          python3 src/blender/clips.py adopt "$PRODUCTION" "${{ matrix.clip.scene }}" --source "${{ matrix.clip.source }}" \
+          python3 src/hyperframes/clips.py adopt "$PRODUCTION" "${{ matrix.clip.scene }}" --source "${{ matrix.clip.source }}" \
             --artifact "${{ matrix.clip.artifact }}" --narration "${{ matrix.clip.narration }}"
       - name: Upload the clip under its name
         uses: actions/upload-artifact@v7
@@ -64,7 +66,7 @@ jobs:
       - env:
           GH_TOKEN: ${{ github.token }}
         name: Download every scene's clip
-        run: python src/blender/clips.py fetch "$PRODUCTION"
+        run: python src/hyperframes/clips.py fetch "$PRODUCTION"
       - name: Mix the soundtrack
         run: python src/audio/mix.py "$PRODUCTION"
       - name: Assemble the film
@@ -82,9 +84,7 @@ jobs:
   narration:
     outputs:
       adopt: ${{ steps.plan.outputs.adopt }}
-      blender: ${{ env.BLENDER }}
       render: ${{ steps.plan.outputs.render }}
-      scenes: ${{ steps.plan.outputs.scenes }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -123,7 +123,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         id: plan
         name: Plan which scenes to render
-        run: python src/blender/plan.py "$PRODUCTION" --blender "$BLENDER" --chunk 90 --adopt "$ADOPT" >> "$GITHUB_OUTPUT"
+        run: python src/hyperframes/plan.py "$PRODUCTION" --adopt "$ADOPT" >> "$GITHUB_OUTPUT"
       - name: Upload narration
         uses: actions/upload-artifact@v7
         with:
@@ -163,19 +163,55 @@ jobs:
         name: Publish the film, its captions, and its scene clips
         run: python3 src/render/release.py "$PRODUCTION" --target "$GITHUB_SHA"
   scenes:
-    if: needs.narration.outputs.scenes != '[]'
+    env:
+      SCENE: ${{ matrix.clip.scene }}
+    if: needs.narration.outputs.render != '[]'
     needs: narration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          lfs: "true"
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          cache: npm
+          node-version: "22"
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install --yes ffmpeg
+      - name: Install Hyperframes
+        run: npm ci --ignore-scripts
+      - name: Download narration
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.PRODUCTION }}-narration
+          path: out/${{ env.PRODUCTION }}/voice
+      - name: Build the scene's page
+        run: python3 src/hyperframes/page.py "$PRODUCTION" "$SCENE"
+      - name: Fetch the browser
+        run: npx hyperframes browser ensure
+      - name: Render the page
+        run: |
+          npx hyperframes render "out/$PRODUCTION/pages/$SCENE" --output "out/$PRODUCTION/pages/$SCENE.mp4" $(python3 src/hyperframes/clips.py render)
+      - name: Keep the clip and pick stills
+        run: python3 src/hyperframes/clips.py keep "$PRODUCTION" "$SCENE"
+      - name: Upload the clip
+        uses: actions/upload-artifact@v7
+        with:
+          if-no-files-found: error
+          name: ${{ matrix.clip.clip }}
+          path: out/${{ env.PRODUCTION }}/scenes
+      - name: Upload stills
+        uses: actions/upload-artifact@v7
+        with:
+          if-no-files-found: error
+          name: ${{ env.PRODUCTION }}-stills-${{ matrix.clip.scene }}
+          path: out/${{ env.PRODUCTION }}/stills
     strategy:
       fail-fast: false
       matrix:
-        scene: ${{ fromJSON(needs.narration.outputs.scenes) }}
-    uses: ./.github/workflows/scene.yml
-    with:
-      blender: ${{ needs.narration.outputs.blender }}
-      chunks: ${{ toJSON(fromJSON(needs.narration.outputs.render)[matrix.scene].chunks) }}
-      clip: ${{ fromJSON(needs.narration.outputs.render)[matrix.scene].clip }}
-      production: ${{ inputs.production }}
-      scene: ${{ matrix.scene }}
+        clip: ${{ fromJSON(needs.narration.outputs.render) }}
 name: render
 on:
   workflow_call:

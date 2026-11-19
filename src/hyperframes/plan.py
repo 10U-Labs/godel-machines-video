@@ -1,14 +1,12 @@
-"""Plan which of a production's Blender scenes a workflow run renders, and in which chunks of frames.
+"""Plan which of a production's scenes a workflow run renders.
 
-    python src/blender/plan.py godel-machines --blender blender-4.5.16-linux-x64 \
-        --chunk 90 [--adopt 43653948688] >> "$GITHUB_OUTPUT"
-    python src/blender/plan.py godel-machines --blender blender-4.5.16-linux-x64 \
-        --chunk 90 --adopt godel-machines-v20261115172101 >> "$GITHUB_OUTPUT"
+    python src/hyperframes/plan.py godel-machines [--adopt 43653948688] >> "$GITHUB_OUTPUT"
+    python src/hyperframes/plan.py godel-machines --adopt godel-machines-v20261115172101 >> "$GITHUB_OUTPUT"
 
 Takes every scene in out/<name>/voice/timings.json that has a file in
 productions/<name>/scenes/, in script order. A scene whose clip is still kept
-as an artifact (see clips.py) needs nothing. The others are rendered, each
-split into chunks of frames for parallel jobs.
+as an artifact (see clips.py) needs nothing. The others are rendered, each in
+a job of its own.
 
 --adopt names an earlier workflow run by its id, or a release of the
 production by its tag (see src/render/release.py). A scene that has no clip
@@ -20,17 +18,16 @@ GitHub has deleted, which it does after 90 days. A scene is taken whatever
 changed in it since, so adopt before changing a picture, not after.
 
 Writes {scene: clip name} for every scene to out/<name>/clips.json, and
-prints three lines:
+prints two lines:
 
-    scenes=[scene, ...]
-    render={scene: {"clip", "chunks": [{"start", "end"}, ...]}, ...}
+    render=[{"scene", "clip"}, ...]
     adopt=[{"scene", "clip", "source", "artifact", "narration"}, ...]
 
-scenes lists the scenes to render, and render gives each one's clip name and
-chunks. In adopt, source and artifact say where the clip to take is kept:
-which artifact of which run, or which asset of which release. narration is
-the run whose narration goes with a clip that was kept without its own, and
-is empty where every clip has its own.
+render lists the scenes to render, each with the name to keep its clip under.
+In adopt, source and artifact say where the clip to take is kept: which
+artifact of which run, or which asset of which release. narration is the run
+whose narration goes with a clip that was kept without its own, and is empty
+where every clip has its own.
 """
 import argparse
 import json
@@ -95,8 +92,6 @@ def released(tag, scenes, name):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('production')
-    ap.add_argument('--blender', required=True)
-    ap.add_argument('--chunk', type=int, default=60)
     ap.add_argument('--adopt', default='')
     a = ap.parse_args()
     run = a.adopt.isdigit()
@@ -109,14 +104,14 @@ def main():
     out = production.out(a.production)
     picture = production.settings(a.production)['picture']
     timings = json.loads((out / 'voice/timings.json').read_text(encoding='utf-8'))
-    names = clips.names(production.folder(a.production) / 'scenes', timings, picture, a.blender)
+    names = clips.names(production.folder(a.production) / 'scenes', timings, picture)
     (out / 'clips.json').write_text(json.dumps(names, indent=1), encoding='utf-8')
 
     missing = [scene for scene, clip in names.items() if clips.find(clip) is None]
     offer = {}
     if a.adopt and missing:
         offer = offered(a.adopt, missing, a.production) if run else released(a.adopt, missing, a.production)
-    render, adopt = {}, []
+    render, adopt = [], []
     for s in timings['scenes']:
         scene = s['id']
         if scene not in names:
@@ -131,15 +126,11 @@ def main():
             })
             print(f'{scene:<28} adopted from {artifact} of {source}', file=sys.stderr)
         else:
-            total = int(round(s['duration'] * picture['fps']))
-            chunks = [{'start': start, 'end': min(total, start + a.chunk - 1)} for start in range(1, total + 1, a.chunk)]
-            if len(chunks) > MATRIX:
-                raise SystemExit(f'{scene}: {len(chunks)} chunks is more than a job matrix allows; raise --chunk')
-            render[scene] = {'clip': names[scene], 'chunks': chunks}
-            print(f'{scene:<28} rendered in {len(chunks)} chunks', file=sys.stderr)
+            render.append({'scene': scene, 'clip': names[scene]})
+            print(f'{scene:<28} rendered', file=sys.stderr)
     if max(len(render), len(adopt)) > MATRIX:
         raise SystemExit('More scenes than a job matrix allows')
-    for output, value in (('scenes', list(render)), ('render', render), ('adopt', adopt)):
+    for output, value in (('render', render), ('adopt', adopt)):
         print(f"{output}={json.dumps(value, separators=(',', ':'))}")
 
 

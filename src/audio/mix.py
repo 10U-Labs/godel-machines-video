@@ -4,7 +4,7 @@
 
 Works under out/<name>/. Reads voice/timings.json and voice/<scene>.wav (from
 make_voice.py) and scenes/<scene>.sfx.json (written by
-src/blender/render_scene.py). Every scene that has a rendered video in scenes/
+src/hyperframes/page.py). Every scene that has a rendered video in scenes/
 is included, in script order. Writes audio/mix.wav and the three stems beside
 it. The levels are the production's [sound] settings and the tune is its
 [music] settings (see src/production.py). A production that sets no music has

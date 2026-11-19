@@ -73,7 +73,7 @@ jobs:
             line-length: disable,
             new-line-at-end-of-file: enable,
             truthy: {allowed-values: ["true", "false", "on"]}}}
-          file_or_dir: .github/workflows/productions.yml .github/workflows/render.yml .github/workflows/scene.yml .github/workflows/voices.yml
+          file_or_dir: .github/workflows/productions.yml .github/workflows/render.yml .github/workflows/voices.yml
           strict: "true"
 name: productions
 on:
@@ -83,7 +83,6 @@ on:
     paths:
       - ".github/workflows/productions.yml"
       - ".github/workflows/render.yml"
-      - ".github/workflows/scene.yml"
       - ".github/workflows/voices.yml"
       - "productions/**"
   workflow_dispatch:

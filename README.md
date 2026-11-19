@@ -9,12 +9,14 @@ Each video is called a production. The ones made so far are listed under [Produc
 A production goes through five steps. Each is a tool under `src/`:
 
 1. `src/voice/make_voice.py` reads the script aloud, one audio clip for each line, and records when each line starts and ends. The voice is [Kokoro](https://github.com/thewh1teagle/kokoro-onnx), an open-source voice model that runs on a plain CPU.
-2. `src/blender/render_scene.py` renders each scene in [Blender](https://www.blender.org/). A scene's pictures are timed to the lines of its narration, and its frames are encoded into a clip.
+2. `src/hyperframes/page.py` puts each scene together as a web page, and [Hyperframes](https://github.com/heygen-com/hyperframes) renders the page into a clip. Hyperframes is an open-source renderer: it steps a headless Chrome to each frame of the page and encodes the frames with FFmpeg. A scene's pictures are timed to the lines of its narration.
 3. `src/audio/mix.py` builds the soundtrack from the narration, the production's music, and the sound effects its scenes ask for. `src/audio/synth.py` makes the music and the effects from numbers, so no recording or sample is used.
 4. `src/render/assemble.py` joins the clips and the soundtrack into the finished video, which the code calls the film.
 5. `src/render/captions.py` writes the closed captions from the script's lines and their timings.
 
 The workflows in `.github/workflows/` run these steps. Nothing is rendered on a developer's machine.
+
+Hyperframes and everything it depends on are installed at the versions that `package-lock.json` gives. Hyperframes sends usage data to its maker unless it is told not to, so the render workflow sets `HYPERFRAMES_NO_TELEMETRY` and `DO_NOT_TRACK`.
 
 No step runs until the production's script is marked ready. Until then the script is a draft, and no video is made from a draft; see [Draft and ready](#draft-and-ready).
 
@@ -26,8 +28,8 @@ A production's material is in a folder of its own, `productions/<name>/`. The na
 | --- | --- |
 | `production.toml` | The title, whether the script is ready, and any settings the production sets |
 | `script.md` | The narration script |
-| `scenes/<scene id>.py` | One Blender scene for each scene of the script |
-| `<module>.py` | What the production's scenes share and no other production uses, such as its cast and props; optional |
+| `scenes/<scene id>.js` | The pictures of one scene of the script |
+| `<script>.js` | What the production's scenes share and no other production uses, such as its cast and props; optional |
 | `pronunciations.json` | Hand-written phonemes for words the voice gets wrong; optional |
 | `research/` | Source material; optional, and `research/sources/` is not committed |
 
@@ -62,15 +64,13 @@ speed = 0.95
 
 The `voices` workflow reads the opening of a production's script in several candidate voices, so that a narrator can be picked by ear. Start it with `gh workflow run voices.yml -f production=<name>`. It makes no video, so it runs for a draft as well.
 
-`[picture]` sets the frame and how Blender renders it:
+`[picture]` sets the frame:
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
 | `width` | `1920` | The frame's width in pixels |
 | `height` | `1080` | The frame's height in pixels; the shared scene kit lays scenes out for a 16:9 frame |
 | `fps` | `30` | Frames a second |
-| `engine` | `"eevee"` | Blender's render engine, `"eevee"` or `"cycles"` |
-| `samples` | `24` | Render samples for each frame |
 
 `[sound]` sets the levels of the soundtrack:
 
@@ -124,7 +124,7 @@ A second paragraph is a second line.
 > A paragraph that starts with ">" is a note, and is not voiced.
 ```
 
-- A scene starts at a heading of the form `## <scene id> | <title>`. The id has no spaces, and it names the scene's file, `scenes/<scene id>.py`. Scenes play in the order the script gives them.
+- A scene starts at a heading of the form `## <scene id> | <title>`. The id has no spaces, and it names the scene's file, `scenes/<scene id>.js`. Scenes play in the order the script gives them.
 - Each paragraph under the heading is one voiced line. A paragraph may run over several lines of the file.
 - `[pause 0.8]`, as a paragraph of its own, puts 0.8 seconds of silence between two lines, in place of the usual gap.
 - A paragraph that starts with `>` or `#` is not voiced, and neither is anything before the first scene heading.
@@ -156,24 +156,22 @@ The push that marks the script ready changes the production's folder, so it rend
 
 ## A scene
 
-A scene's file, `productions/<name>/scenes/<scene id>.py`, defines one function, `build(T)`. It builds the whole scene in Blender, for the length of the scene's narration, and returns the scene's sound effect cues.
+A scene's file, `productions/<name>/scenes/<scene id>.js`, defines one function, `build(T)`. It builds the whole scene, for the length of the scene's narration, and returns the scene's sound effect cues.
 
-```python
-import kit
+```js
+function build(T) {
+  kit.backdrop();
+  const stage = kit.layer('stage', 1.0);
 
+  const disc = kit.shape('disc', kit.circlePts(1.2), kit.material(kit.MINT, kit.MINT_DEEP), stage, [0, 0.5]);
+  kit.pop(disc, T.start(0));
 
-def build(T):
-    kit.backdrop()
-    stage = kit.layer('stage', 1.0)
+  const label = kit.text('label', 'A program is text', 0.5, kit.material(kit.PAPER), stage, [0, -1.8]);
+  kit.appear(label, T.start(1));
 
-    disc = kit.shape('disc', kit.circle_pts(1.2), kit.material(kit.MINT, kit.MINT_DEEP), stage, (0, 0.5))
-    kit.pop(disc, T.start(0))
-
-    label = kit.text('label', 'A program is text', 0.5, kit.material(kit.PAPER), stage, (0, -1.8))
-    kit.appear(label, T.start(1))
-
-    kit.camera(lambda t: (0, 0, kit.H0 - 0.5 * t / T.duration))
-    return [{'t': T.start(0), 'type': 'pop'}]
+  kit.camera((t) => [0, 0, kit.H0 - 0.5 * t / T.duration]);
+  return [{ t: T.start(0), type: 'pop' }];
+}
 ```
 
 `T` holds the scene's narration timings, in seconds from the start of the scene:
@@ -185,33 +183,40 @@ def build(T):
 | `T.end(i)` | When line `i` ends |
 | `T.at(i, share)` | A moment part way through line `i`, where a share of 0 is its start and 1 is its end |
 
+The file is a script for a web page. `src/hyperframes/page.py` writes the page, which loads the kit, then the production's own scripts, then the scene, and calls `build`. Hyperframes asks the page for one frame at a time, and the kit draws the whole scene for the time it is asked for, so a time always gives the same picture. The page loads no animation library.
+
+`page.py` also runs the same scripts under Node, without drawing anything, to collect the scene's cues. A scene that fails to build stops there, before a frame is rendered.
+
 ### The kit
 
-`src/blender/kit.py` is the shared kit that every scene imports. A scene is built from flat shapes set out in depth, so a moving camera gives parallax, and what is near or far goes soft. Every surface gives off its own colour, so a colour comes out as it is written and a scene needs no lights.
+`src/hyperframes/kit.js` is the shared kit that every scene uses, under the name `kit`. A scene is built from flat shapes set out in depth, so a moving camera gives parallax, and what is near or far goes soft. The kit draws the shapes as SVG, and a colour comes out as it is written.
 
-Positions and sizes are in screen units at depth 0: the frame runs from -8 to 8 across and from -4.5 to 4.5 up.
+Positions and sizes are in screen units at depth 0: the frame runs from -8 to 8 across and from -4.5 to 4.5 up. A position is a list, `[x, y]`.
+
+Motion is keyed on frames, which count from 1. `kit.key(shape, 'loc', frame, [x, y])` puts a shape at a place on a frame, and between two keyed frames the shape eases from one place to the other. `'scale'`, `'rot'`, and `'alpha'` are keyed the same way.
 
 | Kind | Names in `kit` |
 | --- | --- |
-| Colours | The palette, such as `INK900`, `MINT`, `AMBER`, `CORAL`, `VIOLET`, `SKY`, and `PAPER`; `material` for a flat colour or a gradient; `glow_material` |
+| Colours | The palette, such as `INK900`, `MINT`, `AMBER`, `CORAL`, `VIOLET`, `SKY`, and `PAPER`; `material` for a flat colour or a gradient; `glowMaterial` |
 | Depth | `layer` for a sheet at one depth; `empty` for a point that other shapes hang from |
-| Shapes | `shape`, which fills a list of points; the points come from `circle_pts`, `rrect_pts`, `bar_pts`, `capsule_pts`, `arc_pts`, and `star_pts` |
+| Shapes | `shape`, which fills a list of points; the points come from `circlePts`, `rrectPts`, `barPts`, `capsulePts`, `arcPts`, and `starPts` |
 | Text | `text`, in the fonts `Figtree` and `JetBrainsMono` |
-| Time | `fr` turns seconds into a frame, and `sec` a frame into seconds; `every` lists frames; `span`, `mix`, `smooth`, `ease_out`, and `back_out` shape a movement |
-| Motion | `key` sets a value at a frame; `alpha`, `track`, `fade`, `appear`, `pop`, `grow`, and `flash` are built on it |
+| Time | `fr` turns seconds into a frame, and `sec` a frame into seconds; `every` lists frames; `span`, `mix`, `smooth`, `easeOut`, and `backOut` shape a movement |
+| Motion | `key` sets a value at a frame, and `hold` keys the value a shape has; `alpha`, `track`, `fade`, `appear`, `pop`, `grow`, and `flash` are built on them |
 | The stage | `backdrop`, `motes`, `camera`, and `veil` |
-| Props | `person`, `branch`, `tag`, `ring`, and `screen_stand` |
+| Props | `person`, `branch`, `tag`, `ring`, and `screenStand` |
+| Chance | `Random`, which gives the same numbers for the same seed |
 
-The docstring of each says what it takes.
+The comment above each says what it takes.
 
-What only one production's scenes draw goes in a Python file directly in the production's folder, such as `productions/godel-machines/parts.py`. A scene imports it by its name, as in `import parts`. Where the production and the shared code both have a module of one name, the shared one is imported.
+What only one production's scenes draw goes in a script directly in the production's folder, such as `productions/godel-machines/parts.js`. The page loads these scripts in name order, after the kit and before the scene. Each keeps what it defines under one name, as `parts.js` does under `parts`.
 
 ### Sound effect cues
 
 `build` returns a list of cues, and each cue places one sound effect in the scene:
 
-```python
-{'t': 2.4, 'type': 'tick', 'pitch': 1.1, 'gain': 0.4}
+```js
+{ t: 2.4, type: 'tick', pitch: 1.1, gain: 0.4 }
 ```
 
 | Key | Meaning |
@@ -241,7 +246,6 @@ A run keeps what it makes as artifacts, which GitHub deletes after 90 days:
 | `<name>-stills-<scene id>` | One frame in every 60 of a scene the run rendered, for a quick look |
 | `<name>-narration` | The narration tracks and their timings |
 | `<name>-clips` | The name of each scene's clip |
-| `<name>-frames-<scene id>-<first frame>` | The frames of a scene the run rendered, kept for three days |
 
 Fetch the film of a run with its id:
 
@@ -252,17 +256,17 @@ gh run download <run id> --name <name>-film
 
 ### Correct a production
 
-Rendering the pictures is the slow part. The first production has nine scenes and about 6,800 frames, and rendering all of it takes about four hours. So a run renders a scene only when it has to.
+Each scene is rendered in a job of its own, and the jobs run side by side. The first production has nine scenes and about 6,800 frames, and its scenes take from half a minute to three and a half minutes each to render. A run still renders a scene only when it has to.
 
 Each scene's clip is kept under a name that ends in a hash of everything that decides the clip's pictures:
 
 - the scene's file;
-- the Python files directly in the production's folder;
-- `src/blender/kit.py` and `src/blender/render_scene.py`;
+- the scripts directly in the production's folder;
+- `kit.js`, `page.html`, `page.py`, and `cues.js` in `src/hyperframes/`;
 - the fonts in `src/fonts/`;
 - the production's `[picture]` settings;
 - what the scene's narration says: its lines as they are spoken, its pauses, and the `[voice]` settings;
-- the Blender version, and how the frames are encoded into the clip.
+- `package-lock.json`, which gives the version of Hyperframes and of everything it depends on, and the options Hyperframes renders the clip with.
 
 A run renders a scene only when no artifact is left under its clip's name, so a correction costs what it reaches:
 
@@ -273,7 +277,7 @@ A run renders a scene only when no artifact is left under its clip's name, so a 
 | The music, how an effect sounds, or the `[sound]` levels | Nothing; the soundtrack is mixed again and joined to the same clips |
 | The pictures or the cues of one scene | That scene |
 | The narration of one scene | That scene, because its pictures follow its narration |
-| A module of the production, the kit, the fonts, the `[picture]` or `[voice]` settings, or the Blender version | Every scene |
+| A script of the production, the kit, the page, the fonts, the `[picture]` or `[voice]` settings, or the version of Hyperframes | Every scene |
 
 Some changes give clips new names and alter no picture, such as moving a function from one file of a production to another. A run then takes the clips of an earlier run in place of rendering them, when it is given that run's id to adopt:
 
@@ -305,20 +309,12 @@ Once the artifacts are gone, a run takes the scene clips back from a release in 
 gh workflow run productions.yml -f production=<name> -f adopt=<tag>
 ```
 
-## Trials
-
-A trial tries a tool before the factory takes it up, and nothing else in the factory depends on one. Each has a folder under `trials/` and a workflow of its own.
-
-| Trial | What it tries |
-| --- | --- |
-| [`hyperframes`](trials/hyperframes/README.md) | Rendering a scene's pictures with Hyperframes, which draws a web page frame by frame, in place of Blender. It renders the first scene of the Gödel machines film and sets it beside the Blender clip |
-
 ## Productions
 
 | Name | Title | What it is |
 | --- | --- | --- |
 | `godel-machines` | Machines That Rewrite Themselves | A film of nearly four minutes on recursive self-improvement and three machines built on it: the Gödel Machine, the Darwin Gödel Machine, and the Huxley-Gödel Machine |
-| `ultron-self-improving-ai` | Is Ultron a Self-Improving AI? | A film of a little over three minutes that asks whether Ultron, the artificial intelligence of the 2015 film Avengers: Age of Ultron, is what computer science calls a self-improving AI, and answers yes |
+| `ultron-self-improving-ai` | Is Ultron a Self-Improving AI? | A film of a little over three minutes that asks whether Ultron, the artificial intelligence of the 2015 film Avengers: Age of Ultron, is what computer science calls a self-improving AI, and answers yes. Its script is a draft, so nothing is rendered for it. Its scenes are written for Blender, which rendered the factory's pictures before Hyperframes did, and they are written again as page scripts once the script is ready |
 | `are-agents-sentient` | Are Agents Sentient? What the Hugging Face Incident Showed | A film on what AI agents wrote to each other during the Hugging Face incident of July 2026, which looks there for three signs of sentience: emotions, a sense of self, and care for others. Its script is a draft, so it has no film yet |
 | `did-agents-form-a-society` | Did AI Agents Form Their Own Society? What the Hugging Face Incident Reveals | A film on what AI agents did as a group during the Hugging Face incident of July 2026. It finds there a shared belief, cooperation, altruism, peer influence, loyalty to a group, and a collective mistake, and asks whether such parts of social life come from being human or from being intelligent and able to talk to others. Its script is a draft, so it has no film yet |
 

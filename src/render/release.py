@@ -13,16 +13,16 @@ The release holds:
     <name>.mp4              the film
     <name>.srt              its closed captions
     <clip name>.zip         for each scene, what the artifact under its clip's
-                            name holds (see src/blender/clips.py): the clip,
+                            name holds (see src/hyperframes/clips.py): the clip,
                             its sound effect cues, and the narration it was
                             rendered for
 
 The film and the captions are read from out/<name>/. The scenes are the ones
-in out/<name>/clips.json, which src/blender/plan.py wrote, and each one's clip
+in out/<name>/clips.json, which src/hyperframes/plan.py wrote, and each one's clip
 is downloaded from whichever workflow run made it.
 
 Prints the tag. A later run takes the clips back from the release when it is
-given the tag to adopt (see src/blender/plan.py).
+given the tag to adopt (see src/hyperframes/plan.py).
 """
 import argparse
 import json
@@ -34,7 +34,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
-sys.path.insert(0, str(HERE.parent / 'blender'))
+sys.path.insert(0, str(HERE.parent / 'hyperframes'))
 import clips  # noqa: E402
 import production  # noqa: E402
 
