@@ -46,3 +46,8 @@
 
 - [The sentience film's production decisions](sentience-film-production-decisions.md) — general public, no length limit, agents drawn as Pip from the Gödel machines film, voice Kokoro af_heart, look and music left to Claude
 - [The sentience film's subject](sentience-film-subject.md) — are AI agents sentient, through the Hugging Face incident of July 2026; a definition with exactly three signs (emotions, a sense of self, care for others); three acts, with the order of scenes inside them left to Claude; never a flat no
+
+## The society film
+
+- [The society film's production decisions](society-film-production-decisions.md) — the sentience film's choices taken over whole: general public, no length limit, agents drawn as Pip, voice Kokoro af_heart, look and music left to Claude
+- [The society film's subject](society-film-subject.md) — did AI agents form a society, through the Hugging Face incident of July 2026; six behaviours of social life in three pairs; a possibility, never a finding, that such behaviour comes with intelligence and interaction; the caution that the agents learned from human writing always stays in
