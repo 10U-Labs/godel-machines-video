@@ -45,4 +45,4 @@
 ## The sentience film
 
 - [The sentience film's production decisions](sentience-film-production-decisions.md) — general public, no length limit, agents drawn as Pip from the Gödel machines film, voice Kokoro af_heart, look and music left to Claude
-- [The sentience film's subject](sentience-film-subject.md) — are AI agents sentient, through the Hugging Face incident of July 2026; a definition with exactly three signs (emotions, a sense of self, care for others); three acts; never a flat no
+- [The sentience film's subject](sentience-film-subject.md) — are AI agents sentient, through the Hugging Face incident of July 2026; a definition with exactly three signs (emotions, a sense of self, care for others); three acts, with the order of scenes inside them left to Claude; never a flat no
