@@ -5,6 +5,7 @@
 - [The repo is a media factory](the-repo-is-a-media-factory.md) — many productions, the Gödel film is the first; keep one production's material out of shared code; the README repeats the code's settings and names, so it changes with them; which memories hold for every production
 - [Never quote the user verbatim](never-quote-the-user-verbatim.md) — restate what the user says in fresh words in memories, commits, comments, and summaries
 - [Render in GitHub workflows](render-in-github-workflows.md) — no local renders; push and let Actions render, fetch artifacts with gh; a manual run with release=true publishes a production
+- [No video before the script is ready](no-video-before-the-script-is-ready.md) — a script is a draft until its production.toml says ready = true; the workflow renders nothing for a draft; the mark is the user's to give
 - [Free tools only](free-tools-only.md) — nothing paid, for voice or anything else; open-source models on free runners, licence checked
 - [A release is numbered by the time](a-release-is-numbered-by-the-time.md) — tag is v plus the fourteen-digit UTC time, as in the sibling repos; never a count; the production's name comes first here
 - [Oxford commas](oxford-commas.md) — the user's rule for the repo's About; apply to other repo prose too, and ask before changing a spoken line

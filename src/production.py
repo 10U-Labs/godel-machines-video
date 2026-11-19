@@ -3,7 +3,8 @@
 A production is one piece of media the repository makes. Its material is in
 productions/<name>/:
 
-    production.toml         its title, and any settings it wants to set
+    production.toml         its title, whether its script is ready, and any
+                            settings it wants to set
     script.md               the narration script
     scenes/<scene>.py       one Blender scene for each scene of the script
     <module>.py             what its scenes share and no other production uses,
@@ -14,16 +15,21 @@ productions/<name>/:
 Everything made from it goes under out/<name>/, and the finished files are
 out/<name>/<name>.mp4 and out/<name>/<name>.srt.
 
-production.toml gives the title and, in a table for each kind, any of the
-settings in DEFAULTS:
+production.toml gives the title, says whether the script is ready, and gives,
+in a table for each kind, any of the settings in DEFAULTS:
 
     title = "Machines That Rewrite Themselves"
+    ready = true
 
     [voice]
     speed = 0.95
 
 A setting the file leaves out takes its value from DEFAULTS, and no tool keeps
 a copy of one.
+
+ready says whether the production's script is ready to be made into a video.
+A file that leaves it out, or gives false, has a draft, and the productions
+workflow renders nothing for a draft.
 
 The music is the exception, since a default tune would be one production's
 music in shared code. A production whose file has no [music] table has no
@@ -39,7 +45,14 @@ music, and one whose file has the table gives all four of its settings:
     arpeggio_from = 6.0         # seconds from the start at which the arpeggio fades in
 
 src/audio/synth.py says how a tune is played.
+
+Run with a production's name, this file prints the production's title and
+settings as JSON, which is how the productions workflow reads ready:
+
+    python3 src/production.py godel-machines
 """
+import json
+import sys
 import tomllib
 from pathlib import Path
 
@@ -135,7 +148,9 @@ def music(path, own):
 def settings(name):
     """A production's title and settings: what its production.toml gives, and the default for the rest.
 
-    The music has no default: 'music' is the production's [music] table, or None.
+    'ready' is whether the production's script is ready to be made into a
+    video, and is False where the file does not say. The music has no default:
+    'music' is the production's [music] table, or None.
     """
     path = folder(name) / 'production.toml'
     if not path.exists():
@@ -144,7 +159,10 @@ def settings(name):
     title = given.pop('title', None)
     if not isinstance(title, str) or not title:
         raise SystemExit(f'{path} gives no title')
-    result = {'title': title}
+    ready = given.pop('ready', False)
+    if not isinstance(ready, bool):
+        raise SystemExit(f'{path}: ready takes true or false')
+    result = {'title': title, 'ready': ready}
     for table, defaults in DEFAULTS.items():
         own = given.pop(table, {})
         if not isinstance(own, dict):
@@ -160,3 +178,9 @@ def settings(name):
     if given:
         raise SystemExit(f'{path}: nothing reads {sorted(given)[0]}')
     return result
+
+
+if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        raise SystemExit('Give the name of one production, a folder in productions/')
+    print(json.dumps(settings(sys.argv[1]), indent=1, ensure_ascii=False))

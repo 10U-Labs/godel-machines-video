@@ -18,16 +18,28 @@ jobs:
         run: |
           if [ "$GITHUB_EVENT_NAME" = "push" ]; then
             changed=$(git diff --name-only "$BEFORE" "$GITHUB_SHA" -- productions | cut -d/ -f2 | sort -u)
-          else
+          elif [ -f "productions/$NAMED/production.toml" ]; then
             changed="$NAMED"
-          fi
-          names=$(echo "$changed" | while read -r name; do
-            if [ -f "productions/$name/production.toml" ]; then echo "$name"; fi
-          done | jq -Rnc '[inputs]')
-          if [ "$GITHUB_EVENT_NAME" != "push" ] && [ "$names" = "[]" ]; then
+          else
             echo "::error::No production named $NAMED: productions/$NAMED/production.toml does not exist"
             exit 1
           fi
+          : > "$RUNNER_TEMP/ready"
+          while read -r name; do
+            if [ ! -f "productions/$name/production.toml" ]; then continue; fi
+            ready=$(python3 src/production.py "$name" | jq .ready)
+            if [ "$ready" = "true" ]; then
+              echo "$name" >> "$RUNNER_TEMP/ready"
+              continue
+            fi
+            draft="Nothing is rendered for $name: its script is a draft until productions/$name/production.toml says ready = true"
+            if [ "$GITHUB_EVENT_NAME" != "push" ]; then
+              echo "::error::$draft"
+              exit 1
+            fi
+            echo "::notice::$draft"
+          done <<< "$changed"
+          names=$(jq -Rnc '[inputs]' "$RUNNER_TEMP/ready")
           echo "To render: $names"
           echo "names=$names" >> "$GITHUB_OUTPUT"
         shell: bash
@@ -81,7 +93,7 @@ on:
         required: false
         type: string
       production:
-        description: The name of the production to render, a folder in productions/
+        description: The name of the production to render, a folder in productions/ whose script is marked ready
         required: true
         type: string
       release:

@@ -16,13 +16,15 @@ A production goes through five steps. Each is a tool under `src/`:
 
 The workflows in `.github/workflows/` run these steps. Nothing is rendered on a developer's machine.
 
+No step runs until the production's script is marked ready. Until then the script is a draft, and no video is made from a draft; see [Draft and ready](#draft-and-ready).
+
 ## A production's folder
 
 A production's material is in a folder of its own, `productions/<name>/`. The name is used for the folder, for the finished files, and in the commands below.
 
 | File | What it holds |
 | --- | --- |
-| `production.toml` | The title, and any settings the production sets |
+| `production.toml` | The title, whether the script is ready, and any settings the production sets |
 | `script.md` | The narration script |
 | `scenes/<scene id>.py` | One Blender scene for each scene of the script |
 | `<module>.py` | What the production's scenes share and no other production uses, such as its cast and props; optional |
@@ -35,16 +37,17 @@ Shared code under `src/` holds nothing that belongs to one production.
 
 ### Settings
 
-`production.toml` gives the production's title and, in a table for each kind, any setting the production wants to change:
+`production.toml` gives the production's title, says whether its script is ready, and gives, in a table for each kind, any setting the production wants to change:
 
 ```toml
 title = "Machines That Rewrite Themselves"
+ready = true
 
 [voice]
 speed = 0.95
 ```
 
-A setting the file leaves out takes its default, which `src/production.py` holds. A setting that nothing reads is an error.
+`ready` is covered under [Draft and ready](#draft-and-ready). A setting the file leaves out takes its default, which `src/production.py` holds. A setting that nothing reads is an error.
 
 `[voice]` sets the narrator:
 
@@ -57,7 +60,7 @@ A setting the file leaves out takes its default, which `src/production.py` holds
 | `line_gap` | `0.38` | Seconds of silence between two lines |
 | `tail` | `0.7` | Seconds of silence after a scene's last line |
 
-The `voices` workflow reads the opening of a production's script in several candidate voices, so that a narrator can be picked by ear. Start it with `gh workflow run voices.yml -f production=<name>`.
+The `voices` workflow reads the opening of a production's script in several candidate voices, so that a narrator can be picked by ear. Start it with `gh workflow run voices.yml -f production=<name>`. It makes no video, so it runs for a draft as well.
 
 `[picture]` sets the frame and how Blender renders it:
 
@@ -136,6 +139,21 @@ The captions show each line as the script writes it.
 ]
 ```
 
+### Draft and ready
+
+A script is a draft until it is marked ready to be made into a video. The mark is one line of the production's `production.toml`:
+
+```toml
+ready = true
+```
+
+A file that leaves the line out, or gives `false`, has a draft, so a new production starts as one. No video is made from a draft:
+
+- a push that changes the production's folder renders nothing for it, and the run says so in a notice;
+- a run started by hand for the production fails, and says that the script is a draft.
+
+The push that marks the script ready changes the production's folder, so it renders the production for the first time. Taking the line out again makes the script a draft once more.
+
 ## A scene
 
 A scene's file, `productions/<name>/scenes/<scene id>.py`, defines one function, `build(T)`. It builds the whole scene in Blender, for the length of the scene's narration, and returns the scene's sound effect cues.
@@ -208,7 +226,7 @@ What only one production's scenes draw goes in a Python file directly in the pro
 
 ### Render a production
 
-A push to `main` that changes anything in `productions/<name>/` renders that production. A push that changes only shared code renders nothing by itself. To render after such a push, or at any other time, start the workflow by hand:
+A push to `main` that changes anything in `productions/<name>/` renders that production, once its script is marked ready (see [Draft and ready](#draft-and-ready)). A push that changes only shared code renders nothing by itself. To render after such a push, or at any other time, start the workflow by hand:
 
 ```sh
 gh workflow run productions.yml -f production=<name>
