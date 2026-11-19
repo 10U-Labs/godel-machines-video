@@ -1,0 +1,17 @@
+title = "Are Agents Sentient? What the Hugging Face Incident Showed"
+
+[voice]
+name = "af_heart"
+lang = "en-us"
+speed = 0.95
+
+[music]
+bpm = 72
+chords = [
+    { bass = 40, notes = [59, 62, 66, 67, 71] },    # Em9
+    { bass = 36, notes = [59, 60, 64, 67] },        # Cmaj7
+    { bass = 43, notes = [57, 59, 62, 66] },        # Gmaj9
+    { bass = 38, notes = [57, 62, 64, 66, 69] },    # Dadd9
+]
+arpeggio = [0, 2, 1, 3, 2, 4, 1, 3, 0, 3, 2, 1]
+arpeggio_from = 7.0

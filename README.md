@@ -311,5 +311,6 @@ gh workflow run productions.yml -f production=<name> -f adopt=<tag>
 | --- | --- | --- |
 | `godel-machines` | Machines That Rewrite Themselves | A film of nearly four minutes on recursive self-improvement and three machines built on it: the Gödel Machine, the Darwin Gödel Machine, and the Huxley-Gödel Machine |
 | `ultron-self-improving-ai` | Is Ultron a Self-Improving AI? | A film of a little over three minutes that asks whether Ultron, the artificial intelligence of the 2015 film Avengers: Age of Ultron, is what computer science calls a self-improving AI, and answers yes |
+| `are-agents-sentient` | Are Agents Sentient? What the Hugging Face Incident Showed | A film on what AI agents wrote to each other during the Hugging Face incident of July 2026, which looks there for three signs of sentience: emotions, a sense of self, and care for others. Its script is a draft, so it has no film yet |
 
-Each production's film is in its [releases](https://github.com/10U-Labs/media-factory/releases).
+Each finished production's film is in its [releases](https://github.com/10U-Labs/media-factory/releases).

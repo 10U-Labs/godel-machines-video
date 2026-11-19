@@ -41,3 +41,8 @@
 
 - [The Ultron film's production decisions](ultron-film-production-decisions.md) — general public, no length limit, a darker palette of its own with an original Ultron, voice Kokoro af_heart, a new darker tune, and an ending on his red eyes opening in the dark
 - [The Ultron film's subject](ultron-film-subject.md) — the 2015 film's Ultron; three steps of the plot, told briefly: no body, then a feeble robot, then a powerful one; the question is whether he is a self-improving AI, the answer is yes with the reasons, and the Gödel Machine is not in the script
+
+## The sentience film
+
+- [The sentience film's production decisions](sentience-film-production-decisions.md) — general public, no length limit, agents drawn as Pip from the Gödel machines film, voice Kokoro af_heart, look and music left to Claude
+- [The sentience film's subject](sentience-film-subject.md) — are AI agents sentient, through the Hugging Face incident of July 2026; a definition with exactly three signs (emotions, a sense of self, care for others); three acts; never a flat no
