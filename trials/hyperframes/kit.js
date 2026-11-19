@@ -350,11 +350,16 @@ const kit = (() => {
     return made;
   }
 
-  /* A filled 2D shape from points given relative to its own origin at loc. */
+  /* A filled 2D shape from points given relative to its own origin at loc.
+
+     options.inside names another shape, and this one is then drawn only where that one is.
+     It is for a see-through shape that lies over two colours and shows over one of them alone:
+     the page works a see-through colour out over a single colour behind it (see seeThrough). */
   function shape(name, pts, mat, parent, loc = [0, 0], options = {}) {
     const made = node('shape', name, parent, [loc[0], loc[1], nextZ(parent, options.lift || 0.0)], 1.0, options.rot || 0.0);
     made.pts = pts;
     made.mat = mat;
+    made.inside = options.inside || null;
     return made;
   }
 
@@ -622,12 +627,31 @@ const kit = (() => {
           }, group);
           el.textContent = made.body;
         } else {
-          el = element('polygon', { fill, points: made.pts.map(([x, y]) => `${x.toFixed(4)},${y.toFixed(4)}`).join(' ') }, group);
+          let holder = group;
+          if (made.inside) {
+            const id = `inside${made.index}`;
+            made.window = { made: made.inside, el: element('polygon', { points: points(made.inside) }, element('clipPath', { id }, defs)), was: {} };
+            holder = element('g', { 'clip-path': `url(#${id})` }, group);
+          }
+          el = element('polygon', { fill, points: points(made) }, holder);
         }
         return { made, el, was: {} };
       });
       drawn.push({ root, group, shapes, blur: '' });
     }
+  }
+
+  const points = (made) => made.pts.map(([x, y]) => `${x.toFixed(4)},${y.toFixed(4)}`).join(' ');
+
+  /* Where the camera at [cx, cy, cz] sees a shape, as an SVG transform. */
+  function seen(made, cx, cy, cz) {
+    const w = made.world;
+    const k = UNIT * H0 / (cz - w.z);
+    const grow = made.kind === 'text' ? made.size * made.face.scale / 100 : 1;
+    const flip = made.kind === 'text' ? -grow : 1;
+    const m = [k * w.m[0] * grow, -k * w.m[1] * grow, k * w.m[2] * flip, -k * w.m[3] * flip,
+      WIDTH / 2 + k * (w.m[4] - cx), HEIGHT / 2 - k * (w.m[5] - cy)];
+    return `matrix(${m.map((v) => v.toFixed(4)).join(' ')})`;
   }
 
   function set(shown, name, value) {
@@ -662,11 +686,8 @@ const kit = (() => {
         }
         set(shown, 'display', 'inline');
         set(shown, 'opacity', alpha.toFixed(3));
-        const grow = shown.made.kind === 'text' ? shown.made.size * shown.made.face.scale / 100 : 1;
-        const flip = shown.made.kind === 'text' ? -grow : 1;
-        const m = [k * w.m[0] * grow, -k * w.m[1] * grow, k * w.m[2] * flip, -k * w.m[3] * flip,
-          WIDTH / 2 + k * (w.m[4] - cx), HEIGHT / 2 - k * (w.m[5] - cy)];
-        set(shown, 'transform', `matrix(${m.map((v) => v.toFixed(4)).join(' ')})`);
+        set(shown, 'transform', seen(shown.made, cx, cy, cz));
+        if (shown.made.window) set(shown.made.window, 'transform', seen(shown.made.inside, cx, cy, cz));
       }
     }
   }

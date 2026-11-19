@@ -39,13 +39,14 @@ const parts = (() => {
     shape(`${name}-bulb`, circlePts(0.11), material('#fff2c4', AMBER), antenna, [0, 0.38]);
     shape(`${name}-body`, rrectPts(1.7, 1.5, 0.62), material(body, bodyDeep), rig);
     shape(`${name}-shine`, circlePts(0.2, null, 0.1), material(PAPER, null, 0.45, body), rig, [-0.48, 0.5], { rot: 0.5 });
-    shape(`${name}-screen`, rrectPts(1.28, 0.86, 0.34), material(INK800, INK900), rig, [0, 0.06]);
+    const screen = shape(`${name}-screen`, rrectPts(1.28, 0.86, 0.34), material(INK800, INK900), rig, [0, 0.06]);
     const face = empty(`${name}-face`, rig, [0, 0.06, nextZ(rig)]);
     const eyes = empty(`${name}-eyes`, face, [0, 0.08, nextZ(face)]);
     const eyeList = [];
     for (const side of [-1, 1]) {
       const e = empty(`${name}-eye${side}`, eyes, [side * 0.27, 0, nextZ(face)]);
-      shape(`${name}-eyeglow${side}`, circlePts(0.3), glowMaterial(body, 0.4, 1.6, DEEP_BEHIND), e);
+      // The glow has the body's colour, so in Blender it shows on the dark screen and not on the body around it.
+      shape(`${name}-eyeglow${side}`, circlePts(0.3), glowMaterial(body, 0.4, 1.6, DEEP_BEHIND), e, [0, 0], { inside: screen });
       shape(`${name}-eyeball${side}`, circlePts(0.12, null, 0.16), material('#d9fff5', body), e);
       shape(`${name}-spark${side}`, circlePts(0.035), material(PAPER), e, [0.04, 0.06]);
       eyeList.push(e);
