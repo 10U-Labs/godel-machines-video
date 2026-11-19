@@ -19,4 +19,5 @@ No video is made from a production while its script is a draft: the script is ju
 Claude's interpretation, which the user has not confirmed:
 
 - The screenplay is the production's `script.md`.
-- The user is the one who considers a script ready. Claude drafts and corrects the script, and adds `ready = true` only once the user says the script is ready.
+- The user is the one who judges a script ready. Claude drafts and corrects the script, and adds `ready = true` only once the user says that this production's script is ready.
+- Nothing else stands in for the user's word. A production that has been rendered, or whose film is released, can still have a draft for a script, so neither is a reason to add the line.
