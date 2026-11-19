@@ -2,7 +2,7 @@
 
 This folder holds the factory's scenes while they move from Blender to [Hyperframes](https://github.com/heygen-com/hyperframes). Hyperframes is an open-source renderer, under the Apache 2.0 licence: a scene is a web page, and Hyperframes steps a headless Chrome to each frame and encodes the frames with FFmpeg.
 
-A scene stays here until its Hyperframes clip has been set beside its Blender clip. When every scene of both finished films has been, the files move to the places the folders here mirror, the render workflows change over, and this folder goes.
+A scene stays here until its Hyperframes clip has been set beside its Blender clip. When every scene of the Gödel machines film has been, the files move to the places the folders here mirror, the render workflows change over, and this folder goes. The Gödel machines film is the one production whose script is marked ready, so it is the one whose scenes move now.
 
 ## What is here
 
@@ -57,4 +57,6 @@ What still differs:
 
 - A browser cannot mix see-through colours as light. The kit works each one out over the colour it mostly lies over, which is right there and a little off elsewhere.
 - Blender draws a see-through shape as scattered dots, which shows as grain. The page's see-through shapes are smooth.
+- The film's release was rendered before the kit stopped a ring from showing faintly before and after its flash, and a figure from showing small before it pops in. The pages follow the kit as it is now, so they show neither.
+- Blender leaves the tail off the letter g of JetBrains Mono. The page draws the whole letter.
 - The page blurs what is out of focus with a Gaussian blur, where Blender spreads each point into a disc.

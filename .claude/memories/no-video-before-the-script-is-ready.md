@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: 01540429-97ee-40e8-8b42-534d4690b14b
-  modified: 2026-11-19T04:02:08.730Z
+  modified: 2026-11-19T14:58:08.343Z
 ---
 
 # No video before the script is ready
@@ -21,3 +21,5 @@ Claude's interpretation, which the user has not confirmed:
 - The screenplay is the production's `script.md`.
 - The user is the one who judges a script ready. Claude drafts and corrects the script, and adds `ready = true` only once the user says that this production's script is ready.
 - Nothing else stands in for the user's word. A production that has been rendered, or whose film is released, can still have a draft for a script, so neither is a reason to add the line.
+- Making video covers every kind of work on a production's pictures, not the workflow's render alone: writing its scenes, moving them to another renderer, and rendering one of them for a check. A draft gets none of it, whatever scenes or releases its folder already holds.
+- Whether a production is ready is read from its `production.toml` before any such work, and never taken from its scenes, its releases, or a count of the films that look finished.

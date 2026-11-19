@@ -51,21 +51,25 @@ const kit = (() => {
   };
   const { INK900, INK800, INK700, INK600, INK500, MINT, AMBER, VIOLET_DEEP, PAPER, MIST, SKIN, SKIN_SHADE } = palette;
 
-  const state = { fps: 30, frames: 1, width: 1920, height: 1080, zstep: 0.002 };
+  // zstep is how much nearer each new shape sits than the last. over is the colour that a see-through
+  // shape lies over where its material names none: the backdrop sets it, to the middle of its sky.
+  const state = { fps: 30, frames: 1, width: 1920, height: 1080, zstep: 0.002, over: null };
   let nodes = [];
   let materials = new Map();
   let view = null;
-  let drawn = null;
+  let drawn = null;                        // every shape's SVG element, in order of depth
+  let groups = null;                       // the SVG groups the elements are put in, far to near
   let canvas = null;
   const CLIP = 1.0;                        // the camera draws nothing nearer to it than this
 
   /* Start a scene: the frame rate, the number of frames, and the frame's size in pixels. */
   function setup(options) {
-    Object.assign(state, options, { zstep: 0.002 });
+    Object.assign(state, options, { zstep: 0.002, over: null });
     nodes = [];
     materials = new Map();
     view = null;
     drawn = null;
+    groups = null;
     canvas = null;
   }
 
@@ -135,12 +139,6 @@ const kit = (() => {
       while (r >= n) r = this.bits() >>> shift;
       return r;
     }
-
-    /* A number from a to b. */
-    uniform(a, b) { return a + (b - a) * this.random(); }
-
-    /* One of a list's items. */
-    choice(items) { return items[this.randrange(items.length)]; }
   }
 
   // ---------------------------------------------------------------- timing
@@ -213,18 +211,20 @@ const kit = (() => {
   }
 
   // What see-through shapes mostly lie over: the middle of the backdrop's sky, bare and with its glow.
+  // backdrop() works the second out again for the colour of its own glow, and keeps it as state.over.
   const DEEP_BEHIND = laid(INK800, 0.5, INK900);
-  const SKY_BEHIND = laid(VIOLET_DEEP, 0.35 * 0.6 ** 1.2, DEEP_BEHIND);
+  const skyBehind = (glow) => laid(glow, 0.35 * 0.6 ** 1.2, DEEP_BEHIND);
+  const SKY_BEHIND = skyBehind(VIOLET_DEEP);
 
   /* A flat colour, or a gradient from bottom to top of the shape, with alpha.
 
      options.alphaBottom is the alpha at the bottom of the shape, where it differs from the top's.
-     options.over is the colour that a see-through shape mostly lies over, and the sky where none
-     is given. Every shape's alpha is also multiplied by the shape's own, which is how shapes fade
+     options.over is the colour that a see-through shape mostly lies over; where none is given
+     it is the middle of the backdrop's sky. Every shape's alpha is also multiplied by the shape's own, which is how shapes fade
      in and out. */
   function material(top, bottom = null, alpha = 1.0, options = {}) {
     const alphaBottom = options.alphaBottom === undefined ? null : options.alphaBottom;
-    const over = options.over || SKY_BEHIND;
+    const over = options.over || state.over || SKY_BEHIND;
     const id = ['flat', top, bottom, alpha, alphaBottom, over].join('|');
     if (!materials.has(id)) {
       const kind = bottom === null && alphaBottom === null ? 'flat' : 'linear';
@@ -235,8 +235,9 @@ const kit = (() => {
 
   /* A soft round glow: bright in the middle, fading toward the edge. */
   function glowMaterial(colour, alpha = 0.5, power = 1.6, over = null) {
-    const id = ['glow', colour, alpha, power, over].join('|');
-    if (!materials.has(id)) materials.set(id, { id, kind: 'radial', top: colour, alpha, power, over: over || SKY_BEHIND });
+    const behind = over || state.over || SKY_BEHIND;
+    const id = ['glow', colour, alpha, power, behind].join('|');
+    if (!materials.has(id)) materials.set(id, { id, kind: 'radial', top: colour, alpha, power, over: behind });
     return materials.get(id);
   }
 
@@ -273,7 +274,6 @@ const kit = (() => {
     const made = {
       kind, name, parent, nest, order: 0, index: nodes.length,
       x: loc[0], y: loc[1], z: loc[2], sx: scale, sy: scale, sz: scale, rot, alpha: 1.0,
-      z0: loc[2], s0: scale,          // its depth and scale as it was made
       keys: {},           // loc, scale, rot, alpha: the frames each is keyed on
       world: null,
     };
@@ -528,6 +528,7 @@ const kit = (() => {
   /* A deep blue field with a soft glow and faint specks at a few depths. */
   function backdrop(seed = 3, glow = VIOLET_DEEP) {
     const rnd = new Random(seed);
+    state.over = skyBehind(glow);
     const back = layer('back', -6.0, { sharp: true });
     shape('sky', rrectPts(28, 16, 0), material(INK800, INK900), back);
     shape('sky-glow', circlePts(9.0, null, 6.5), glowMaterial(glow, 0.35, 1.2, DEEP_BEHIND), back, [0, 0.5]);
@@ -736,7 +737,7 @@ const kit = (() => {
     };
   }
 
-  function element(tag, attributes, parent) {
+  function element(tag, attributes, parent = null) {
     const made = document.createElementNS(SVG, tag);
     for (const [name, value] of Object.entries(attributes)) made.setAttribute(name, value);
     if (parent) parent.appendChild(made);
@@ -817,64 +818,37 @@ const kit = (() => {
     return `url(#${ids.get(id)})`;
   }
 
-  const SLAB = 0.05;                       // shapes of one layer that lie nearer in depth than this are blurred as one
-
-  /* Build the page's SVG once. The shapes that hang on one top-level shape or layer, and lie
-     at about one depth, share a group: the group is blurred as one, and is drawn before or
-     after the other groups as a whole. */
+  /* Build the page's SVG once: an element for each shape. render() puts them in groups. */
   function mount(svg) {
     canvas = svg;
     const defs = element('defs', {}, svg);
     const ids = new Map();
-    const below = (made) => {             // depth below the top-level node, with every scale as it was made
-      if (!made.parent) return 0;
-      let z = made.z0;
-      for (let up = made.parent; up; up = up.parent) z = up.parent ? up.z0 + up.s0 * z : up.s0 * z;
-      return z;
-    };
-    const roots = new Map();
-    for (const made of nodes) {
-      if (made.kind === 'empty') continue;
-      let root = made;
-      while (root.parent) root = root.parent;
-      if (!roots.has(root)) roots.set(root, []);
-      roots.get(root).push([below(made), made]);
-    }
-    drawn = [];
-    for (const [root, members] of roots) {
-      members.sort((a, b) => a[0] - b[0] || a[1].index - b[1].index);
-      let slab = null;
-      members.forEach(([z, made], i) => {
-        if (i === 0 || z - members[i - 1][0] > SLAB) {
-          slab = { made, root, group: element('g', {}, svg), shapes: [], blur: '', order: '' };
-          drawn.push(slab);
-        }
-        slab.shapes.push(draw(made, slab.group, defs, ids));
-      });
-    }
-    drawn.order = '';
+    drawn = nodes.filter((made) => made.kind !== 'empty').map((made) => draw(made, defs, ids));
+    groups = [];
   }
 
   /* Make the SVG element of one shape or line of text. */
-  function draw(made, group, defs, ids) {
-    const shown = { made, el: null, top: null, was: {}, window: null };
+  function draw(made, defs, ids) {
+    let root = made;
+    while (root.parent) root = root.parent;
+    const shown = { made, sharp: root.sharp === true, el: null, top: null, was: {}, window: null, depth: 0, blur: 0 };
     if (made.kind === 'text') {
       shown.el = element('text', {
-        'font-family': made.face.family, 'font-weight': made.face.weight, 'font-size': 100, 'text-anchor': made.anchor,
+        'data-name': made.name, 'font-family': made.face.family, 'font-weight': made.face.weight, 'font-size': 100, 'text-anchor': made.anchor,
         y: 100 * made.face.drop,
-      }, group);
+      });
       shown.el.textContent = made.body;
       shown.top = shown.el;
       return shown;
     }
-    let holder = group;
+    shown.el = element('path', { 'data-name': made.name, d: outline(made) });
+    shown.top = shown.el;
     if (made.inside) {
       const id = `inside${made.index}`;
       shown.window = { made: made.inside, el: element('path', { d: outline(made.inside) }, element('clipPath', { id }, defs)), was: {} };
-      holder = element('g', { 'clip-path': `url(#${id})` }, group);
+      shown.top = element('g', { 'clip-path': `url(#${id})` });
+      shown.top.appendChild(shown.el);
     }
-    shown.el = element('path', { d: outline(made) }, holder);
-    shown.top = made.inside ? holder : shown.el;
     if (made.mat.kind !== 'flat') shown.el.setAttribute('fill', paint(made, defs, ids));
     return shown;
   }
@@ -896,15 +870,44 @@ const kit = (() => {
     shown.el.setAttribute(name, value);
   }
 
-  /* Put a parent's children in order, far to near, where the order has changed.
-     Two shapes can come out at one depth, and then the one nested deeper is in front. */
-  function arrange(holder, parent, items, depth, top) {
-    const sorted = items.map((item) => [Math.round(depth(item) * 1e7), item]).sort((a, b) => (
-      a[0] - b[0] || a[1].made.nest - b[1].made.nest || a[1].made.index - b[1].made.index));
-    const order = sorted.map(([, item]) => item.made.index).join(' ');
-    if (order === holder.order) return;
-    holder.order = order;
-    for (const [, item] of sorted) parent.appendChild(top(item));
+  /* Put every shape in the page in order of its depth, far to near, and blur each by its depth.
+
+     Shapes that follow one another in depth and are blurred alike share a group, and the group is
+     blurred as one. Two shapes can come out at one depth, and then the one nested deeper is in
+     front. The camera blurs a point into a disc; a Gaussian blur a quarter as wide spreads light
+     as far, and it is taken to the nearest quarter of a pixel. */
+  function arrange(cz) {
+    const focus = cz - view.focusZ;
+    const spread = LENS * LENS / (view.fstop * (focus - LENS)) / SENSOR * state.width;
+    for (const shown of drawn) {
+      const z = shown.made.world.z;
+      const far = Math.max(cz - z, CLIP);
+      const sigma = shown.sharp ? 0 : spread * Math.abs(far - focus) / far / 4;
+      shown.depth = Math.round(z * 1e7);
+      shown.blur = sigma < 0.3 ? 0 : Math.round(sigma * 4);
+    }
+    drawn.sort((a, b) => a.depth - b.depth || a.made.nest - b.made.nest || a.made.index - b.made.index);
+    let used = 0;
+    let from = 0;
+    for (let i = 1; i <= drawn.length; i++) {
+      if (i < drawn.length && drawn[i].blur === drawn[from].blur) continue;
+      if (used === groups.length) groups.push({ el: element('g', {}, canvas), order: '', blur: 0 });
+      const group = groups[used];
+      const blur = drawn[from].blur;
+      if (group.blur !== blur) {
+        group.el.style.filter = blur ? `blur(${(blur / 4).toFixed(2)}px)` : '';
+        group.blur = blur;
+      }
+      let order = '';
+      for (let k = from; k < i; k++) order += `${drawn[k].made.index} `;
+      if (order !== group.order) {
+        for (let k = from; k < i; k++) group.el.appendChild(drawn[k].top);
+        group.order = order;
+      }
+      used += 1;
+      from = i;
+    }
+    for (let i = used; i < groups.length; i++) groups[i].order = '';
   }
 
   /* Draw the scene as it is at time t, in seconds. */
@@ -912,42 +915,29 @@ const kit = (() => {
     const frame = t * state.fps + 1;
     const [cx, cy, cz] = view.path(t);
     for (const made of nodes) place(made, frame);
-    const focus = cz - view.focusZ;
-    const spread = LENS * LENS / (view.fstop * (focus - LENS)) / SENSOR * state.width;
-    arrange(drawn, canvas, drawn, (entry) => entry.made.world.z, (entry) => entry.group);
-    for (const entry of drawn) {
-      // The camera blurs a point into a disc; a Gaussian blur a quarter as wide spreads light as far.
-      const far = Math.max(cz - entry.made.world.z, CLIP);
-      const sigma = entry.root.sharp ? 0 : spread * Math.abs(far - focus) / far / 4;
-      const filter = sigma >= 0.3 ? `blur(${sigma.toFixed(2)}px)` : '';
-      if (filter !== entry.blur) {
-        entry.group.style.filter = filter;
-        entry.blur = filter;
+    arrange(cz);
+    for (const shown of drawn) {
+      const made = shown.made;
+      const w = made.world;
+      const mat = made.mat;
+      const own = clamp(w.alpha);
+      const size = Math.hypot(w.m[0], w.m[1]) * state.width / 16 * H0 / (cz - w.z);
+      let fill = null;
+      let opacity = own;
+      if (mat.kind === 'flat' || made.kind === 'text') {
+        const step = Math.round(own * mat.alpha * 1000);
+        if (!mat.laid.has(step)) mat.laid.set(step, seeThrough(mat.top, step / 1000, mat.over));
+        [fill, opacity] = mat.laid.get(step);
       }
-      if (entry.shapes.length > 1) arrange(entry, entry.group, entry.shapes, (shown) => shown.made.world.z, (shown) => shown.top);
-      for (const shown of entry.shapes) {
-        const made = shown.made;
-        const w = made.world;
-        const mat = made.mat;
-        const own = clamp(w.alpha);
-        const size = Math.hypot(w.m[0], w.m[1]) * state.width / 16 * H0 / (cz - w.z);
-        let fill = null;
-        let opacity = own;
-        if (mat.kind === 'flat' || made.kind === 'text') {
-          const step = Math.round(own * mat.alpha * 1000);
-          if (!mat.laid.has(step)) mat.laid.set(step, seeThrough(mat.top, step / 1000, mat.over));
-          [fill, opacity] = mat.laid.get(step);
-        }
-        if (opacity <= 0.002 || size < 0.5 || cz - w.z < CLIP) {     // faded out, shrunk to less than a pixel, or too near the camera
-          set(shown, 'display', 'none');
-          continue;
-        }
-        set(shown, 'display', 'inline');
-        if (fill) set(shown, 'fill', fill);
-        set(shown, 'opacity', opacity.toFixed(3));
-        set(shown, 'transform', seen(made, cx, cy, cz));
-        if (shown.window) set(shown.window, 'transform', seen(made.inside, cx, cy, cz));
+      if (opacity <= 0.002 || size < 0.5 || cz - w.z < CLIP) {     // faded out, shrunk to less than a pixel, or too near the camera
+        set(shown, 'display', 'none');
+        continue;
       }
+      set(shown, 'display', 'inline');
+      if (fill) set(shown, 'fill', fill);
+      set(shown, 'opacity', opacity.toFixed(3));
+      set(shown, 'transform', seen(made, cx, cy, cz));
+      if (shown.window) set(shown.window, 'transform', seen(made.inside, cx, cy, cz));
     }
   }
 

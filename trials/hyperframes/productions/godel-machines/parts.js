@@ -36,7 +36,7 @@ const parts = (() => {
     const antenna = empty(`${name}-antenna`, rig, [0, 0.72, nextZ(rig)]);
     shape(`${name}-stem`, capsulePts(0.34, 0.07), material(bodyDeep), antenna, [0, 0.34]);
     // The bulb's glow lies over the halo, a third of the way out from the halo's middle.
-    const haloBehind = laid(body, 0.3 * (2 / 3) ** 2.2, SKY_BEHIND);
+    const haloBehind = laid(body, 0.3 * (2 / 3) ** 2.2, kit.state.over || SKY_BEHIND);
     const bulbGlow = shape(`${name}-bulb-glow`, circlePts(0.45), glowMaterial(AMBER, 0.55, 1.6, haloBehind), antenna, [0, 0.38]);
     shape(`${name}-bulb`, circlePts(0.11), material('#fff2c4', AMBER), antenna, [0, 0.38]);
     shape(`${name}-body`, rrectPts(1.7, 1.5, 0.62), material(body, bodyDeep), rig);

@@ -6,7 +6,7 @@ env:
   DO_NOT_TRACK: "1"
   HYPERFRAMES_NO_TELEMETRY: "1"
   HYPERFRAMES_NO_UPDATE_CHECK: "1"
-  RELEASES: '{"godel-machines": "godel-machines-v20261115233441", "ultron-self-improving-ai": "ultron-self-improving-ai-v20261116093245"}'
+  RELEASES: '{"godel-machines": "godel-machines-v20261115233441"}'
 jobs:
   find:
     needs: yamllint
