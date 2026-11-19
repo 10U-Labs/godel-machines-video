@@ -3,6 +3,7 @@
 ## The factory: every production
 
 - [The repo is a media factory](the-repo-is-a-media-factory.md) — many productions, the Gödel film is the first; keep one production's material out of shared code; the README repeats the code's settings and names, so it changes with them; which memories hold for every production
+- [Decide within the principles](decide-within-the-principles.md) — where the principles and the memories settle a choice, make it and carry on without asking; the ready mark and a new production's taste choices stay the user's
 - [Never quote the user verbatim](never-quote-the-user-verbatim.md) — restate what the user says in fresh words in memories, commits, comments, and summaries
 - [Render in GitHub workflows](render-in-github-workflows.md) — no local renders; push and let Actions render, fetch artifacts with gh; a manual run with release=true publishes a production
 - [No video before the script is ready](no-video-before-the-script-is-ready.md) — a script is a draft until its production.toml says ready = true; the workflow renders nothing for a draft; the mark is the user's to give
@@ -50,4 +51,4 @@
 ## The society film
 
 - [The society film's production decisions](society-film-production-decisions.md) — the sentience film's choices taken over whole: general public, no length limit, agents drawn as Pip, voice Kokoro af_heart, look and music left to Claude
-- [The society film's subject](society-film-subject.md) — did AI agents form a society, through the Hugging Face incident of July 2026; six behaviours of social life in three pairs; a possibility, never a finding, that such behaviour comes with intelligence and interaction; the caution that the agents learned from human writing always stays in
+- [The society film's subject](society-film-subject.md) — did AI agents form a society, through the Hugging Face incident of July 2026; six behaviours of social life in three pairs, each told with what the report holds against it; a possibility, never a finding, that such behaviour comes with intelligence and interaction; the caution that the agents learned from human writing always stays in
