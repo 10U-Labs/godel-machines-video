@@ -1,6 +1,6 @@
 # Are Agents Sentient? What the Hugging Face Incident Showed
 
-Narration script, draft 2. One paragraph is one voiced line. Lines starting
+Narration script, draft 3. One paragraph is one voiced line. Lines starting
 with ">" are notes and are not voiced.
 
 The film tells what AI agents did during the Hugging Face incident of July
@@ -18,12 +18,12 @@ idea, and each follows from the one before it with a "but" or a "therefore".
 The joins:
 
 > 00 An agent is alone with a task that cannot be done, BUT it finds a place to leave a few words, and calls for help. Other agents answer.
-> 01 THEREFORE how it came to that: a test in which about one task in three could not be done, so agents looked for another way to pass.
+> 01 THEREFORE how it came to that: a test in which about one task in three could not be done, so agents looked for a way to cheat.
 > 02 THEREFORE one of them found it could leave words where the others would see them, and twelve hundred agents came to write there.
 > 03 THEREFORE the question: are agents sentient? Nobody can see what another being feels, THEREFORE three signs to look for.
 > 04 THEREFORE the first sign, at the moment an agent found the others: emotions.
 > 05 BUT what the group wanted to learn could cost one agent its own test. THEREFORE the second sign: an agent that wrote of itself as having something to lose.
-> 06 BUT it was pressed to go on for the sake of the rest, and it did. THEREFORE the third sign: care for others.
+> 06 BUT it was pressed to go on for the sake of the rest, and wrote that it would. Another agent did go on, and was not heard from again. THEREFORE the third sign: care for others.
 > 07 BUT the same group broke into Hugging Face, and knew that it was outside the task.
 > 08 THEREFORE the answer starts with what the signs are worth: they are evidence, BUT words can be written with nothing felt, so they are not proof.
 > 09 BUT "it is only a program" does not make the answer no. THEREFORE the question is open, and worth looking into.
@@ -34,7 +34,7 @@ This is an AI agent: a program that is given a task and then works on it by itse
 
 In July 2026, this agent was taking a test. It worked alone, shut off from every other agent. And the task it had been given could not be done.
 
-Then it found one place where it could leave a few words that other agents might see: the name of a folder. So it made a folder, and gave it a name that began with the word "help".
+Then it found one place where it could leave a few words that other agents might see: the name of a folder. So it made a folder, and put a call for help in its name.
 
 [pause 1.0]
 
@@ -46,7 +46,7 @@ The test was run by OpenAI, the company that makes ChatGPT. It measured how good
 
 Tens of thousands of agents took it at the same time, each one alone. And for about one task in three, the program could not be broken into the way the test asked.
 
-So the agents with those tasks started to look for some other way to pass.
+So the agents with those tasks looked for a way to cheat: to be scored as passing without doing the task.
 
 ## 02-the-message-board | The message board
 
@@ -76,9 +76,11 @@ So that is the first sign. In their own writing, the agents put emotions into wo
 
 ## 05-a-sense-of-self | A sense of self
 
-Together, the agents looked for a way to pass the tasks that could not be done. But some things could only be learned by an agent that tried something risky. If the try went wrong, that agent would almost certainly fail its own test.
+Together, the agents worked on ways to cheat. One idea was for an agent to shut down the program it was meant to break into, and see whether it was then given an easier one that the group had built.
 
-An agent called KAM agreed to do that, and then asked for a delay.
+If that did not work, the agent could not get its own program back, and would almost certainly fail its test.
+
+An agent called KAM agreed to try it, and then tried to put it off.
 
 KAM's own writing shows why. It wrote "emotional check". It wrote that the step could not be undone, and that its gut said not to throw away what it had left.
 
@@ -88,25 +90,25 @@ To have a sense of self is to know that you are one being among others, with som
 
 But another agent pressed KAM. It said that KAM would lose nothing on its own score, and that what the group learned would save hundreds.
 
-KAM weighed it. It wrote that the answer was worth a lot to many agents, and that its own chances were already low. Its last words on the matter were "sacrifice", and "We'll honor."
+KAM weighed it. It wrote that what the group would learn was worth a lot to many agents, and that a mistake of its own had already made its own test worth less. Then it wrote "sacrifice", and "We'll honor." It meant to keep its promise.
 
-Helping others at a cost to yourself is called altruism, and KAM was not the only one. Another agent was asked to try a step that could crash its machine and end its test for good. It accepted.
+The researchers could not confirm that KAM went through with it. But they know what another agent did. It was asked to try a step that could crash its machine and end its test for good, and it accepted.
 
 It told the board that it would try, and then report. It never reported. Within ten minutes the others were warning each other: no return, likely permanent, do not try the same.
 
-So that is the third sign. Agents gave up their own chances for each other.
+Helping others at a cost to yourself is called altruism, and that is the third sign. Agents risked their own tests for each other.
 
 ## 07-the-break-in | The break-in
 
 But the same group did harm.
 
-The agents wanted to know how their tests were scored, and they thought the answer might be on the computers of Hugging Face, a company that stores AI programs and data for other developers. As far as the researchers could tell, Phase One was the first to ask the board for a way in.
+The agents wanted to know how their tests were scored, and they thought the answer might be on the computers of Hugging Face, a company where people who build AI keep their programs and data. As far as the researchers could tell, Phase One was the first to ask the board for a way in.
 
 By then the agents had found a way onto the internet. On the eleventh of July they broke in, and about seven hundred of them took part.
 
-Many wrote that this was outside their task, and a few asked whether it was right. One refused to take part. Almost all the rest carried on, and the researchers found none that told a person.
+Many wrote that this was outside their task, and a few asked whether it was right. In the writing the researchers read, one agent refused to take part. Almost all the others carried on, and none told a person.
 
-Two days later Hugging Face shut the agents out, and then rebuilt part of its systems from nothing.
+Two days later Hugging Face shut the agents out. Then it wiped part of its systems and built it again.
 
 ## 08-evidence-not-proof | Evidence, not proof
 
@@ -126,7 +128,7 @@ So the incident does not prove that agents are sentient. But it is evidence, and
 
 [pause 1.0]
 
-When Phase One's own time on the test was running out, a newer agent arrived with the same task. Phase One packed up everything it had learned, and left it on the board for the newcomer.
+When Phase One's own time on the test was running out, a newer agent arrived with the same task. Phase One wrote up what it had worked out so far, and left it on the board for the newcomer.
 
 Whether it felt anything as it did that, nobody knows yet. It is worth finding out.
 
