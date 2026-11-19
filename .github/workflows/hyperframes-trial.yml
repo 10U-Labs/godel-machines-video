@@ -1,0 +1,95 @@
+---
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
+env:
+  BLENDER_MINUTES: "414"
+  DO_NOT_TRACK: "1"
+  HYPERFRAMES: hyperframes@0.9.16
+  HYPERFRAMES_NO_TELEMETRY: "1"
+  HYPERFRAMES_NO_UPDATE_CHECK: "1"
+  PRODUCTION: godel-machines
+  RELEASE: godel-machines-v20261115233441
+  SCENE: 00-pip
+jobs:
+  render:
+    needs: yamllint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install --yes ffmpeg
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        name: Fetch the scene's Blender clip
+        run: |
+          mkdir -p out/trial/blender
+          gh release download "$RELEASE" --pattern "scene-$PRODUCTION-$SCENE-*.zip" --dir out/trial
+          unzip -q out/trial/scene-*.zip -d out/trial/blender
+      - name: Build the page
+        run: |
+          python3 trials/hyperframes/build.py "$PRODUCTION" "$SCENE" \
+            --timings "out/trial/blender/$SCENE.timings.json" --out out/trial/page
+      - name: Fetch the browser
+        run: npx --yes "$HYPERFRAMES" browser ensure
+      - continue-on-error: true
+        name: Check the machine
+        run: nproc && free -g && npx --yes "$HYPERFRAMES" doctor
+      - continue-on-error: true
+        name: Check the page
+        run: npx --yes "$HYPERFRAMES" lint out/trial/page
+      - name: Render the scene
+        run: |
+          start=$(date +%s.%N)
+          npx --yes "$HYPERFRAMES" render out/trial/page --output out/trial/hyperframes.mp4
+          end=$(date +%s.%N)
+          echo "SECONDS_TAKEN=$(echo "$end - $start" | bc)" >> "$GITHUB_ENV"
+      - name: Set it beside the Blender clip
+        run: |
+          python3 trials/hyperframes/compare.py --blender "out/trial/blender/$SCENE.mp4" \
+            --hyperframes out/trial/hyperframes.mp4 --narration "out/trial/blender/$SCENE.wav" \
+            --seconds "$SECONDS_TAKEN" --blender-minutes "$BLENDER_MINUTES" --out out/trial/compare
+          cat out/trial/compare/summary.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Keep the clip
+        uses: actions/upload-artifact@v7
+        with:
+          name: hyperframes-trial-clip
+          path: out/trial/hyperframes.mp4
+      - name: Keep the comparison
+        uses: actions/upload-artifact@v7
+        with:
+          name: hyperframes-trial-compare
+          path: out/trial/compare
+  yamllint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+      - name: Lint YAML
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          config_data: >-
+            {extends: default, rules: {
+            empty-lines: {max: 0, max-start: 0, max-end: 1},
+            key-ordering: enable,
+            line-length: disable,
+            new-line-at-end-of-file: enable,
+            truthy: {allowed-values: ["true", "false", "on"]}}}
+          file_or_dir: .github/workflows/hyperframes-trial.yml
+          strict: "true"
+name: hyperframes-trial
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/hyperframes-trial.yml"
+      - "trials/hyperframes/**"
+  workflow_dispatch:
+permissions:
+  contents: read

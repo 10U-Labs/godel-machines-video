@@ -305,6 +305,14 @@ Once the artifacts are gone, a run takes the scene clips back from a release in 
 gh workflow run productions.yml -f production=<name> -f adopt=<tag>
 ```
 
+## Trials
+
+A trial tries a tool before the factory takes it up, and nothing else in the factory depends on one. Each has a folder under `trials/` and a workflow of its own.
+
+| Trial | What it tries |
+| --- | --- |
+| [`hyperframes`](trials/hyperframes/README.md) | Rendering a scene's pictures with Hyperframes, which draws a web page frame by frame, in place of Blender. It renders the first scene of the Gödel machines film and sets it beside the Blender clip |
+
 ## Productions
 
 | Name | Title | What it is |
