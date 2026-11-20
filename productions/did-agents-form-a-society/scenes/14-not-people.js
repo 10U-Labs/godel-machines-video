@@ -35,7 +35,7 @@ function build(T) {
   // ------------------------------------------------------------ among people
   [-2.4, -1.2, 0, 1.2, 2.4].forEach((x, k) => {
     const made = parts.human(`among${k}`, st.cast, [x, 0.2 + 0.25 * (k % 2)], 0.46, k, k < 2 ? 1 : -1);
-    kit.pop(made.root, 0.3 + 0.1 * k, 0.46, 0.4, tNeed - 0.6 + 0.04 * k);
+    kit.pop(made.root, 0.3 + 0.1 * k, 0.46, 0.4, tNeed - 0.3 + 0.03 * k);
     cues.push({ t: 0.3 + 0.1 * k, type: 'pop', pitch: 0.7 + 0.08 * k, gain: 0.6 });
   });
 

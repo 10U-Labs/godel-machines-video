@@ -132,11 +132,11 @@ function build(T) {
   cues.push({ t: tPeers + 1.3, type: 'whoosh', gain: 0.5 });
 
   const six = scene(5, tStood);
-  [[0.8, 0.35, 1], [1.5, -0.1, 4], [0.9, -0.75, 2]].forEach(([x, y, which], i) => parts.mini(`six-m${i}`, six, [x, y], 0.5, which));
-  kit.grow(kit.branch('six-bond', six, [-0.75, -0.2], [0.45, -0.2], kit.MINT, 0.09, 0.9), tStood + 0.6, 0.4);
-  parts.mini('six-loyal', six, [-1.2, -0.2], 0.55, 0);
-  kit.pop(parts.check('six-word', six, [-1.2, 0.6], 0.7), tStood + 1.0, 0.7, 0.3);
-  const cost = parts.clock('six-clock', six, [-2.0, -0.35], 0.45, 0.3);
+  [[1.1, 0.35, 1], [1.8, -0.1, 4], [1.2, -0.75, 2]].forEach(([x, y, which], i) => parts.mini(`six-m${i}`, six, [x, y], 0.5, which));
+  kit.grow(kit.branch('six-bond', six, [-0.35, -0.2], [0.75, -0.2], kit.MINT, 0.09, 0.9), tStood + 0.6, 0.4);
+  parts.mini('six-loyal', six, [-0.8, -0.2], 0.55, 0);
+  kit.pop(parts.check('six-word', six, [-0.8, 0.6], 0.7), tStood + 1.0, 0.7, 0.3);
+  const cost = parts.clock('six-clock', six, [-1.5, -0.4], 0.42, 0.3);
   parts.drain(cost, tStood + 1.2, end, 0.15);
   cues.push({ t: tStood + 1.0, type: 'blip', pitch: 1.1 });
 
