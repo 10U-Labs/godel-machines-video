@@ -249,18 +249,20 @@ const parts = (() => {
     return pts[pts.length - 1];
   }
 
-  /* Send a node along a line through pts from t0 to t1. It is shown on the way and, unless
-     options.stay, hidden once it is there. options.size is its scale on the way, and options.spin
-     turns it. Call one node's journeys in the order they happen. */
+  /* Send a node along a line through pts from t0 to t1. It is hidden until it leaves, unless
+     options.shown, and hidden once it is there, unless options.stay. options.size is its scale
+     on the way, options.to its scale at the end where that differs, and options.spin turns it.
+     Call one node's journeys in the order they happen. */
   function send(made, pts, t0, t1, options = {}) {
-    const { stay = false, size = 1.0, spin = 0.0, ease = kit.smooth } = options;
+    const { stay = false, shown = false, size = 1.0, to = size, spin = 0.0, ease = kit.smooth } = options;
     const [f0, f1] = [fr(t0), Math.max(fr(t0) + 1, fr(t1))];
     const z = made.z;
-    key(made, 'scale', Math.max(1, f0 - 1), 0.001);
+    if (!shown) key(made, 'scale', Math.max(1, f0 - 1), 0.001);
     for (const f of every(1, f0, f1)) {
-      const [x, y] = along(pts, ease((f - f0) / (f1 - f0)));
+      const q = (f - f0) / (f1 - f0);
+      const [x, y] = along(pts, ease(q));
       key(made, 'loc', f, [x, y, z]);
-      key(made, 'scale', f, size);
+      key(made, 'scale', f, size + (to - size) * q);
       if (spin) key(made, 'rot', f, spin * sec(f));
     }
     if (!stay) key(made, 'scale', f1 + 1, 0.001);
@@ -272,17 +274,19 @@ const parts = (() => {
 
      options.which picks the colour of the agent that made it. options.word is a start of the name
      that can be read; the rest of the name is drawn as bars, one for each word, and options.bars
-     gives their lengths. options.plate draws the dark strip behind the name. written lists the
-     pieces of the name in the order they are written. */
+     gives their lengths. options.plate draws the dark strip behind the name, and options.tail
+     makes the strip that much longer, for a small picture after the name; tail is where that
+     room starts, from the folder's middle for a folder of scale 1. written lists the pieces of
+     the name in the order they are written. */
   function folder(name, parent, loc, options = {}) {
-    const { scale = 1.0, which = 0, word = null, bars = [0.5, 0.8], plate = true } = options;
+    const { scale = 1.0, which = 0, word = null, bars = [0.5, 0.8], plate = true, tail = 0.0 } = options;
     const [colour, deep] = body(which);
     const root = group(name, parent, loc, scale);
     shape(`${name}-back`, [[-0.5, -0.36], [-0.5, 0.3], [-0.42, 0.4], [-0.14, 0.4], [-0.06, 0.3], [0.5, 0.3], [0.5, -0.36]], material(deep), root);
     shape(`${name}-front`, rrectPts(1.0, 0.56, 0.08), material(colour, deep), root, [0, -0.1]);
     const size = 0.3;
     const wordW = word ? 0.62 * size * word.length + 0.12 : 0;
-    const total = 0.36 + wordW + bars.reduce((sum, length) => sum + length + 0.1, 0);
+    const total = 0.36 + wordW + bars.reduce((sum, length) => sum + length + 0.1, 0) + tail;
     const x0 = 0.72;
     const strip = plate
       ? shape(`${name}-plate`, rrectPts(total, 0.6, 0.14).map(([x, y]) => [x + x0 + total / 2, y - 0.03]), material(INK900, null, 0.78), root)
@@ -297,7 +301,7 @@ const parts = (() => {
       written.push(shape(`${name}-bar${i}`, barPts(length, 0.12), material(MIST), root, [x, -0.03]));
       x += length + 0.1;
     });
-    return { root, written, plate: strip, width: (x0 + total) * scale, which };
+    return { root, written, plate: strip, width: (x0 + total) * scale, tail: x0 + total - tail - 0.1, which };
   }
 
   /* Write a folder's name at t, one piece after another. Returns when each piece is written. */
@@ -391,7 +395,7 @@ const parts = (() => {
     const { at = [0, 0.4], n = 52, scale = 0.6, keep = [], layer = st.props } = options;
     const made = board('board', layer, at);
     const places = sides(n + 12, { at, inner: 4.7, dx: 1.75, top: 5.6, dy: 2.15, seed: 12 })
-      .filter(([x, y]) => keep.every(([kx, ky]) => Math.hypot(x - kx, y - ky) > 1.5)).slice(0, n);
+      .filter(([x, y]) => keep.every(([kx, ky]) => Math.hypot(x - kx, y - ky) > 2.0)).slice(0, n);
     return { board: made, crowd: crowd('agent', st.cast, places, scale, 21), places };
   }
 
@@ -435,13 +439,15 @@ const parts = (() => {
     made.share = to;
   }
 
-  /* The secret word: a bright card whose letters are hidden. */
-  function word(name, parent, loc, scale = 1.0) {
+  /* The secret word: a bright card whose letters are hidden. glow gives it a glow, which a word
+     that an agent holds does without, since the glow would lie over the agent's face. */
+  function word(name, parent, loc, scale = 1.0, glow = true) {
     const root = group(name, parent, loc, scale);
-    const glow = shape(`${name}-glow`, circlePts(1.5, null, 1.0), glowMaterial(AMBER, 0.55, 1.6), root);
+    const lit = glow ? shape(`${name}-glow`, circlePts(1.5, null, 1.0), glowMaterial(AMBER, 0.55, 1.6), root) : null;
+    shape(`${name}-edge`, rrectPts(1.62, 0.72, 0.26), material(AMBER_DEEP), root);
     shape(`${name}-card`, rrectPts(1.5, 0.6, 0.2), material('#fff2c4', AMBER), root);
     for (let i = 0; i < 5; i++) shape(`${name}-star${i}`, starPts(0.11, 0.045, 5), material(INK900), root, [-0.5 + 0.25 * i, 0]);
-    return { root, glow };
+    return { root, glow: lit };
   }
 
   /* A closed padlock. */
@@ -558,10 +564,11 @@ const parts = (() => {
   }
 
   /* The program that scores the test: a square machine with one eye, a slot that takes a secret
-     word, and two lamps, one for a pass and one for a fail. The lamps are dark at first. */
-  function scorer(name, parent, loc, scale = 1.0) {
+     word, and two lamps, one for a pass and one for a fail. The lamps are dark at first. halo
+     gives it a glow, which a scorer drawn inside a thought does without. */
+  function scorer(name, parent, loc, scale = 1.0, halo = true) {
     const root = group(name, parent, loc, scale);
-    shape(`${name}-halo`, circlePts(2.3), glowMaterial(VIOLET, 0.3, 2.0), root);
+    if (halo) shape(`${name}-halo`, circlePts(2.3), glowMaterial(VIOLET, 0.3, 2.0), root);
     for (const side of [-1, 1]) shape(`${name}-foot${side}`, rrectPts(0.5, 0.3, 0.1), material(VIOLET_DEEP), root, [side * 0.5, -1.2]);
     shape(`${name}-body`, rrectPts(2.0, 2.3, 0.3), material(VIOLET, VIOLET_DEEP), root);
     shape(`${name}-brow`, rrectPts(1.6, 0.9, 0.22), material(INK800, INK900), root, [0, 0.5]);

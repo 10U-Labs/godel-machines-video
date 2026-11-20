@@ -163,8 +163,8 @@ function build(T) {
   parts.send(own, [lines[MINE][0], lines[MINE][1], [STORE[0] - 1.8, STORE[1] - 0.6]], tMade + 0.2, tMade + 1.2, { size: 1.0, spin: 3 });
   cues.push({ t: tMade + 0.2, type: 'rise', dur: 1.0, pitch: 1.2, gain: 0.6 });
   const help = parts.folder('help', st.front, [STORE[0] + store.rows[0][0], STORE[1] + store.rows[0][1]],
-    { scale: 0.62, word: 'HELP', bars: [0.9, 0.6, 1.1] });
-  kit.pop(help.root, tMade + 1.2, 0.62, 0.4);
+    { scale: 0.52, word: 'HELP', bars: [0.9, 0.6, 1.1] });
+  kit.pop(help.root, tMade + 1.2, 0.52, 0.4);
   cues.push({ t: tMade + 1.2, type: 'pop', pitch: 1.2 });
   for (const t of parts.write(help, tWrote, 0.2)) cues.push({ t, type: 'tick', pitch: 1.3 });
   cues.push({ t: tWrote + 0.9, type: 'chime', gain: 0.5, dur: 1.6 });

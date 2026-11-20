@@ -83,7 +83,7 @@ function build(T) {
 
   // ------------------------------------------------------------ folders on the computer's panel
   const row = (r) => [STORE[0] + store.rows[r][0], STORE[1] + store.rows[r][1]];
-  const help = parts.folder('help', st.front, row(0), { scale: 0.62, word: 'HELP', bars: [0.9, 0.6, 1.1] });
+  const help = parts.folder('help', st.front, row(0), { scale: 0.52, word: 'HELP', bars: [0.9, 0.6, 1.1] });
   const NAMES = [
     { which: 1, word: 'ANSWER', bars: [0.7, 0.9] }, { which: 2, bars: [0.6, 1.0, 0.5, 0.8] },
     { which: 3, word: 'INFO', bars: [0.8, 0.5, 0.7] }, { which: 4, bars: [1.1, 0.4, 0.9] },
@@ -91,8 +91,8 @@ function build(T) {
   const after = [tNew, tMore + 0.3, T.at(1, 0.13), T.at(1, 0.21)];
   const listed = [help.root];
   NAMES.forEach((name, k) => {
-    const made = parts.folder(`reply${k}`, st.front, row(k + 1), { scale: 0.62, ...name });
-    kit.pop(made.root, after[k], 0.62, 0.3);
+    const made = parts.folder(`reply${k}`, st.front, row(k + 1), { scale: 0.52, ...name });
+    kit.pop(made.root, after[k], 0.52, 0.3);
     cues.push({ t: after[k], type: 'pop', pitch: 1.0 + 0.12 * k });
     const written = parts.write(made, k ? after[k] + 0.25 : tAnswer, k ? 0.07 : 0.2);
     for (const t of written) cues.push({ t, type: 'tick', pitch: 1.3, gain: k ? 0.5 : 1.0 });
@@ -144,7 +144,7 @@ function build(T) {
   // ------------------------------------------------------------ three hours later: fifty-three agents
   parts.move(pip.root, tThree + 0.2, PLACE, 1.1);
   const places = parts.sides(64, { at: STORE, inner: 4.7, dx: 1.75, top: 5.6, dy: 2.15, seed: 12 })
-    .filter(([x, y]) => Math.hypot(x - PLACE[0], y - PLACE[1]) > 1.5).slice(0, 52);
+    .filter(([x, y]) => Math.hypot(x - PLACE[0], y - PLACE[1]) > 2.0).slice(0, 52);
   parts.crowd('agent', st.cast, places, 0.6, 21).forEach((made, i) => {
     const t = tThree + 0.4 + 0.035 * i;
     kit.pop(made.root, t, 0.6, 0.35);

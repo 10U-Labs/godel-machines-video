@@ -9,7 +9,7 @@ Pip: a secret word appears in its hands, and it looks down at it.
 'use strict';
 
 function build(T) {
-  const { fr, sec, key } = kit;
+  const { sec } = kit;
   parts.begin();
 
   const PLACE = [-5.0, -3.6];
@@ -89,12 +89,12 @@ function build(T) {
   // ------------------------------------------------------------ a word for every agent, and one for Pip
   crowd.forEach((made, i) => {
     if (i % 3 === 2) return;
-    const own = parts.word(`word${i}`, st.front, over(made.at), 0.42);
+    const own = parts.word(`word${i}`, st.front, over(made.at), 0.42, false);
     const t = tAny + 0.05 * i;
     kit.pop(own.root, t, 0.42, 0.3);
     if (i % 5 === 0) cues.push({ t, type: 'blip', pitch: 1.0 + 0.04 * (i % 8), gain: 0.4 });
   });
-  const held = parts.word('held', st.front, HELD, 0.8);
+  const held = parts.word('held', st.front, HELD, 0.8, false);
   kit.pop(held.root, tPip + 0.5, 0.8, 0.45);
   cues.push({ t: tPip + 0.5, type: 'pop', pitch: 1.2 });
   cues.push({ t: tPip + 0.6, type: 'chime', gain: 0.6 });
@@ -102,7 +102,6 @@ function build(T) {
   parts.mood(pip, tPip + 0.7, 'glad');
   parts.mood(pip, tHold, 'happy');
   parts.pulse(held.root, tHold + 0.2, 0.8, 1.15, 0.6);
-  for (const f of kit.every(2, fr(tHold), fr(end))) key(held.glow, 'scale', f, 1 + 0.12 * Math.sin(sec(f) * 3));
   parts.live(pip, 7);
 
   // ------------------------------------------------------------ camera
