@@ -5,7 +5,7 @@
 - [The repo is a media factory](the-repo-is-a-media-factory.md) — many productions, the Gödel film is the first; keep one production's material out of shared code; the README repeats the code's settings and names, so it changes with them; which memories hold for every production
 - [Decide within the principles](decide-within-the-principles.md) — where the principles and the memories settle a choice, make it and carry on without asking; the ready mark and a new production's taste choices stay the user's
 - [Never quote the user verbatim](never-quote-the-user-verbatim.md) — restate what the user says in fresh words in memories, commits, comments, and summaries
-- [Render in GitHub workflows](render-in-github-workflows.md) — no local renders; push and let Actions render, fetch artifacts with gh; a manual run with release=true publishes a production
+- [Render in GitHub workflows](render-in-github-workflows.md) — no local renders; push and let Actions render, fetch artifacts with gh; a manual run with release=true publishes a production; a release holds only the film and its captions
 - [No video before the script is ready](no-video-before-the-script-is-ready.md) — a script is a draft until its production.toml says ready = true; the workflow renders nothing for a draft; the mark is the user's to give
 - [Free tools only](free-tools-only.md) — nothing paid, for voice or anything else; open-source models on free runners, licence checked
 - [A release is numbered by the time](a-release-is-numbered-by-the-time.md) — tag is v plus the fourteen-digit UTC time, as in the sibling repos; never a count; the production's name comes first here
@@ -32,7 +32,7 @@
 - [An issue is brought up to date before work](an-issue-is-brought-up-to-date-before-work.md) — fix a stale title and body first, without widening; one problem and one commit per issue, split otherwise
 - [Before an issue is labelled needs decision](before-an-issue-is-labelled-needs-decision.md) — check the memories and the code first, then write what is to be decided into the body; publishing a production needs no decision
 - [A commit closes at least one issue](a-commit-closes-at-least-one-issue.md) — a Closes #N line for each issue; after the push, check that each one closed
-- [Every run is watched](every-run-is-watched.md) — after a push the work goes on; each run gets a background watch; a failed run is fixed in the next push; a push that renames clips and alters no picture adopts them, from a run or, once artifacts are deleted, from a release
+- [Every run is watched](every-run-is-watched.md) — after a push the work goes on; each run gets a background watch; a failed run is fixed in the next push; a push that renames clips and alters no picture adopts them from a run
 
 ## The Gödel machines film
 

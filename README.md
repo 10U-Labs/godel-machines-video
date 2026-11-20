@@ -296,19 +296,15 @@ To keep a production longer than 90 days, publish it as a GitHub release:
 gh workflow run productions.yml -f production=<name> -f release=true
 ```
 
-The run ends by making a release tagged `<name>-v<time>`, where the time is the moment the release is made, in UTC, as fourteen digits: `godel-machines-v20261115172101`. The release holds the film, its captions, and, for each scene, an archive named `<clip name>.zip` that holds what the scene's artifact holds. The repository is public, so anyone can see a release. No push makes one.
+The run ends by making a release tagged `<name>-v<time>`, where the time is the moment the release is made, in UTC, as fourteen digits: `godel-machines-v20261115172101`. The release holds the film and its captions, and nothing else: no scene clips. The repository is public, so anyone can see a release. No push makes one.
 
 Fetch a released film and its captions with the tag:
 
 ```sh
-gh release download <tag> --pattern '<name>.*'
+gh release download <tag>
 ```
 
-Once the artifacts are gone, a run takes the scene clips back from a release in place of rendering them, when it is given the tag to adopt:
-
-```sh
-gh workflow run productions.yml -f production=<name> -f adopt=<tag>
-```
+Once a scene's artifact is gone, the next run renders the scene again, since no release keeps it.
 
 ## Productions
 
@@ -317,6 +313,6 @@ gh workflow run productions.yml -f production=<name> -f adopt=<tag>
 | `godel-machines` | Machines That Rewrite Themselves | A film of nearly four minutes on recursive self-improvement and three machines built on it: the Gödel Machine, the Darwin Gödel Machine, and the Huxley-Gödel Machine |
 | `ultron-self-improving-ai` | Is Ultron a Self-Improving AI? | A film of a little over three minutes that asks whether Ultron, the artificial intelligence of the 2015 film Avengers: Age of Ultron, is what computer science calls a self-improving AI, and answers yes. Its script is a draft, so nothing is rendered for it. Its scenes are written for Blender, which rendered the factory's pictures before Hyperframes did, and they are written again as page scripts once the script is ready |
 | `are-agents-sentient` | Are Agents Sentient? What the Hugging Face Incident Showed | A film on what AI agents wrote to each other during the Hugging Face incident of July 2026, which looks there for three signs of sentience: emotions, a sense of self, and care for others. Its script is a draft, so it has no film yet |
-| `did-agents-form-a-society` | Did AI Agents Form Their Own Society? What the Hugging Face Incident Reveals | A film on what AI agents did as a group during the Hugging Face incident of July 2026. It finds there a shared belief, cooperation, altruism, peer influence, loyalty to a group, and a collective mistake, and asks whether such parts of social life come from being human or from being intelligent and able to talk to others. It tells this as the story of Pip, a made-up agent that does only what real agents did, and runs for nearly eleven minutes. It has no release yet, so its film is in the artifacts of its latest run |
+| `did-agents-form-a-society` | Did AI Agents Form Their Own Society? What the Hugging Face Incident Reveals | A film on what AI agents did as a group during the Hugging Face incident of July 2026. It finds there a shared belief, cooperation, altruism, peer influence, loyalty to a group, and a collective mistake, and asks whether such parts of social life come from being human or from being intelligent and able to talk to others. It tells this as the story of Pip, a made-up agent that does only what real agents did, and runs for nearly eleven minutes. |
 
 Each finished production's film is in its [releases](https://github.com/10U-Labs/media-factory/releases).

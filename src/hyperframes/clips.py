@@ -35,16 +35,15 @@ and that narration is used wherever the clip is:
     <scene>.wav             the scene's narration track
     <scene>.timings.json    the scene's entry in the narration timings
 
-An artifact is deleted 90 days after its run. src/render/release.py keeps the
-same four files of each scene in a GitHub release, as an asset named
-<clip name>.zip.
+An artifact is deleted 90 days after its run, and a release keeps no clips
+(see src/render/release.py), so a scene whose clip is older than that is
+rendered again.
 
 keep takes the clip that Hyperframes rendered from a scene's page (see
 page.py), checks that it has a frame for every frame of the scene, keeps the
 narration beside it and the cues that page.py wrote, and keeps some of its
-frames as stills. adopt takes a clip that an earlier run or a release kept,
-under another name or the same one; --source is the run's id or the release's
-tag. fetch downloads the clip of every scene in the list that plan.py wrote,
+frames as stills. adopt takes a clip that an earlier run kept, under another
+name or the same one; --source is the run's id. fetch downloads the clip of every scene in the list that plan.py wrote,
 from whichever workflow run made it, and puts each clip's narration in place
 of the run's own. render prints the options that Hyperframes renders a clip
 with, for the render workflow to pass on.
@@ -118,19 +117,10 @@ def find(artifact):
     return max(live, key=lambda a: a['created_at'])['workflow_run']['id'] if live else None
 
 
-def download(source, artifact, out):
-    """Unpack into a folder what a workflow run keeps as an artifact, or a release as an asset.
-
-    A run is given by its id, which is all digits, and a release by its tag.
-    The release's asset is <artifact>.zip.
-    """
+def download(run, artifact, out):
+    """Unpack into a folder what a workflow run, given by its id, keeps as an artifact."""
     out.mkdir(parents=True, exist_ok=True)
-    if str(source).isdigit():
-        gh('run', 'download', str(source), '--name', artifact, '--dir', str(out))
-        return
-    with tempfile.TemporaryDirectory() as tmp:
-        gh('release', 'download', source, '--pattern', f'{artifact}.zip', '--dir', tmp)
-        shutil.unpack_archive(Path(tmp) / f'{artifact}.zip', out)
+    gh('run', 'download', str(run), '--name', artifact, '--dir', str(out))
 
 
 def keep_narration(scene, voice, scenes):
@@ -178,7 +168,7 @@ def keep(scene, out, fps):
 
 
 def adopt(scene, source, artifact, narration, scenes):
-    """Download a scene's clip from an earlier run or from a release, with the narration it was rendered for.
+    """Download a scene's clip from an earlier run, with the narration it was rendered for.
 
     A clip kept before narration was kept with it takes its narration from the
     'narration' artifact of the run given for that.

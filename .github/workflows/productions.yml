@@ -88,7 +88,7 @@ on:
   workflow_dispatch:
     inputs:
       adopt:
-        description: The id of an earlier run, or the tag of a release, whose scene clips to take, in place of rendering, for the scenes that have none
+        description: The id of an earlier run whose scene clips to take, in place of rendering, for the scenes that have none
         required: false
         type: string
       production:
@@ -97,7 +97,7 @@ on:
         type: string
       release:
         default: false
-        description: Publish the film, its captions, and its scene clips as a GitHub release, which anyone can see
+        description: Publish the film and its captions as a GitHub release, which anyone can see
         required: false
         type: boolean
 permissions:
