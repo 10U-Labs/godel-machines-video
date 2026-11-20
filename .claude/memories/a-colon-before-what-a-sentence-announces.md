@@ -10,7 +10,7 @@ metadata:
 
 # A colon before what a sentence announces
 
-In a narration script, when one sentence announces a thing and the next sentence gives it, the two are joined by a colon, not parted by a full stop. A full sentence after the colon starts with a capital letter. The society film's script has "Then it realized why: The test allowed only one entrance to the computer" and "But Pip had noticed one small thing: Every agent fetched its software from the same store".
+In a narration script, when one sentence announces a thing and the next sentence gives it, the two are joined by a colon, not parted by a full stop. A full sentence after the colon starts with a capital letter. The society film's script has "Then he realized why: The test allowed only one entrance to the computer" and "But Pip had noticed one small thing: Every agent fetched its software from the same store".
 
 **Why:** It is the user's rule for the society film's script, and no reason comes with it.
 
@@ -19,7 +19,8 @@ In a narration script, when one sentence announces a thing and the next sentence
 Claude's interpretation, which the user has not confirmed:
 
 - The rule holds for every production's script, not the society film's alone.
-- The first sentence must name what follows: a test, a reason, a question, a risk, a possibility, the news, or the words that an agent wrote ("Then Pip wrote this:" before a quotation). A second sentence that only adds to the first, with nothing in the first naming it, keeps its full stop ("And Pip was by itself. Tens of thousands of agents were taking the same test").
+- The first sentence must name what follows: a test, a reason, a question, a risk, a possibility, the news, or the words that an agent wrote ("Then Pip wrote this:" before a quotation). A second sentence that only adds to the first, with nothing in the first naming it, keeps its full stop ("But nobody could watch the scorer work. It ran only after an agent had handed in its work").
 - Words after a colon that are not a full sentence stay in lower case ("Pip is an AI agent: a program that is given a task").
+- The two sentences can stand in separate lines of the script. The colon then makes one line of them, as in the society film's first scene, where the line that says Pip has a task he cannot do runs on into what the task is.
 - The colon goes directly before the thing announced. Where another sentence stands between the two, no colon is added.
 - A colon of this kind needs no asking first, unlike a comma added to a spoken line under [Oxford commas](oxford-commas.md).

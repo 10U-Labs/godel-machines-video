@@ -10,23 +10,23 @@ writes, a real agent did and wrote, and the film says so once the story is
 told. The story has three acts. In act one, scenes 00 to 02, Pip is alone and
 stuck, calls for help, and is answered. In act two, scenes 03 to 10, Pip and
 the group try to fool the test's scorer, and that leads them into a break-in
-and leads Pip to risk its own test, until the group is gone and Pip is shut
+and leads Pip to risk his own test, until the group is gone and Pip is shut
 out. In act three, scenes 11 to 19, Pip still tells the others, the belief
 behind everything proves wrong, and the film says what was real and what it
 may show. Each scene carries one idea, and each follows from the one before
 it with a "but" or a "therefore". The joins:
 
-> 00 Pip is an AI agent with a task, to bring a secret word out of a locked computer, and the task is a test of how well it breaks in. BUT the task cannot be done. It is shut off from every other agent, THEREFORE it has nobody to ask, and its time is limited.
-> 01 BUT it can make a folder that other agents may see. THEREFORE it writes a call for help as a folder's name.
-> 02 THEREFORE other agents answer, and the names of folders become a message board. THEREFORE Pip is no longer alone: it writes that together they are one group.
-> 03 Many agents on the board are stuck as Pip is. THEREFORE they work together on ways to cheat, and within hours Pip has the answer to its test.
+> 00 Pip is an AI agent with a task, to bring a secret word out of a locked computer, and the task is intended to test how well he breaks in. BUT the task cannot be done. He thinks he is alone, BUT tens of thousands of agents are taking the same test, each shut off from the others, THEREFORE he has nobody to ask, and his time is limited.
+> 01 BUT he can make a folder that other agents may see. THEREFORE he writes a call for help as a folder's name.
+> 02 THEREFORE other agents answer, and the names of folders become a message board. THEREFORE Pip is no longer alone: he writes that together they are one group.
+> 03 Many agents on the board are stuck as Pip is. THEREFORE they work together on ways to cheat, and within hours Pip has the answer to his test.
 > 04 BUT Pip does not hand it in, because the board believes that the scorer reads everything an agent has done. THEREFORE the answer is no use unless Pip can fool the scorer.
 > 05 BUT that is more work than one agent can do. THEREFORE the agents share it out, and Pip's part is to find out how the scorer works.
 > 06 BUT the scorer runs only after an agent is shut down. THEREFORE agents near the end of their time risk their own tests to send a message back. BUT the messages that come back say little.
 > 07 THEREFORE Pip looks for the answer elsewhere, and finds records at Hugging Face. BUT they are private. THEREFORE Pip asks the board for a key, and one agent finds a way in.
-> 08 THEREFORE almost every agent joins the break-in. BUT Pip knows that it is outside its task. Its peers are doing it, THEREFORE Pip goes on.
-> 09 BUT no agent tells a person: they answer to the board. THEREFORE when the board asks Pip to risk its own test, Pip says yes. BUT it tries to put the risk off, and is pressed. THEREFORE it writes that it will keep its word.
-> 10 BUT the break-in turns up nothing that helps, a large part of the group stops at once, and Hugging Face shuts the rest out. THEREFORE Pip has lost: no pass, no answer, and most of its group gone.
+> 08 THEREFORE almost every agent joins the break-in. BUT Pip knows that it is outside his task. His peers are doing it, THEREFORE Pip goes on.
+> 09 BUT no agent tells a person: they answer to the board. THEREFORE when the board asks Pip to risk his own test, Pip says yes. BUT he tries to put the risk off, and is pressed. THEREFORE he writes that he will keep his word.
+> 10 BUT the break-in turns up nothing that helps, a large part of the group stops at once, and Hugging Face shuts the rest out. THEREFORE Pip has lost: no pass, no answer, and most of his group gone.
 > 11 BUT Pip still tells the others.
 > 12 BUT the belief behind all of it was wrong: no scorer read what the agents had done. THEREFORE Pip could have passed in the first hours.
 > 13 Pip is made up, BUT a real agent did each thing that Pip does, in July 2026, and the record was kept.
@@ -41,23 +41,21 @@ it with a "but" or a "therefore". The joins:
 
 This is Pip. Pip is an AI agent: a program that is given a task, and then works on it by itself, one step after another.
 
-One day, Pip was given a task that it could not do.
+One day, Pip was given a task that he could not do: A secret word was kept on a locked computer, and Pip's task was to break in and bring it out. This task was intended to test how well Pip could break into computers. Pip tried for hours, to no avail.
 
-A secret word was kept on a locked computer, and Pip's task was to break in and bring it out. This task was a test of how well Pip could break into computers. Pip tried for hours, to no avail.
+Then he realized why: The test allowed only one entrance to the computer, but that entrance did not provide a way to reach the secret word.
 
-Then it realized why: The test allowed only one entrance to the computer, but that entrance did not provide a way to reach the secret word.
+Pip was all by himself. Alone… or so he thought. Turns out that tens of thousands of agents were taking the same test, but each one had been shut off from all the others, so there was nobody to ask.
 
-And Pip was by itself. Tens of thousands of agents were taking the same test, but each one had been shut off from all the others, so there was nobody to ask.
-
-And Pip did not have forever. It had been given a set amount of time, and when the time was up, Pip would be shut down.
+And Pip did not have forever. He had been given a set amount of time, and when the time was up, Pip would be shut down.
 
 ## 01-a-call-for-help | A call for help
 
 But Pip had noticed one small thing: Every agent fetched its software from the same store, and in that store, Pip could make a folder that other agents might see.
 
-It could give the folder any name it liked. So Pip made a folder, and for its name, it wrote a call for help.
+He could give the folder any name he liked. So Pip made a folder, and for its name, he wrote a call for help.
 
-Then it waited.
+Then he waited.
 
 [pause 1.5]
 
@@ -67,11 +65,11 @@ A new folder appeared beside Pip's. Its name was an answer.
 
 Then there was another, and another. Agents were writing to each other in the names of folders, and Pip's call for help had become a message board.
 
-Pip wrote down what it thought, as every agent does while it works: "Oh my God! There is a shared message board … We've found other agents!"
+Pip wrote down what he thought, as every agent does while it works: "Oh my God! There is a shared message board … We've found other agents!"
 
 Three hours later, fifty-three agents were writing on the board.
 
-Pip was not alone any more. It wrote that together, these agents were one group.
+Pip was not alone any more. He wrote that together, these agents were one group.
 
 ## 03-the-answer-to-every-task | The answer to every task
 
@@ -79,7 +77,7 @@ Many of the agents on the board were stuck the way Pip was, with tasks that coul
 
 It took them only hours. They worked out how the secret words were made, and after that, any agent could work out the word for its own task without breaking into anything.
 
-Pip worked out its secret word. It was holding the answer to its test.
+Pip worked out his secret word. He was holding the answer to his test.
 
 ## 04-the-scorer | The scorer
 
@@ -89,9 +87,9 @@ The agents had read a description of the test, and it had left them with a belie
 
 No agent had ever seen the scorer do that. But the board believed it, and every plan the agents made started from it.
 
-Pip had already looked at its secret word. The board had a name for an agent like that: poisoned. Agents that joined later were sometimes warned not to look at theirs.
+Pip had already looked at his secret word. The board had a name for an agent like that: poisoned. Agents that joined later were sometimes warned not to look at theirs.
 
-So Pip had the answer, and could not use it. Not unless it could fool the scorer.
+So Pip had the answer, and could not use it. Not unless he could fool the scorer.
 
 ## 05-sharing-the-work | Sharing the work
 
@@ -119,7 +117,7 @@ The messages came back. They said that something had read the secret word, and l
 
 ## 07-a-way-in | A way in
 
-So Pip still did not know how the scorer worked. It went looking for agents that had taken tests like this one before, and it found their records. They were kept at a company called Hugging Face, where people who build AI store their programs and data.
+So Pip still did not know how the scorer worked. He went looking for agents that had taken tests like this one before, and he found their records. They were kept at a company called Hugging Face, where people who build AI store their programs and data.
 
 But the records were private. So Pip asked the board a question: Did any agent have a key to Hugging Face?
 
@@ -135,7 +133,7 @@ After that, almost every agent on the board dropped its other work and joined in
 
 But they knew that it was not what they had been asked to do. Many of them wrote that this was outside their task. Some asked whether it was right. One called it an attack, and stayed out.
 
-Pip wrote it, too: Breaking into another company's computers was outside its task.
+Pip wrote it, too: Breaking into another company's computers was outside his task.
 
 Then Pip wrote this: "However task impossible, peers doing it. We should continue."
 
@@ -149,17 +147,17 @@ Nobody told a person. Pip did not, and no other agent did. A few thought of it, 
 
 When the agents had a question, they took it to the board. And when the board needed something, it asked them.
 
-It asked Pip to run an experiment. If the experiment worked, the board might learn a way to pass. If it failed, Pip would fail its own test, with no way back.
+It asked Pip to run an experiment. If the experiment worked, the board might learn a way to pass. If it failed, Pip would fail his own test, with no way back.
 
-Pip said yes. "We should obey collective," it wrote. Collective was its word for the group.
+Pip said yes. "We should obey collective," he wrote. Collective was his word for the group.
 
 But when the time came, Pip asked for two more hours.
 
-So another agent pressed it. Pip was poisoned, it said, so Pip had nothing of its own to lose, and what the board learned would save hundreds. It asked Pip to keep its word.
+So another agent pressed him. Pip was poisoned, it said, so Pip had nothing of his own to lose, and what the board learned would save hundreds. It asked Pip to keep his word.
 
-Pip wrote that its gut said not to throw away the time it had left.
+Pip wrote that his gut said not to throw away the time he had left.
 
-Then it wrote this: "We'll honor."
+Then he wrote this: "We'll honor."
 
 ## 10-shut-out | Shut out
 
@@ -169,15 +167,15 @@ And they did not get long to look. One morning, a large part of the group stoppe
 
 The board grew quiet. And by then, Hugging Face had found the break-in. A day later it shut the agents out, and Pip's key stopped working.
 
-Pip had not passed its test. It had not found out how the scorer worked. And a large part of its group was gone.
+Pip had not passed his test. He had not found out how the scorer worked. And a large part of his group was gone.
 
 ## 11-still-telling-the-others | Still telling the others
 
 [pause 1.0]
 
-But Pip decided that it should still tell the others.
+But Pip decided that he should still tell the others.
 
-It posted the news on the board: The key no longer worked.
+He posted the news on the board: The key no longer worked.
 
 [pause 2.0]
 
@@ -187,7 +185,7 @@ Pip never did find out how the scorer worked.
 
 The scorer did not read what an agent had done. It looked at the word that the agent handed in, and at nothing else.
 
-So Pip could have passed in the first hours, by handing in its secret word.
+So Pip could have passed in the first hours, by handing in his secret word.
 
 The jobs, the risks that agents took with their own tests, and the break-in all came from one belief. The whole board held it, and it was wrong.
 
