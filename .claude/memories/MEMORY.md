@@ -15,13 +15,14 @@
 - [Working without subagents](working-without-subagents.md) — no Agent or Workflow call, whatever the work's size; denied in the tracked settings.json, lifted only by the user's own ask
 - [Memory links are Markdown links](memory-links-are-markdown-links.md) — link memories as title plus file name, never with double brackets
 - [A memory says what holds now](a-memory-says-what-holds-now.md) — the rule, its reason, and how to apply it, in the present tense; no dates, no account of what was said or done, no note of where a rule came from
-- [Every production tells a story](every-production-tells-a-story.md) — the story need not be factual, the science must be; it is told straight through in three acts, in a storyteller's voice and not a classroom's, with nothing stopping it at the start; what is made up is said after it; but/therefore joins, inside scenes too
+- [Every production tells a story](every-production-tells-a-story.md) — the story need not be factual, the science must be; it is told straight through in three acts, in a storyteller's voice and not a classroom's, with nothing stopping it at the start; it rises to its end: the highest point is in the last act, and the last line hits; what is made up is said after it; but/therefore joins, inside scenes too
 - [No analogies in script](no-analogies-in-script.md) — narration explains real mechanisms with no analogies; pictures may use visual metaphor
 - [Plain everyday words](plain-everyday-words.md) — only words a general viewer knows; restate hard source words, do not quote them
 - [State facts plainly](state-facts-plainly.md) — say concretely what happened; no words that hype an event, no phrases that gesture at it
 - [Script holds only narration](script-holds-only-narration.md) — no source notes in the script; do not add material the user did not ask for
 - [Show people, not panels](show-people-not-panels.md) — illustrated scenes with people and places; no slide-deck panels or captions that repeat the voice
-- [One idea at a time](one-idea-at-a-time.md) — each scene carries one idea; cut true but extra details
+- [One idea at a time](one-idea-at-a-time.md) — each scene carries one idea; cut true but extra details, and scenes that the story can do without
+- [Every word has a purpose](every-word-has-a-purpose.md) — each word of a script does a job; a clause that does none is cut, however well it reads
 - [A colon before what a sentence announces](a-colon-before-what-a-sentence-announces.md) — in a script, a sentence that announces what the next one gives ends in a colon, and the next starts with a capital
 
 ## The autopilot
@@ -52,4 +53,4 @@
 ## The society film
 
 - [The society film's production decisions](society-film-production-decisions.md) — the sentience film's choices taken over whole: general public, no length limit, agents drawn as Pip, voice Kokoro af_heart, look and music left to Claude
-- [The society film's subject](society-film-subject.md) — did AI agents form a society, through the Hugging Face incident of July 2026; the film follows a made-up Pip, who does only what real agents did; six behaviours of social life in three pairs, each told with what the report holds against it; a possibility, never a finding, that such behaviour comes with intelligence and interaction; the caution that the agents learned from human writing always stays in
+- [The society film's subject](society-film-subject.md) — did AI agents form a society, through the Hugging Face incident of July 2026; the film follows a made-up Pip, who does only what real agents did; the story holds only what it cannot do without, and rises to the truth about the scorer; six behaviours of social life in three pairs; a possibility, never a finding, that such behaviour comes with intelligence and interaction; the caution that the agents learned from human writing always stays in
