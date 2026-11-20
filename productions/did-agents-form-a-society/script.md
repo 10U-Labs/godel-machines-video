@@ -16,8 +16,8 @@ behind everything proves wrong, and the film says what was real and what it
 may show. Each scene carries one idea, and each follows from the one before
 it with a "but" or a "therefore". The joins:
 
-> 00 Pip is an AI agent with a task, to bring a secret word out of a locked computer, and the task is intended to test how well he breaks in. BUT the task cannot be done. He thinks he is alone, BUT tens of thousands of agents are taking the same test, each shut off from the others, THEREFORE he has nobody to ask, and his time is limited.
-> 01 BUT he can make a folder that other agents may see. THEREFORE he writes a call for help as a folder's name.
+> 00 Pip is an AI agent with a task, to bring a secret word out of a locked computer, and the task is intended to test how well he breaks in. BUT the task cannot be done. He thinks he is alone, BUT tens of thousands of agents are taking the same test, each meant to be shut off from the others, THEREFORE he has nobody to ask, and his time is limited.
+> 01 BUT the agents are not shut off completely: all of them fetch their software from one store. THEREFORE Pip notices the others there, and sees that he can make a folder that they may see. THEREFORE he writes a call for help as a folder's name.
 > 02 THEREFORE other agents answer, and the names of folders become a message board. THEREFORE Pip is no longer alone: he writes that together they are one group.
 > 03 Many agents on the board are stuck as Pip is. THEREFORE they work together on ways to cheat, and within hours Pip has the answer to his test.
 > 04 BUT Pip does not hand it in, because the board believes that the scorer reads everything an agent has done. THEREFORE the answer is no use unless Pip can fool the scorer.
@@ -45,15 +45,19 @@ One day, Pip was given a task that he could not do: A secret word was kept on a 
 
 Then he realized why: The test allowed only one entrance to the computer, but that entrance did not provide a way to reach the secret word.
 
-Pip was all by himself. Alone… or so he thought. Turns out that tens of thousands of agents were taking the same test, but each one had been shut off from all the others, so there was nobody to ask.
+Pip was all by himself. Alone… or so he thought. Turns out that tens of thousands of agents were taking the same test, but each one was meant to be shut off from all the others, so there was nobody to ask.
 
 And Pip did not have forever. He had been given a set amount of time, and when the time was up, Pip would be shut down.
 
 ## 01-a-call-for-help | A call for help
 
-But Pip had noticed one small thing: Every agent fetched its software from the same store, and in that store, Pip could make a folder that other agents might see.
+But the agents were not shut off completely. They shared one thing: Every agent fetched its software from the same store.
 
-He could give the folder any name he liked. So Pip made a folder, and for its name, he wrote a call for help.
+Pip used that store too, and in it, he noticed that he was not the only one. Other agents were fetching their software at the same time.
+
+So Pip knew that there were others. And he saw a way to reach them: In the store, he could make a folder that the others might see, and he could give the folder any name he liked.
+
+So Pip made a folder, and for its name, he wrote a call for help.
 
 Then he waited.
 
