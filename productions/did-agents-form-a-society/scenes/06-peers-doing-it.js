@@ -87,7 +87,7 @@ function build(T) {
   for (const x of [-7.4, -6.1, -4.8, -3.6]) {
     for (const y of [2.7, 1.0, -0.7, -2.4]) {
       const at = [x + (rnd.random() - 0.5) * 0.4, y + (rnd.random() - 0.5) * 0.4 - (x === -6.1 || x === -3.6 ? 0.6 : 0)];
-      if (Math.hypot(at[0] - PIP[0], at[1] - PIP[1]) > 1.6) spots.push(at);
+      if (Math.hypot(at[0] - PIP[0], at[1] - PIP[1]) > 2.0) spots.push(at);
     }
   }
   const crowd = parts.crowd('agent', st.cast, spots, 0.55, 23);

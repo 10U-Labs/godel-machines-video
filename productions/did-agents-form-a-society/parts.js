@@ -190,6 +190,15 @@ const parts = (() => {
     pipArm(p, 'right', t, 4, dur);
   }
 
+  /* An agent that is shut down from the scene's first frame. Give it no life. */
+  function dark(p) {
+    for (const lit of [...p.lights, p.halo, p.bulbGlow]) alpha(lit, 1, 0.0);
+    key(p.antenna, 'rot', 1, 0.55);
+    key(p.rig, 'loc', 1, [0, -0.07, 0]);
+    key(p.rig, 'scale', 1, [1.02, 0.95, 1]);
+    for (const [side, s] of [['left', -1], ['right', 1]]) key(p.arms[side], 'rot', 1, s * 4 * Math.PI / 180);
+  }
+
   // ---------------------------------------------------------------- motion
 
   /* Move a node to a place by t + dur, from where it was last put. Call one node's moves in the order they happen. */
@@ -752,7 +761,7 @@ const parts = (() => {
   }
 
   return {
-    STEP, BODIES, begin, group, stage, ramp, edge, zoom, body, agent, mini, miniOff, bob, mood, blink, live, off,
+    STEP, BODIES, begin, group, stage, ramp, edge, zoom, body, agent, mini, miniOff, bob, mood, blink, live, off, dark,
     move, vanish, pulse, shake, spark, along, send,
     folder, write, slip, board, post, sides, crowd, gathering, clock, drain, word, lock, doorKey, sheet, writing, check, cross,
     computer, flicker, scorer, light, thought, notion, room, target, tool, store, building,
