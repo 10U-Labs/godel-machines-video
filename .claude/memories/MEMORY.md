@@ -15,7 +15,7 @@
 - [Working without subagents](working-without-subagents.md) — no Agent or Workflow call, whatever the work's size; denied in the tracked settings.json, lifted only by the user's own ask
 - [Memory links are Markdown links](memory-links-are-markdown-links.md) — link memories as title plus file name, never with double brackets
 - [A memory says what holds now](a-memory-says-what-holds-now.md) — the rule, its reason, and how to apply it, in the present tense; no dates, no account of what was said or done, no note of where a rule came from
-- [Every production tells a story](every-production-tells-a-story.md) — the story need not be factual, the science must be; the opening is a story, not a fact: someone who is stopped and acts; feeling; a question and a payoff; but/therefore joins, inside scenes too
+- [Every production tells a story](every-production-tells-a-story.md) — the story need not be factual, the science must be; it is told straight through in three acts, in a storyteller's voice and not a classroom's, with nothing stopping it at the start; what is made up is said after it; but/therefore joins, inside scenes too
 - [No analogies in script](no-analogies-in-script.md) — narration explains real mechanisms with no analogies; pictures may use visual metaphor
 - [Plain everyday words](plain-everyday-words.md) — only words a general viewer knows; restate hard source words, do not quote them
 - [State facts plainly](state-facts-plainly.md) — say concretely what happened; no words that hype an event, no phrases that gesture at it
