@@ -31,7 +31,7 @@ function build(T) {
     const s = made.sx;
     kit.pop(made, 0.4 + 0.25 * k, s, 0.4);
     kit.key(made, 'loc', kit.fr(GONE[k]), [made.x, made.y, made.z]);
-    kit.key(made, 'loc', kit.fr(GONE[k] + 0.6), [made.x, made.y - 7.5, made.z]);
+    kit.key(made, 'loc', kit.fr(GONE[k] + 0.7), [made.x, made.y - 13, made.z]);
     kit.key(made, 'rot', kit.fr(GONE[k]), 0.0);
     kit.key(made, 'rot', kit.fr(GONE[k] + 0.6), k === 1 ? 0.2 : -0.5);
     cues.push({ t: 0.4 + 0.25 * k, type: 'pop', pitch: 0.8 + 0.1 * k }, { t: GONE[k], type: 'whoosh', pitch: 0.8, gain: 0.5 });

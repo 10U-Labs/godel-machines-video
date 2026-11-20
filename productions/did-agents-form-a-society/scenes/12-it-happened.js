@@ -17,7 +17,7 @@ function build(T) {
 
   const PIP = [-0.2, 0.9];
   const ROW = -2.5;
-  const OPENAI = [-5.6, -0.4];
+  const OPENAI = [-5.2, -0.4];
   const GROUND = -2.4;
   const FIELD = { x0: -0.9, y0: 1.3, step: 0.172, cols: 50, rows: 24 };
   const HF = [3.9, -0.3];
@@ -91,7 +91,7 @@ function build(T) {
   });
 
   [0, 1, 2, 3].forEach((k) => {
-    const day = parts.group(`day${k}`, st.front, [1.2 + 0.9 * k, 3.75]);
+    const day = parts.group(`day${k}`, st.front, [1.0 + 1.1 * k, 3.75]);
     kit.shape(`day${k}-glow`, kit.circlePts(0.55), kit.glowMaterial(kit.AMBER, 0.6), day);
     kit.shape(`day${k}-sun`, kit.circlePts(0.26), kit.material('#fff2c4', kit.AMBER), day);
     kit.pop(day, tDays + 0.3 * k, 1.0, 0.3, tReached - 0.5);
@@ -160,8 +160,8 @@ function build(T) {
 
   // ------------------------------------------------------------ camera
   kit.camera(parts.ramp([
-    [0, [0, 0.2, 20.5]], [tOpenAI - 0.3, [0.2, 0.2, 19.6]], [tOpenAI + 1.4, [0.6, 0.4, 21]], [tReached, [0.8, 0.4, 20.6]],
-    [tKept, [0.6, 0.3, 20.2]], [end, [0.9, 0.1, 19.2]],
+    [0, [0, 0.2, 20.5]], [tOpenAI - 0.3, [0.1, 0.2, 19.6]], [tOpenAI + 1.4, [0.3, 0.4, 21]], [tReached, [0.35, 0.4, 20.8]],
+    [tKept, [0.3, 0.3, 20.6]], [end, [0.35, 0.2, 20.2]],
   ]), 1.0);
   return cues;
 }

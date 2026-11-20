@@ -94,10 +94,11 @@ function build(T) {
     kit.pop(light, tIntelligent + 0.15 * k, 1.0, 0.3);
     cues.push({ t: tIntelligent + 0.15 * k, type: 'blip', pitch: 1.0 + 0.1 * k, gain: 0.6 });
   });
+  const talk = parts.group('own-talk', st.props, [0, 0]);        // made after the card, so that its lines lie over the card
   [[0, 1], [2, 3], [0, 2], [1, 3], [0, 3], [1, 2]].forEach(([i, j], k) => {
     const from = [OWN[0] + FOUR[i][0] * 0.6, OWN[1] + FOUR[i][1] * 0.6 - 0.05];
     const to = [OWN[0] + FOUR[j][0] * 0.6, OWN[1] + FOUR[j][1] * 0.6 - 0.05];
-    kit.grow(kit.branch(`own-link${k}`, st.props, from, to, kit.MINT, 0.08, 0.8), tTalk + 0.15 * k, 0.35);
+    kit.grow(kit.branch(`own-link${k}`, talk, from, to, kit.MINT, 0.08, 0.9), tTalk + 0.15 * k, 0.35);
     cues.push({ t: tTalk + 0.15 * k, type: 'tick', pitch: 1.0 + 0.08 * k, gain: 0.6 });
   });
   const which = [kit.ring('which0', st.front, COPIED, 2.3, kit.PAPER, 0.06), kit.ring('which1', st.front, OWN, 2.3, kit.PAPER, 0.06)];

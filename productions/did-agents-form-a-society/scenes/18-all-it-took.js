@@ -14,13 +14,13 @@ function build(T) {
   parts.begin();
 
   const [COLS, ROWS] = [8, 5];
-  const at = (c, r) => [-7.3 + c * 1.42, 3.3 - r * 1.62];
-  const HF = [6.25, 0.1];
+  const at = (c, r) => [-7.0 + c * 1.42, 3.3 - r * 1.62];
+  const HF = [6.5, 0.1];
   const FOLDER = [-2.7, 0.0];
 
   const cues = [];
   const end = sec(kit.frames());
-  const tEach = T.at(0, 0.12);
+  const tEach = T.at(0, 0.12);                   // the first line speaks of each agent's own task
   const tShut = T.at(0, 0.33);
   const tFound = T.at(0, 0.52);
   const tBelief = T.at(0, 0.66);
@@ -46,7 +46,7 @@ function build(T) {
       kit.shape(`room${c}_${r}-wall`, kit.rrectPts(1.12, 1.16, 0.2), wall, cell);
       kit.shape(`room${c}_${r}-in`, kit.rrectPts(0.98, 1.02, 0.14), inside, cell);
       parts.mini(`one${c}_${r}`, cell, [0, -0.08], 0.36, c === 2 && r === 2 ? 0 : 1 + rnd.randrange(5));
-      const t = tEach - 1.2 + 0.05 * (c + r) + 0.3 * rnd.random();
+      const t = 0.4 + 0.07 * (c + r) + 0.3 * rnd.random();
       kit.pop(cell, t, 1.0, 0.3);
       if ((c + r * COLS) % 5 === 0) cues.push({ t, type: 'blip', pitch: 0.7 + 0.05 * ((c + r) % 8), gain: 0.35 });
     }
@@ -88,7 +88,7 @@ function build(T) {
 
   // ------------------------------------------------------------ and broke into a company together
   const hf = parts.building('hf', web, HF, { w: 6.6, h: 4.6, scale: 0.5, label: 'Hugging Face', rows: 4, seed: 5 });
-  kit.pop(hf.root, tEach - 0.9, 0.5, 0.4);
+  kit.pop(hf.root, tEach - 0.2, 0.5, 0.4);
   [0, 1, 2, 3, 4].forEach((r) => {
     const from = at(COLS - 1, r);
     const way = kit.branch(`way${r}`, links, [from[0] + 0.56, from[1]], [HF[0] - 1.65, HF[1] + (2 - r) * 0.3], kit.CORAL, 0.09, 0.9);
@@ -115,6 +115,6 @@ function build(T) {
   kit.veil(end - 2.3, 1.8);
 
   // ------------------------------------------------------------ camera
-  kit.camera(parts.ramp([[0, [0.2, 0.3, 21.5]], [tFound, [0.3, 0.3, 21]], [tBroke, [0.6, 0.3, 21]], [tClear, [0.5, 0.25, 21]], [tAll, [0, 0, 19]], [end, [0, 0, 17]]]), 1.0);
+  kit.camera(parts.ramp([[0, [0.2, 0.3, 21.5]], [tFound, [0.3, 0.3, 21.2]], [tBroke, [0.4, 0.3, 21.2]], [tClear, [0.4, 0.25, 21]], [tAll, [0, 0, 19]], [end, [0, 0, 17]]]), 1.0);
   return cues;
 }

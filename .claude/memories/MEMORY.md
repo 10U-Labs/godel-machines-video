@@ -52,5 +52,5 @@
 
 ## The society film
 
-- [The society film's production decisions](society-film-production-decisions.md) — the sentience film's choices taken over whole: general public, no length limit, agents drawn as Pip, voice Kokoro af_heart, look and music left to Claude
+- [The society film's production decisions](society-film-production-decisions.md) — the sentience film's choices taken over whole: general public, no length limit, agents drawn as Pip, voice Kokoro af_heart, look and music left to Claude; within the look, one thing has one picture, and no message text is made up for the screen
 - [The society film's subject](society-film-subject.md) — did AI agents form a society, through the Hugging Face incident of July 2026; the film follows a made-up Pip, who does only what real agents did; the story holds only what it cannot do without, and rises to the truth about the scorer; six behaviours of social life in three pairs; a possibility, never a finding, that such behaviour comes with intelligence and interaction; the caution that the agents learned from human writing always stays in

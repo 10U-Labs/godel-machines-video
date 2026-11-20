@@ -12,8 +12,8 @@ function build(T) {
   const { sec } = kit;
   parts.begin();
 
-  const COLS = [-5.3, 0.0, 5.3];
-  const [TOP, LOW] = [0.75, -3.3];                 // where the people stand, and where the agents do
+  const COLS = [-5.0, 0.2, 5.2];
+  const [TOP, LOW] = [0.55, -3.3];                 // where the people stand, and where the agents do
   const cues = [];
   const end = sec(kit.frames());
   const tNeed = T.at(0, 0.3);
@@ -32,34 +32,41 @@ function build(T) {
     cues.push({ t, type: 'pop', pitch });
   };
 
+  // ------------------------------------------------------------ among people
+  [-2.4, -1.2, 0, 1.2, 2.4].forEach((x, k) => {
+    const made = parts.human(`among${k}`, st.cast, [x, 0.2 + 0.25 * (k % 2)], 0.46, k, k < 2 ? 1 : -1);
+    kit.pop(made.root, 0.3 + 0.1 * k, 0.46, 0.4, tNeed - 0.6 + 0.04 * k);
+    cues.push({ t: 0.3 + 0.1 * k, type: 'pop', pitch: 0.7 + 0.08 * k, gain: 0.6 });
+  });
+
   // ------------------------------------------------------------ people need each other to stay alive
   const need = parts.group('need', st.props, [COLS[0], TOP]);
-  parts.fire('need-fire', need, [0, 0.2], 0.8);
+  parts.fire('need-fire', need, [0, 0.25], 1.0);
   shown(need, tNeed, 1.0, 0.8);
-  const givers = [parts.human('giver', st.cast, [COLS[0] - 1.35, TOP], 0.36, 3, 1), parts.human('taker', st.cast, [COLS[0] + 1.35, TOP], 0.36, 1, -1)];
-  givers.forEach((made, k) => kit.pop(made.root, tNeed + 0.15 * k, 0.36, 0.4));
-  const food = parts.bowl('food', st.front, [COLS[0] - 0.85, TOP + 1.0], 0.75);
-  kit.pop(food, tNeed + 0.5, 0.75, 0.3);
+  const givers = [parts.human('giver', st.cast, [COLS[0] - 1.65, TOP], 0.46, 3, 1), parts.human('taker', st.cast, [COLS[0] + 1.65, TOP], 0.46, 1, -1)];
+  givers.forEach((made, k) => kit.pop(made.root, tNeed + 0.15 * k, 0.46, 0.4));
+  const food = parts.bowl('food', st.front, [COLS[0] - 0.75, TOP + 1.55], 0.85);
+  kit.pop(food, tNeed + 0.5, 0.85, 0.3);
   kit.key(givers[0].arm, 'rot', kit.fr(tNeed + 0.6), 0.0);
   kit.key(givers[0].arm, 'rot', kit.fr(tNeed + 1.1), 1.2);
-  parts.move(food, tNeed + 1.3, [COLS[0] + 0.8, TOP + 1.05], 0.9);
+  parts.move(food, tNeed + 1.3, [COLS[0] + 0.75, TOP + 1.6], 0.9);
   kit.key(givers[1].arm, 'rot', kit.fr(tNeed + 1.6), 0.0);
   kit.key(givers[1].arm, 'rot', kit.fr(tNeed + 2.1), -1.2);
   cues.push({ t: tNeed + 1.3, type: 'whoosh', gain: 0.4 });
 
   // ------------------------------------------------------------ people come from a long line of ancestors
-  [0.36, 0.3, 0.25, 0.2, 0.16, 0.13].forEach((s, k) => {
-    const back = parts.human(`ancestor${k}`, kit.layer(`far${k}`, 0.5 - 0.02 * k, { sharp: true }), [COLS[1] + 1.1 - 0.62 * k + 0.05 * k * k, TOP + 0.34 * k - 0.012 * k * k], s, k, -1);
+  [0.46, 0.38, 0.31, 0.25, 0.2, 0.16].forEach((s, k) => {
+    const back = parts.human(`ancestor${k}`, kit.layer(`far${k}`, 0.5 - 0.02 * k, { sharp: true }), [COLS[1] + 1.4 - 0.8 * k + 0.065 * k * k, TOP + 0.43 * k - 0.015 * k * k], s, k, -1);
     kit.pop(back.root, tAncestors + 0.22 * k, s, 0.35);
     cues.push({ t: tAncestors + 0.22 * k, type: 'blip', pitch: 1.1 - 0.08 * k, gain: 0.5 });
   });
 
   // ------------------------------------------------------------ people have feelings for each other
-  const lovers = [parts.human('lover0', st.cast, [COLS[2] - 1.0, TOP], 0.36, 4, 1), parts.human('lover1', st.cast, [COLS[2] + 1.0, TOP], 0.36, 2, -1)];
-  lovers.forEach((made, k) => kit.pop(made.root, tFeel + 0.15 * k, 0.36, 0.4));
-  const love = parts.heart('love', st.front, [COLS[2], TOP + 2.35], 0.9);
-  shown(love, tFeel + 0.6, 0.9, 1.2);
-  for (let t = tFeel + 1.4; t < end - 0.5; t += 1.1) parts.pulse(love, t, 0.9, 1.18, 0.4);
+  const lovers = [parts.human('lover0', st.cast, [COLS[2] - 1.25, TOP], 0.46, 4, 1), parts.human('lover1', st.cast, [COLS[2] + 1.25, TOP], 0.46, 2, -1)];
+  lovers.forEach((made, k) => kit.pop(made.root, tFeel + 0.15 * k, 0.46, 0.4));
+  const love = parts.heart('love', st.front, [COLS[2], TOP + 2.95], 1.1);
+  shown(love, tFeel + 0.6, 1.1, 1.2);
+  for (let t = tFeel + 1.4; t < end - 0.5; t += 1.1) parts.pulse(love, t, 1.1, 1.18, 0.4);
 
   // ------------------------------------------------------------ an agent has no body to feed or keep safe
   const rule = kit.branch('rule', st.props, [-7.6, -0.25], [7.6, -0.25], kit.MIST, 0.04, 0.4);
@@ -91,7 +98,7 @@ function build(T) {
   });
   const unknown = parts.heart('unknown', st.front, [COLS[2], LOW + 2.35], 0.9, kit.SLATE, kit.INK500);
   shown(unknown, tNoFeel + 0.6, 0.9, 0.9);
-  const what = kit.text('what', '?', 0.62, kit.material(kit.PAPER), st.front, [COLS[2], LOW + 2.37]);
+  const what = kit.text('what', '?', 0.62, kit.material(kit.PAPER), parts.group('what-over', st.front, [COLS[2], LOW + 2.37]), [0, 0]);
   kit.appear(what, tNoFeel + 1.0, null, 0.25);
   parts.live(hungry, 41, tNoBody);
   parts.live(lone, 42, tNoAncestors);

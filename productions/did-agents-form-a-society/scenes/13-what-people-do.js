@@ -15,7 +15,7 @@ function build(T) {
   parts.begin();
 
   const COLS = [-5.3, 0.0, 5.3];
-  const ROWS = [2.0, -1.85];
+  const ROWS = [2.15, -1.75];
   const cues = [];
   const end = sec(kit.frames());
   const tDid = T.at(0, 0.6);
@@ -64,7 +64,7 @@ function build(T) {
   cues.push({ t: tBut, type: 'whoosh', gain: 0.6 });
 
   // ------------------------------------------------------------ what people do when they live together
-  const town = parts.group('town', st.props, [-3.9, -0.5]);
+  const town = parts.group('town', st.front, [-3.9, -0.5]);
   parts.fire('fire', town, [0, -1.55]);
   kit.pop(town, tPeople, 1.0, 0.5, tBelieve - 0.5);
   [[-2.3, 1], [-1.2, 1], [1.2, -1], [2.3, -1], [0, 1]].forEach(([x, facing], k) => {
@@ -78,17 +78,17 @@ function build(T) {
   const NAMES = ['shared belief', 'collective mistake', 'cooperation', 'altruism', 'peer influence', 'loyalty to a group'];
   const scene = (k, t) => {
     const at = [COLS[Math.floor(k / 2)], ROWS[k % 2]];
-    const root = parts.group(`did${k}`, st.props, at);
-    kit.pop(root, t, 1.0, 0.4);
+    const root = parts.group(`did${k}`, st.props, at, 1.2);
+    kit.pop(root, t, 1.2, 0.4);
     cues.push({ t, type: 'pop', pitch: 0.8 + 0.08 * k });
-    const label = kit.text(`name${k}`, NAMES[k], 0.42, kit.material(kit.PAPER), st.front, [at[0], at[1] - 1.5]);
+    const label = kit.text(`name${k}`, NAMES[k], 0.42, kit.material(kit.PAPER), st.front, [at[0], at[1] - 1.72]);
     kit.appear(label, NAMED[k], null, 0.3);
     cues.push({ t: NAMED[k], type: 'chime', gain: 0.35, pitch: 0.9 + 0.06 * k, dur: 1.0 });
     return root;
   };
-  const trio = (name, root, colours = [1, 2, 4]) => colours.map((which, i) => parts.mini(`${name}-m${i}`, root, [-1.0 + i, -0.55], 0.55, which));
+  const trio = (name, root, colours = [1, 2, 4]) => colours.map((which, i) => parts.mini(`${name}-m${i}`, root, [-1.0 + i, -0.62], 0.55, which));
   const thinks = (name, root) => {
-    const cloud = parts.thought(name, root, [0, 0.75], 2.3, 1.0, [0, -1]);
+    const cloud = parts.thought(name, root, [0, 0.88], 2.3, 1.0, [0, -1]);
     parts.scorer(`${name}-scorer`, cloud.root, [-0.55, 0.0], 0.32, false);
     parts.sheet(`${name}-read`, cloud.root, [0.45, 0.02], { scale: 0.55, seed: 7 });
     return cloud;
@@ -101,7 +101,7 @@ function build(T) {
   const two = scene(1, tWrong);
   trio('two', two);
   thinks('two-thought', two);
-  const mistaken = parts.cross('two-wrong', two, [0, 0.75], 2.0);
+  const mistaken = parts.cross('two-wrong', two, [0, 0.88], 2.0);
   kit.pop(mistaken, tWrong + 0.7, 2.0, 0.3);
   cues.push({ t: tWrong + 0.7, type: 'tick', pitch: 0.5, gain: 1.2 });
 
@@ -143,7 +143,7 @@ function build(T) {
   // ------------------------------------------------------------ camera
   kit.camera(parts.ramp([
     [0, [0, 0.4, 18.5]], [tBut, [0, 0.3, 19.5]], [tBelieve - 0.4, [0, 0.1, 20]], [tBelieve + 1.0, [-1.6, 0.0, 19]], [tWorked - 0.3, [-1.5, 0.0, 18.8]],
-    [tWorked + 1.0, [0.0, 0.0, 19]], [tPeers - 0.3, [0.2, 0.0, 18.8]], [tPeers + 1.0, [1.6, 0.0, 19]], [NAMED[5], [1.4, 0.0, 19.2]], [end, [0, 0.05, 20.4]],
+    [tWorked + 1.0, [0.0, 0.0, 19]], [tPeers - 0.3, [0.2, 0.0, 18.8]], [tPeers + 1.0, [1.6, 0.0, 19]], [NAMED[4], [1.5, 0.0, 19.2]], [NAMED[5], [0, 0.05, 20.4]], [end, [0, 0.05, 20.1]],
   ]), 1.0);
   return cues;
 }

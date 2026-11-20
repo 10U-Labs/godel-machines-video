@@ -59,7 +59,8 @@ function build(T) {
 
   const clock = parts.clock('clock', st.front, CLOCK, 1.0, 0.09);
   parts.drain(clock, 0.3, tUp, 0.0);
-  for (let t = 0.5; t < tUp - 0.2; t += 0.5) cues.push({ t, type: 'tick', pitch: 1.4, gain: 0.6 });
+  for (let t = 0.5; t < tUp - 3.2; t += 1.0) cues.push({ t, type: 'tick', pitch: 1.4, gain: 0.45 });
+  for (let t = tUp - 3.0; t < tUp - 0.2; t += 0.5) cues.push({ t, type: 'tick', pitch: 1.4, gain: 0.65 });
 
   // ------------------------------------------------------------ it would not help Pip pass, and Pip tells them all the same
   const over = parts.thought('over', st.front, OVER, 2.4, 1.5, [-0.6, -1]);

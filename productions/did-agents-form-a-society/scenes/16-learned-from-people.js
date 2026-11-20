@@ -43,8 +43,9 @@ function build(T) {
     early.push(writer.root);
   });
   const learner = parts.agent('learner', st.cast, LEARNER, 1.1, 1);
-  kit.pop(learner.root, tLearn - 0.3, 1.1, 0.45);
-  cues.push({ t: tLearn - 0.6, type: 'swoosh', dur: 0.8, gain: 0.5 }, { t: tLearn - 0.3, type: 'pop' });
+  kit.pop(learner.root, 0.4, 1.1, 0.45);
+  cues.push({ t: tLearn - 0.6, type: 'swoosh', dur: 0.8, gain: 0.5 }, { t: 0.4, type: 'pop' });
+  kit.pipLook(learner, 1.2, 0.0, 0.1);
   kit.pipLook(learner, tLearn + 0.3, -0.14, 0.03);
 
   let n = 0;
@@ -122,7 +123,7 @@ function build(T) {
     const at = [1.6 + 2.2 * k, -2.6];
     [-0.45, 0.45].forEach((dx, i) => kit.pop(parts.mini(`trained${k}${i}`, st.cast, [at[0] + dx, at[1]], 0.5, 1 + (k * 2 + i) % 5).root, tTrained + 0.12 * (2 * k + i), 0.5, 0.3));
     if (k === 1) return;
-    kit.grow(kit.branch(`joined${k}`, st.front, [at[0] - 0.3, at[1] + 0.62], [at[0] + 0.3, at[1] + 0.62], kit.MINT, 0.1, 1.0), tTrained + 1.0 + 0.3 * k, 0.3);
+    kit.appear(kit.ring(`team${k}`, st.front, [at[0], at[1] + 0.08], 1.0, kit.MINT, 0.07), tTrained + 1.0 + 0.3 * k, null, 0.3);
     cues.push({ t: tTrained + 1.0 + 0.3 * k, type: 'blip', pitch: 1.1 + 0.1 * k });
   });
 
@@ -132,13 +133,13 @@ function build(T) {
   cues.push({ t: tNobody + 0.3, type: 'blip', pitch: 0.7 });
   const open = kit.ring('open', st.front, [ABOVE[0] + 0.3, (ABOVE[1] + BELOW[1]) / 2 + 0.7], 1.3, kit.PAPER, 0.06);
   kit.flash(open, tNobody + 0.5, 1.0, 0.3);
-  parts.live(learner, 61, tLearn - 0.3);
+  parts.live(learner, 61, 0.4);
   parts.live(other, 62, tRepeat + 0.9);
 
   // ------------------------------------------------------------ camera
   kit.camera(parts.ramp([
     [0, [-0.6, -0.1, 20.5]], [tRepeat - 0.4, [-0.4, -0.1, 20]], [tRepeat + 1.2, [-1.6, -0.3, 20.5]], [tOnTop - 0.2, [-1.4, -0.3, 20.3]],
-    [tOnTop + 1.2, [0.0, -0.4, 21]], [tNobody - 0.2, [0.1, -0.4, 21]], [tNobody + 1.3, [-1.2, -0.4, 19.5]], [end, [-1.5, -0.4, 19]],
+    [tOnTop + 1.2, [0.0, -0.4, 21]], [tNobody - 0.2, [0.1, -0.4, 21]], [tNobody + 1.3, [-0.8, -0.4, 20.2]], [end, [-0.9, -0.4, 19.8]],
   ]), 1.0);
   return cues;
 }
