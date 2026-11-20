@@ -531,6 +531,47 @@ const parts = (() => {
     return root;
   }
 
+  // ---------------------------------------------------------------- what people live by
+
+  /* A fire of two logs, whose flame flickers through the scene. */
+  function fire(name, parent, loc, scale = 1.0) {
+    const root = group(name, parent, loc, scale);
+    shape(`${name}-glow`, circlePts(1.6), glowMaterial(AMBER, 0.5), root, [0, 0.3]);
+    branch(`${name}-log0`, root, [-0.5, -0.1], [0.5, 0.05], '#8a5a2b', 0.16, 1.0);
+    branch(`${name}-log1`, root, [-0.5, 0.05], [0.5, -0.1], '#6b4420', 0.16, 1.0);
+    const flame = shape(`${name}-flame`, [[-0.3, 0], [-0.2, 0.4], [0, 0.85], [0.2, 0.4], [0.3, 0], [0, -0.08]], material(AMBER, CORAL), root, [0, 0.1], { smooth: true });
+    for (const f of every(3)) key(flame, 'scale', f, [1 + 0.08 * Math.sin(sec(f) * 9), 1 + 0.14 * Math.sin(sec(f) * 7 + 1), 1]);
+    return root;
+  }
+
+  /* A bowl of food. */
+  function bowl(name, parent, loc, scale = 1.0) {
+    const root = group(name, parent, loc, scale);
+    shape(`${name}-food`, circlePts(0.3, null, 0.2, 20), material(AMBER, AMBER_DEEP), root, [0, 0.08]);
+    const dish = [];
+    for (let i = 0; i <= 14; i++) dish.push([0.42 * Math.cos(Math.PI * (1 + i / 14)), 0.4 * Math.sin(Math.PI * (1 + i / 14))]);
+    shape(`${name}-dish`, dish, material('#eef0ff', MIST), root, [0, 0.08]);
+    return root;
+  }
+
+  /* A heart. options.colour and options.deep are its colours. */
+  function heart(name, parent, loc, scale = 1.0, colour = CORAL, deep = CORAL_DEEP) {
+    const root = group(name, parent, loc, scale);
+    shape(`${name}-shape`, [[0, -0.42], [-0.42, 0.0], [-0.4, 0.28], [-0.2, 0.4], [0, 0.22], [0.2, 0.4], [0.4, 0.28], [0.42, 0.0]], material(colour, deep), root, [0, 0], { smooth: true });
+    return root;
+  }
+
+  // People's coats and hair, to tell one person from another.
+  const LOOKS = [
+    {}, { coat: '#c2557a', coatDeep: '#8e3a57', hair: '#1c1c28' }, { coat: '#3f9b8f', coatDeep: '#2c6f66', hair: '#8a5a2b' },
+    { coat: '#c28a3f', coatDeep: '#8f6229', hair: '#d8d2c4' }, { coat: '#7357e0', coatDeep: '#4d38a8', hair: '#3b2a26' },
+  ];
+
+  /* A person of the kit, standing with their feet at loc, in the coat and hair that which picks. */
+  function human(name, parent, loc, scale = 0.4, which = 0, facing = 1) {
+    return kit.person(name, parent, [loc[0], loc[1] + 4.3 * scale], scale, { facing, ...LOOKS[which % LOOKS.length] });
+  }
+
   // ---------------------------------------------------------------- computers
 
   /* A computer: a tall case with rows of lights. options.also is a second colour of lights, dark at
@@ -764,7 +805,7 @@ const parts = (() => {
     STEP, BODIES, begin, group, stage, ramp, edge, zoom, body, agent, mini, miniOff, bob, mood, blink, live, off, dark,
     move, vanish, pulse, shake, spark, along, send,
     folder, write, slip, board, post, sides, crowd, gathering, clock, drain, word, lock, doorKey, sheet, writing, check, cross,
-    computer, flicker, scorer, light, thought, notion, room, target, tool, store, building,
+    fire, bowl, heart, human, computer, flicker, scorer, light, thought, notion, room, target, tool, store, building,
   };
 })();
 

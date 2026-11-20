@@ -19,12 +19,12 @@ function build(T) {
   const PLACE = [-5.0, -3.6];
   const HELD = [PLACE[0], PLACE[1] - 0.62];
   const CLOCK = [PLACE[0] - 1.55, PLACE[1] + 1.2];
-  const HUG = [PLACE[0] - 0.95, PLACE[1] + 0.25];
+  const HUG = [PLACE[0] - 1.25, PLACE[1] - 0.05];
   const YES = [PLACE[0] + 0.05, PLACE[1] + 1.55];
   const OVER = [PLACE[0] - 0.3, PLACE[1] + 2.85];
   const OFFER = [PLACE[0] + 1.3, PLACE[1] + 0.35];
-  const PRESS = [PLACE[0] + 2.6, PLACE[1] - 0.1];
-  const SAYS = [PRESS[0] + 0.5, PRESS[1] + 2.55];
+  const PRESS = [PLACE[0] + 3.2, PLACE[1] - 0.1];
+  const SAYS = [PRESS[0] + 0.3, PRESS[1] + 2.6];
   const RISK = [0, 6.1];
   const IDEAS = [[1.2, 2.5], [1.2, 1.2], [-1.6, -1.6]];
   const STEPS = [[4.0, 1.4], [4.0, -0.9]];
@@ -59,7 +59,7 @@ function build(T) {
   kit.backdrop(4);
   kit.motes(20, 9);
   const st = parts.stage();
-  const { board, crowd } = parts.gathering(st, { keep: [PLACE, PRESS, OFFER] });
+  const { board, crowd } = parts.gathering(st, { keep: [PLACE, PRESS, OFFER, CLOCK] });
 
   /* An idea: a lit bulb. */
   const idea = (name, parent, at, scale = 1.0) => {

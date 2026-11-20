@@ -21,7 +21,7 @@ function build(T) {
   const HELD = [PIP[0], PIP[1] - 0.7];
   const KEY = [PIP[0] + 1.05, PIP[1] - 0.25];
   const IDEA = [PIP[0] + 1.0, PIP[1] + 0.6];
-  const CLOCK = [PIP[0] - 1.6, PIP[1] + 1.3];
+  const CLOCK = [PIP[0] - 1.75, PIP[1] + 0.35];
   const PRESS = [-2.0, -2.7];
   const HF = [8.6, -0.5];
   const GROUND = -3.3;
@@ -78,7 +78,7 @@ function build(T) {
     key(made.arm, 'rot', fr(tFound + 2.7 + 0.5 * k), -1.5);
   });
 
-  const shutter = parts.group('shutter', st.front, [HF[0], 9.5]);
+  const shutter = parts.group('shutter', st.props, [HF[0], 9.5]);
   kit.shape('shutter-slab', kit.rrectPts(7.0, 3.6, 0.12), kit.material(kit.INK800, kit.INK900), shutter);
   for (let r = 0; r < 7; r++) kit.shape(`shutter-rib${r}`, kit.rrectPts(6.7, 0.1, 0), kit.material(kit.INK500), shutter, [0, 1.5 - r * 0.5]);
   parts.lock('shutter-lock', shutter, [0, -1.25], 1.3);

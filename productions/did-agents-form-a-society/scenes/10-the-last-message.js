@@ -16,7 +16,7 @@ function build(T) {
   const PIP = [-4.6, -2.5];
   const HELD = [PIP[0], PIP[1] - 0.7];
   const KEY = [PIP[0] + 1.05, PIP[1] - 0.25];
-  const CLOCK = [PIP[0] - 1.6, PIP[1] + 1.3];
+  const CLOCK = [PIP[0] - 1.75, PIP[1] + 0.35];
   const OVER = [PIP[0] + 0.6, PIP[1] + 2.55];
   const PRESS = [-2.0, -2.7];
   const POST = [-11.7, 2.55];
