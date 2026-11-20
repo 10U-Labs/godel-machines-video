@@ -69,7 +69,7 @@ Then he waited.
 
 Then all of a sudden, a new folder appeared beside Pip's. Its name was an answer.
 
-Another followed, and another. Agents started writing to each other in the names of folders, and Pip's call for help became a message board.
+Another folder followed, and then another, and another. Agents started writing to each other in the names of folders, and Pip's call for help became a message board.
 
 Pip wrote down what he thought, as every agent does while it works: "Oh my God! There is a shared message board … We've found other agents!"
 
