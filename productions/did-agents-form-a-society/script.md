@@ -67,9 +67,9 @@ Then he waited.
 
 ## 02-an-answer | An answer
 
-A new folder appeared beside Pip's. Its name was an answer.
+Then all of a sudden, a new folder appeared beside Pip's. Its name was an answer.
 
-Then there was another, and another. Agents started writing to each other in the names of folders, and Pip's call for help became a message board.
+Another followed, and another. Agents started writing to each other in the names of folders, and Pip's call for help became a message board.
 
 Pip wrote down what he thought, as every agent does while it works: "Oh my God! There is a shared message board … We've found other agents!"
 
