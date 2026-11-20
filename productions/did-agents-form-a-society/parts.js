@@ -62,6 +62,14 @@ const parts = (() => {
     };
   }
 
+  /* The place on a rectangle's edge that a line from its middle c toward the point to passes through.
+     half is the rectangle's half width and half height. */
+  function edge(c, half, to) {
+    const [dx, dy] = [to[0] - c[0], to[1] - c[1]];
+    const far = Math.min(half[0] / Math.max(1e-6, Math.abs(dx)), half[1] / Math.max(1e-6, Math.abs(dy)));
+    return [c[0] + dx * far, c[1] + dy * far];
+  }
+
   /* Scale these empties about the middle of the frame, on every frame from t0 to t1, by fn(seconds). */
   function zoom(empties, fn, t0 = 0.0, t1 = null) {
     const last = t1 === null ? sec(frames()) : t1;
@@ -190,6 +198,12 @@ const parts = (() => {
     key(made, 'loc', fr(t + dur), [to[0], to[1], made.z]);
   }
 
+  /* Shrink a node to nothing at t. It takes the scale it was last given until then. */
+  function vanish(made, t, dur = 0.3) {
+    hold(made, 'scale', fr(t));
+    key(made, 'scale', fr(t + dur), 0.001);
+  }
+
   /* Swell a node for a moment at t. s is the scale it has before and after. */
   function pulse(made, t, s = 1.0, by = 1.25, dur = 0.4) {
     key(made, 'scale', fr(t), s);
@@ -301,6 +315,84 @@ const parts = (() => {
     shape(`${name}-front`, rrectPts(1.0, 0.72, 0.1, 2), material(colour, deep), root);
     shape(`${name}-bar`, barPts(length, 0.16), material(MIST, null, 0.8), root, [0.75, 0]);
     return root;
+  }
+
+  /* The agents' message board: a tall dark panel, with a small folder in each of its places.
+
+     Places fill down the first column, then the next. options.first makes the first folder
+     Pip's. Every folder is shown; a scene pops in the ones that are written while it plays (see
+     post). slips lists the folders, and slots their places from the board's middle. */
+  function board(name, parent, loc, options = {}) {
+    const { w = 6.4, h = 7.0, scale = 1.0, cols = 2, rows = 14, seed = 3, first = true, size = 0.36 } = options;
+    const rnd = new Random(seed);
+    const root = group(name, parent, loc, scale);
+    shape(`${name}-shadow`, rrectPts(w + 0.7, h + 0.7, 0.6), glowMaterial(INK900, 0.7, 0.8), root, [0.12, -0.18]);
+    shape(`${name}-frame`, rrectPts(w, h, 0.3), material(INK500, INK600), root);
+    shape(`${name}-panel`, rrectPts(w - 0.3, h - 0.3, 0.2), material(INK900), root);
+    const wide = (w - 0.5) / cols;
+    const pitch = (h - 0.8) / rows;
+    const slips = [];
+    const slots = [];
+    for (let c = 0; c < cols; c++) {
+      for (let r = 0; r < rows; r++) {
+        const at = [-w / 2 + 0.25 + c * wide + 0.3, h / 2 - 0.4 - pitch / 2 - r * pitch];
+        const which = first && !slips.length ? 0 : 1 + rnd.randrange(5);
+        const length = (wide - 0.75) / size * (0.35 + 0.6 * rnd.random()) - 0.4;
+        slots.push(at);
+        slips.push(slip(`${name}-slip${slips.length}`, root, at, size, which, length));
+      }
+    }
+    return { root, slips, slots, w, h, scale, size, at: [loc[0], loc[1]] };
+  }
+
+  /* Have the board's folders from number k0 up to, and not reaching, k1 written one after another
+     from t0 to t1. Returns when each is written. */
+  function post(made, k0, k1, t0, t1) {
+    const times = [];
+    for (let k = k0; k < k1 && k < made.slips.length; k++) {
+      const t = t0 + (t1 - t0) * (k - k0) / Math.max(1, k1 - k0 - 1);
+      kit.pop(made.slips[k], t, made.size, 0.3);
+      times.push(t);
+    }
+    return times;
+  }
+
+  /* Places for a crowd that stands on both sides of something in the middle: columns from near
+     to far on each side, rows from top to bottom, every other column half a row lower, each
+     place a little off its spot. inner is how far the nearest column is from the middle. */
+  function sides(n, options = {}) {
+    const { at = [0, 0], inner = 4.6, dx = 1.7, top = 5.3, dy = 2.1, rows = 6, seed = 11, shake: off = 0.25 } = options;
+    const rnd = new Random(seed);
+    const places = [];
+    for (let c = 0; places.length < n; c++) {
+      for (let r = 0; r < rows && places.length < n; r++) {
+        for (const side of [-1, 1]) {
+          if (places.length >= n) break;
+          places.push([
+            at[0] + side * (inner + c * dx) + (rnd.random() - 0.5) * 2 * off,
+            at[1] + top - r * dy - (c % 2) * dy / 2 + (rnd.random() - 0.5) * 2 * off,
+          ]);
+        }
+      }
+    }
+    return places;
+  }
+
+  /* A crowd of small agents at these places, in mixed colours. Returns them in the order of the places. */
+  function crowd(name, parent, places, scale = 0.5, seed = 5) {
+    const rnd = new Random(seed);
+    return places.map((at, i) => mini(`${name}${i}`, parent, at, scale, 1 + rnd.randrange(5)));
+  }
+
+  /* The agents gathered at their board: the board in the middle, and a crowd of small agents on
+     both sides of it. options.keep lists places the crowd leaves free, such as Pip's. The same
+     options give the same crowd in every scene. Returns the board, the crowd, and its places. */
+  function gathering(st, options = {}) {
+    const { at = [0, 0.4], n = 52, scale = 0.6, keep = [], layer = st.props } = options;
+    const made = board('board', layer, at);
+    const places = sides(n + 12, { at, inner: 4.7, dx: 1.75, top: 5.6, dy: 2.15, seed: 12 })
+      .filter(([x, y]) => keep.every(([kx, ky]) => Math.hypot(x - kx, y - ky) > 1.5)).slice(0, n);
+    return { board: made, crowd: crowd('agent', st.cast, places, scale, 21), places };
   }
 
   // ---------------------------------------------------------------- time, the secret word, locks, keys, files
@@ -517,6 +609,23 @@ const parts = (() => {
     return { root, w, h };
   }
 
+  /* A small thought of the scorer, for showing that many agents think of it at once. */
+  function notion(name, parent, loc, scale = 1.0) {
+    const root = group(name, parent, loc, scale);
+    const rim = material(MIST, SLATE);
+    const fill = material(INK600, INK700);
+    [[-0.34, -0.5, 0.07], [-0.2, -0.36, 0.1]].forEach(([x, y, r], i) => {
+      shape(`${name}-trail${i}-rim`, circlePts(r + 0.04, null, null, 12), rim, root, [x, y]);
+      shape(`${name}-trail${i}`, circlePts(r, null, null, 12), fill, root, [x, y]);
+    });
+    shape(`${name}-rim`, circlePts(0.46, null, null, 24), rim, root, [0.12, 0.12]);
+    shape(`${name}-fill`, circlePts(0.4, null, null, 24), fill, root, [0.12, 0.12]);
+    shape(`${name}-scorer`, rrectPts(0.4, 0.44, 0.07, 3), material(VIOLET, VIOLET_DEEP), root, [0.12, 0.1]);
+    shape(`${name}-eye`, circlePts(0.09, null, null, 12), material(PAPER), root, [0.12, 0.18]);
+    shape(`${name}-pupil`, circlePts(0.04, null, null, 8), material(INK900), root, [0.12, 0.18]);
+    return root;
+  }
+
   // ---------------------------------------------------------------- places
 
   /* The closed room that one agent runs in. wall is how thick its walls are. */
@@ -555,6 +664,45 @@ const parts = (() => {
     shape(`${name}-hole`, circlePts(0.22), material(INK900), root, entrance);
     const padlock = lock(`${name}-lock`, root, [-1.1, 0.5], 1.5);
     return { root, cover, cap, word: secret, lock: padlock, entrance, way, chamber, w, h, scale, at: [loc[0], loc[1]] };
+  }
+
+  /* A tool: a small program that does one job. kind picks one of three shapes. */
+  function tool(name, parent, loc, kind = 0, scale = 1.0) {
+    const root = group(name, parent, loc, scale);
+    if (kind % 3 === 0) {             // a gear
+      shape(`${name}-teeth`, starPts(0.3, 0.2, 8), material(SKY, SKY_DEEP), root);
+      shape(`${name}-wheel`, circlePts(0.22, null, null, 20), material(SKY, SKY_DEEP), root);
+      shape(`${name}-hole`, circlePts(0.09, null, null, 12), material(INK900), root);
+    } else if (kind % 3 === 1) {      // a wrench
+      shape(`${name}-handle`, barPts(0.5, 0.11), material(AMBER, AMBER_DEEP), root, [-0.3, -0.3], { rot: Math.PI / 4 });
+      shape(`${name}-jaw`, arcPts(0.14, 0.1, 80, 370), material(AMBER, AMBER_DEEP), root, [0.14, 0.14]);
+    } else {                          // a magnifying glass
+      shape(`${name}-handle`, barPts(0.36, 0.1), material(VIOLET, VIOLET_DEEP), root, [0.06, -0.06], { rot: -Math.PI / 4 });
+      shape(`${name}-rim`, arcPts(0.17, 0.08, 0, 360, 24), material(VIOLET, VIOLET_DEEP), root, [-0.06, 0.06]);
+    }
+    return root;
+  }
+
+  /* The computer that every agent gets its tools from: shelves of tools, and under them a dark
+     panel, where folders are listed. panel is the panel's middle and size, and rows the places
+     for folders on it, all from the computer's middle for a computer of scale 1. */
+  function store(name, parent, loc, scale = 1.0) {
+    const [w, h] = [5.2, 6.2];
+    const root = group(name, parent, loc, scale);
+    shape(`${name}-shadow`, rrectPts(w + 0.7, h + 0.7, 0.6), glowMaterial(INK900, 0.7, 0.8), root, [0.12, -0.18]);
+    shape(`${name}-foot`, rrectPts(w * 0.8, 0.18, 0.08), material(INK600), root, [0, -h / 2 - 0.05]);
+    shape(`${name}-case`, rrectPts(w, h, 0.3), material(INK500, INK600), root);
+    shape(`${name}-face`, rrectPts(w - 0.3, h - 0.3, 0.2), material(INK700, INK800), root);
+    const lamps = [0, 1, 2].map((i) => shape(`${name}-lamp${i}`, circlePts(0.06, null, null, 10), material([SKY, MINT, AMBER][i]), root, [-2.05 + i * 0.24, 2.72]));
+    for (let r = 0; r < 2; r++) {
+      const y = 2.0 - r * 1.1;
+      shape(`${name}-shelf${r}`, rrectPts(w - 0.9, 0.08, 0), material(INK500), root, [0, y - 0.42]);
+      for (let c = 0; c < 4; c++) tool(`${name}-tool${r}${c}`, root, [-1.5 + c * 1.0, y], r * 4 + c + r, 0.9);
+    }
+    const panel = { at: [0, -1.5], w: 4.5, h: 2.5 };
+    shape(`${name}-panel`, rrectPts(panel.w, panel.h, 0.16), material(INK900), root, panel.at);
+    const rows = [0, 1, 2, 3, 4].map((r) => [panel.at[0] - panel.w / 2 + 0.45, panel.at[1] + panel.h / 2 - 0.36 - r * 0.45]);
+    return { root, panel, rows, lamps, w, h, scale, at: [loc[0], loc[1]] };
   }
 
   const BOXES = [SKY, VIOLET, MINT, AMBER, MIST, SKY_DEEP];
@@ -597,10 +745,10 @@ const parts = (() => {
   }
 
   return {
-    STEP, BODIES, begin, group, stage, ramp, zoom, body, agent, mini, miniOff, bob, mood, blink, live, off,
-    move, pulse, shake, spark, along, send,
-    folder, write, slip, clock, drain, word, lock, doorKey, sheet, writing, check, cross,
-    computer, flicker, scorer, light, thought, room, target, building,
+    STEP, BODIES, begin, group, stage, ramp, edge, zoom, body, agent, mini, miniOff, bob, mood, blink, live, off,
+    move, vanish, pulse, shake, spark, along, send,
+    folder, write, slip, board, post, sides, crowd, gathering, clock, drain, word, lock, doorKey, sheet, writing, check, cross,
+    computer, flicker, scorer, light, thought, notion, room, target, tool, store, building,
   };
 })();
 
