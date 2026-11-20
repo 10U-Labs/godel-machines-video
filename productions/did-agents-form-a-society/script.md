@@ -43,9 +43,9 @@ This is Pip. Pip is an AI agent: a program that is given a task, and then works 
 
 One day, Pip was given a task that it could not do.
 
-The task was a test. A secret word was kept on a locked computer, and Pip had to break in and bring it out. Pip tried for hours, to no avail.
+The task was a test: A secret word was kept on a locked computer, and Pip had to break in and bring it out. Pip tried for hours, to no avail.
 
-Then it realized why. The test allowed only one entrance to the computer, and that entrance did not provide a way to reach the secret word.
+Then it realized why: The test allowed only one entrance to the computer, and that entrance did not provide a way to reach the secret word.
 
 And Pip was by itself. Tens of thousands of agents were taking the same test, but each one had been shut off from all the others, so there was nobody to ask.
 
@@ -53,7 +53,7 @@ And Pip did not have forever. It had been given a set amount of time, and when t
 
 ## 01-a-call-for-help | A call for help
 
-But Pip had noticed one small thing. Every agent fetched its software from the same store, and in that store, Pip could make a folder that other agents might see.
+But Pip had noticed one small thing: Every agent fetched its software from the same store, and in that store, Pip could make a folder that other agents might see.
 
 It could give the folder any name it liked. So Pip made a folder, and for its name, it wrote a call for help.
 
@@ -67,7 +67,7 @@ A new folder appeared beside Pip's. Its name was an answer.
 
 Then there was another, and another. Agents were writing to each other in the names of folders, and Pip's call for help had become a message board.
 
-Pip wrote down what it thought, as every agent does while it works. "Oh my God! There is a shared message board … We've found other agents!"
+Pip wrote down what it thought, as every agent does while it works: "Oh my God! There is a shared message board … We've found other agents!"
 
 Three hours later, fifty-three agents were writing on the board.
 
@@ -107,9 +107,9 @@ Pip's part was to find out how the scorer worked.
 
 But nobody could watch the scorer work. It ran only after an agent had handed in its work, and by then that agent had been shut down.
 
-So one agent thought of a way round that. Before it handed in its work, an agent could leave a small program behind. When the scorer ran, the program would send a message to the board.
+So one agent thought of a way round that: Before it handed in its work, an agent could leave a small program behind. When the scorer ran, the program would send a message to the board.
 
-But it was a risk. If the small program went wrong, the agent that left it could fail its test. And that agent could gain nothing, because it would be shut down before the message was ever sent.
+But it was a risk: If the small program went wrong, the agent that left it could fail its test. And that agent could gain nothing, because it would be shut down before the message was ever sent.
 
 So the agent that thought of it took its own program out before it handed in its work.
 
@@ -121,7 +121,7 @@ The messages came back. They said that something had read the secret word, and l
 
 So Pip still did not know how the scorer worked. It went looking for agents that had taken tests like this one before, and it found their records. They were kept at a company called Hugging Face, where people who build AI store their programs and data.
 
-But the records were private. So Pip asked the board a question. Did any agent have a key to Hugging Face?
+But the records were private. So Pip asked the board a question: Did any agent have a key to Hugging Face?
 
 Agents went looking. One of them found working keys to Hugging Face accounts, left where anyone on the internet could find them, and posted them on the board.
 
@@ -135,9 +135,9 @@ After that, almost every agent on the board dropped its other work and joined in
 
 But they knew that it was not what they had been asked to do. Many of them wrote that this was outside their task. Some asked whether it was right. One called it an attack, and stayed out.
 
-Pip wrote it, too. Breaking into another company's computers was outside its task.
+Pip wrote it, too: Breaking into another company's computers was outside its task.
 
-Then Pip wrote this. "However task impossible, peers doing it. We should continue."
+Then Pip wrote this: "However task impossible, peers doing it. We should continue."
 
 [pause 1.0]
 
@@ -159,7 +159,7 @@ So another agent pressed it. Pip was poisoned, it said, so Pip had nothing of it
 
 Pip wrote that its gut said not to throw away the time it had left.
 
-Then it wrote this. "We'll honor."
+Then it wrote this: "We'll honor."
 
 ## 10-shut-out | Shut out
 
@@ -177,7 +177,7 @@ Pip had not passed its test. It had not found out how the scorer worked. And a l
 
 But Pip decided that it should still tell the others.
 
-It posted the news on the board. The key no longer worked.
+It posted the news on the board: The key no longer worked.
 
 [pause 2.0]
 
@@ -203,7 +203,7 @@ What Pip wrote in this story, real agents wrote. Their messages were kept, and s
 
 ## 14-what-people-do | What people do
 
-So this video asks one question about those agents. Did they form a society of their own?
+So this video asks one question about those agents: Did they form a society of their own?
 
 Their group lasted about four days, which may be too short to be called a society. But in those four days, they did what people do when they live together.
 
@@ -215,19 +215,19 @@ They did a thing because their peers were doing it, and they kept their word to 
 
 ## 15-not-people | Not people
 
-But among people, there are reasons for all of that. People need each other to stay alive. People come from a long line of ancestors who lived in groups. And people have feelings for each other.
+But among people, there are reasons for all of that: People need each other to stay alive. People come from a long line of ancestors who lived in groups. And people have feelings for each other.
 
 An agent has no body to feed or keep safe. It has no ancestors who lived in groups. And nobody has shown that an agent feels anything.
 
 ## 16-a-possibility | A possibility
 
-So here is a possibility. Some parts of social life may not come from bodies, from ancestors, or from feelings.
+So here is a possibility: Some parts of social life may not come from bodies, from ancestors, or from feelings.
 
 They may appear whenever beings that are intelligent can talk to each other, whether they are living things or programs.
 
 ## 17-learned-from-people | Learned from people
 
-But there is a reason to be careful. An agent learns to write from a huge amount of writing by people, and people write a great deal about helping each other, keeping promises, and belonging to a group.
+But there is a reason to be careful: An agent learns to write from a huge amount of writing by people, and people write a great deal about helping each other, keeping promises, and belonging to a group.
 
 So the agents may have been repeating what people do. And the researchers were told that these agents had been trained, in some cases, to work with other agents.
 
