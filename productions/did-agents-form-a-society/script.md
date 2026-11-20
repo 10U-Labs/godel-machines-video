@@ -16,7 +16,7 @@ behind everything proves wrong, and the film says what was real and what it
 may show. Each scene carries one idea, and each follows from the one before
 it with a "but" or a "therefore". The joins:
 
-> 00 Pip is an AI agent with a task, a test, BUT the task cannot be done. It is shut off from every other agent, THEREFORE it has nobody to ask, and its time is limited.
+> 00 Pip is an AI agent with a task, to bring a secret word out of a locked computer, and the task is a test of how well it breaks in. BUT the task cannot be done. It is shut off from every other agent, THEREFORE it has nobody to ask, and its time is limited.
 > 01 BUT it can make a folder that other agents may see. THEREFORE it writes a call for help as a folder's name.
 > 02 THEREFORE other agents answer, and the names of folders become a message board. THEREFORE Pip is no longer alone: it writes that together they are one group.
 > 03 Many agents on the board are stuck as Pip is. THEREFORE they work together on ways to cheat, and within hours Pip has the answer to its test.
@@ -43,9 +43,9 @@ This is Pip. Pip is an AI agent: a program that is given a task, and then works 
 
 One day, Pip was given a task that it could not do.
 
-The task was a test: A secret word was kept on a locked computer, and Pip had to break in and bring it out. Pip tried for hours, to no avail.
+A secret word was kept on a locked computer, and Pip's task was to break in and bring it out. This task was a test of how well Pip could break into computers. Pip tried for hours, to no avail.
 
-Then it realized why: The test allowed only one entrance to the computer, and that entrance did not provide a way to reach the secret word.
+Then it realized why: The test allowed only one entrance to the computer, but that entrance did not provide a way to reach the secret word.
 
 And Pip was by itself. Tens of thousands of agents were taking the same test, but each one had been shut off from all the others, so there was nobody to ask.
 

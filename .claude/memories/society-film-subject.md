@@ -22,7 +22,7 @@ The film's argument is the user's direction, and it has five steps:
 
 The film follows an agent called Pip, as the Gödel machines film does. It is the user's decision, and so is the rule behind it: the film's story need not be factual, and what it says of the incident must be, per [Every production tells a story](every-production-tells-a-story.md). The story is told straight through in the standard three acts, and the film says that Pip is made up only once the story is told: both are the user's direction.
 
-Some wording in the first scene is the user's own choice, so a later check for plain words leaves it as it is: Pip tries for hours "to no avail" and then "realized why", the thing it must bring out is a "secret word", and the word is kept "on a locked computer".
+Some wording in the first scene is the user's own choice, so a later check for plain words leaves it as it is: Pip tries for hours "to no avail" and then "realized why", the thing it must bring out is a "secret word", the word is kept "on a locked computer", and the one entrance is joined to its fault with "but that entrance". The first scene says what the task is, to break in and bring out the secret word, before it says that the task is a test of how well Pip breaks into computers: a line that calls the task a test and then describes a search leaves the viewer unsure which of the two it is.
 
 The film puts this forward as a possibility and never as a finding. Its answer to the title is that for about four days the agents did what people do when they live together; it does not rule on whether that deserves the word society.
 

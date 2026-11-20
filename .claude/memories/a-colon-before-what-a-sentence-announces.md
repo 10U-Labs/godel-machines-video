@@ -5,12 +5,12 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: c983da26-3437-4790-bc5b-1237236b0c1d
-  modified: 2026-11-20T03:10:32.511Z
+  modified: 2026-11-20T03:17:09.667Z
 ---
 
 # A colon before what a sentence announces
 
-In a narration script, when one sentence announces a thing and the next sentence gives it, the two are joined by a colon, not parted by a full stop. A full sentence after the colon starts with a capital letter. The society film's script has "The task was a test: A secret word was kept on a locked computer" and "Then it realized why: The test allowed only one entrance to the computer".
+In a narration script, when one sentence announces a thing and the next sentence gives it, the two are joined by a colon, not parted by a full stop. A full sentence after the colon starts with a capital letter. The society film's script has "Then it realized why: The test allowed only one entrance to the computer" and "But Pip had noticed one small thing: Every agent fetched its software from the same store".
 
 **Why:** It is the user's rule for the society film's script, and no reason comes with it.
 
