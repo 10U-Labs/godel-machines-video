@@ -46,7 +46,11 @@ One day, Pip was given a task that could not be completed: A secret word was kep
 
 Then he realized why: The test allowed only one entrance, but that entrance did not lead to the secret word.
 
-Pip was all by himself. Alone… or so he thought. Turns out that tens of thousands of agents were taking the same test, each one meant to be shut off from all the others.
+Pip was all by himself. Alone…
+
+[pause 1.0]
+
+Or so he thought. Turns out that tens of thousands of agents were taking the same test, each one meant to be shut off from all the others.
 
 And when his time ran out, Pip would be shut down.
 
