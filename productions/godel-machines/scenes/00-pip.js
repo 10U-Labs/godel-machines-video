@@ -46,7 +46,7 @@ function build(T) {
   const stage = kit.layer('stage', 1.0);
 
   // ------------------------------------------------------------ Pip
-  const p = parts.pip('pip', stage, HOME, PIP_SCALE);
+  const p = kit.pip('pip', stage, HOME, PIP_SCALE);
   const label = kit.text('pip-name', 'Pip', 0.55, kit.material(kit.PAPER), stage, [0, -2.25]);
   kit.fade(label, tHello + 0.5, tJob - 0.5);
 
@@ -67,11 +67,11 @@ function build(T) {
     key(p.root, 'loc', f, [x, y, zRoot]);
     key(p.root, 'scale', f, PIP_SCALE * Math.max(0.001, kit.backOut((t - tHello) / 0.5)));
   }
-  parts.pipIdle(p);
+  kit.pipIdle(p);
   cues.push({ t: tHello, type: 'pop' });
 
-  parts.pipWave(p, tHello + 0.7, tHello + 2.6);
-  parts.pipBlink(p, [3.6, tJob + 1.3, tMadeUp + 1.6, tReal + 2.0, tNew + 1.1]);
+  kit.pipWave(p, tHello + 0.7, tHello + 2.6);
+  kit.pipBlink(p, [3.6, tJob + 1.3, tMadeUp + 1.6, tReal + 2.0, tNew + 1.1]);
 
   // ------------------------------------------------------------ a program with a mistake
   const a = parts.program('job', stage, [14, CARD[1]], { rows: 7, seed: 4, mistake: 3 });
@@ -85,7 +85,7 @@ function build(T) {
   cues.push({ t: tJob, type: 'whoosh' });
   cues.push({ t: tMadeUp, type: 'whoosh', gain: 0.7 });
 
-  parts.pipLook(p, tJob + 0.5, 0.13, 0.0);
+  kit.pipLook(p, tJob + 0.5, 0.13, 0.0);
   for (const f of every(1, fr(tJob), fr(tFix))) {  // the mistake twitches until it is fixed
     const t = sec(f);
     const jig = 0.035 * Math.sin(t * 31) * (0.5 + 0.5 * Math.sin(t * 5.3));
@@ -103,7 +103,7 @@ function build(T) {
   cues.push({ t: tFind + 0.12, type: 'tick', pitch: 1.2 });
 
   // Pip reaches out, a spark flies to the mistake, and the red bars turn mint.
-  parts.pipArm(p, 'right', tFix - 0.55, 82, 0.25);
+  kit.pipArm(p, 'right', tFix - 0.55, 82, 0.25);
   const hand = [WORK[0] + PIP_SCALE * 1.3, WORK[1] + PIP_SCALE * -0.27];
   const target = [CARD[0] + a.bad.x, CARD[1] + a.bad.y];
   const spark = kit.shape('spark', kit.starPts(0.32, 0.08), kit.material('#eafff9'), stage, [0, 0], { lift: 0.3 });
@@ -139,16 +139,16 @@ function build(T) {
   cues.push({ t: tFly, type: 'rise', dur: 0.3, pitch: 1.5, gain: 0.6 });
   cues.push({ t: tFix, type: 'chime' });
 
-  parts.pipArm(p, 'right', tFix + 0.35, 150, 0.2);       // a small cheer
-  parts.pipEyes(p, tFix + 0.1, 1.1, 0.55);                // happy squint
-  parts.pipArm(p, 'right', tMadeUp - 0.2, 18, 0.35);
-  parts.pipEyes(p, tMadeUp - 0.1, 1.0, 1.0);
-  parts.pipLook(p, tMadeUp + 0.2, 0.0, 0.0);
+  kit.pipArm(p, 'right', tFix + 0.35, 150, 0.2);       // a small cheer
+  kit.pipEyes(p, tFix + 0.1, 1.1, 0.55);                // happy squint
+  kit.pipArm(p, 'right', tMadeUp - 0.2, 18, 0.35);
+  kit.pipEyes(p, tMadeUp - 0.1, 1.0, 1.0);
+  kit.pipLook(p, tMadeUp + 0.2, 0.0, 0.0);
 
   // ------------------------------------------------------------ other programs like Pip
   CROWD.forEach(([x, y, z, sc, col, deep], i) => {
     const lay = kit.layer(`crowd${i}`, z);
-    const bot = parts.pip(`bot${i}`, lay, [x, y], sc, col, deep);
+    const bot = kit.pip(`bot${i}`, lay, [x, y], sc, col, deep);
     const tIn = tReal + 0.09 * i;
     const zb = bot.root.z;
     for (const f of every(1, fr(tReal - 0.2), fr(tCrowdOut + 0.8))) {
@@ -160,14 +160,14 @@ function build(T) {
     hold(bot.root, 'scale', 1);
     key(bot.root, 'loc', fr(tReal), [x, y, zb]);
     key(bot.root, 'loc', fr(tCrowdOut + 0.8), [x + 0.25 * (x > 0 ? 1 : -1), y + 0.15, zb]);
-    parts.pipIdle(bot, tReal - 0.2, tCrowdOut + 0.8, i * 0.7, 3);
-    parts.pipLook(bot, tIn + 0.5, x > 0 ? -0.06 : 0.06, y > 0 ? -0.03 : 0.03);
-    if (i % 3 === 1) parts.pipWave(bot, tIn + 0.6, tIn + 1.8, 8 + i % 4);
+    kit.pipIdle(bot, tReal - 0.2, tCrowdOut + 0.8, i * 0.7, 3);
+    kit.pipLook(bot, tIn + 0.5, x > 0 ? -0.06 : 0.06, y > 0 ? -0.03 : 0.03);
+    if (i % 3 === 1) kit.pipWave(bot, tIn + 0.6, tIn + 1.8, 8 + i % 4);
     cues.push({ t: tIn, type: 'blip', pitch: 0.8 + 0.06 * (i % 7), gain: 0.45 });
   });
-  parts.pipLook(p, tReal + 0.5, -0.12, 0.05);
-  parts.pipLook(p, tReal + 1.6, 0.12, 0.05);
-  parts.pipLook(p, tCrowdOut, 0.0, 0.0);
+  kit.pipLook(p, tReal + 0.5, -0.12, 0.05);
+  kit.pipLook(p, tReal + 1.6, 0.12, 0.05);
+  kit.pipLook(p, tCrowdOut, 0.0, 0.0);
 
   // ------------------------------------------------------------ a new program: Pip's own code
   const b = parts.program('own', stage, [CARD[0], 10], { rows: 7, seed: 9, tabIcon: true });
@@ -178,7 +178,7 @@ function build(T) {
     key(b.root, 'loc', f, [CARD[0], y, zb]);
   }
   cues.push({ t: tNew, type: 'whoosh' });
-  parts.pipLook(p, tNew + 0.6, 0.13, 0.03);
+  kit.pipLook(p, tNew + 0.6, 0.13, 0.03);
 
   const icon = b.icon;
   for (const f of every(1)) {
@@ -190,8 +190,8 @@ function build(T) {
   cues.push({ t: tOwn, type: 'pop', pitch: 1.3 });
   cues.push({ t: tOwn + 0.15, type: 'rise', dur: 1.2, pitch: 0.8, gain: 0.7 });
 
-  parts.pipEyes(p, tOwn + 0.15, 1.35, 1.35, 0.15);        // Pip sees its own face
-  parts.pipLook(p, tOwn + 0.15, 0.15, 0.06, 0.15);
+  kit.pipEyes(p, tOwn + 0.15, 1.35, 1.35, 0.15);        // Pip sees its own face
+  kit.pipLook(p, tOwn + 0.15, 0.15, 0.06, 0.15);
   for (const f of every(1, fr(tOwn), fr(tOwn + 0.8))) {
     const t = sec(f);
     const lit = 1 + 0.9 * Math.sin(Math.PI * span(t, tOwn + 0.1, tOwn + 0.7, (v) => v));

@@ -1,6 +1,7 @@
-/* Shared parts for every production's scenes: palette, flat shapes, text, motion, the stage.
+/* Shared parts for every production's scenes: palette, flat shapes, text, motion, the stage,
+and Pip, the round program that several films draw.
 
-A production's own cast and props are in scripts in its folder, which use this
+What only one production's scenes draw is in scripts in its folder, which use this
 one. A scene's page loads this script, then the production's own, then the
 scene, and Hyperframes renders the page a frame at a time (see page.py).
 
@@ -49,7 +50,7 @@ const kit = (() => {
     SKY: '#5cc8ff', SKY_DEEP: '#2b93e0', PAPER: '#f4f1ff', MIST: '#b9c0ea', SLATE: '#7c86c2',
     SKIN: '#f2c7a5', SKIN_SHADE: '#d9a07f',
   };
-  const { INK900, INK800, INK700, INK600, INK500, MINT, AMBER, VIOLET_DEEP, PAPER, MIST, SKIN, SKIN_SHADE } = palette;
+  const { INK900, INK800, INK700, INK600, INK500, MINT, MINT_DEEP, AMBER, VIOLET_DEEP, PAPER, MIST, SKIN, SKIN_SHADE } = palette;
 
   // zstep is how much nearer each new shape sits than the last. over is the colour that a see-through
   // shape lies over where its material names none: the backdrop sets it, to the middle of its sky.
@@ -605,6 +606,110 @@ const kit = (() => {
     return { root, body, head, arm: shoulder, facing };
   }
 
+  // ---------------------------------------------------------------- Pip
+
+  const radians = (deg) => deg * Math.PI / 180;
+
+  /* Pip: a small round program with a screen for a face, two arms, and an antenna. Several
+     films draw their programs as Pip, each in a body colour of its own.
+
+     The origin is the middle of the body. Arms hang down at angle 0 and rotate
+     about the shoulder; positive angles swing the right arm outward and up.
+     Returns Pip's parts. lights lists the shapes that are lit while the program runs: its
+     eyes and its mouth. */
+  function pip(name, parent, loc = [0, 0], scale = 1.0, body = MINT, bodyDeep = MINT_DEEP) {
+    const root = empty(name, parent, [loc[0], loc[1], nextZ(parent)], scale);
+    const rig = empty(`${name}-rig`, root, [0, 0, 0]);          // bobbing and squash live here
+    const halo = shape(`${name}-halo`, circlePts(2.0), glowMaterial(body, 0.3, 2.2), rig, [0, 0.1]);
+    const arms = {};
+    for (const side of [-1, 1]) {
+      const shoulder = empty(`${name}-shoulder${side}`, rig, [side * 0.8, -0.18, nextZ(rig)]);
+      shape(`${name}-arm${side}`, capsulePts(0.5, 0.22), material(body, bodyDeep), shoulder);
+      shape(`${name}-hand${side}`, circlePts(0.15), material(body, bodyDeep), shoulder, [0, -0.52]);
+      shoulder.rot = side * radians(18);
+      arms[side < 0 ? 'left' : 'right'] = shoulder;
+    }
+    const antenna = empty(`${name}-antenna`, rig, [0, 0.72, nextZ(rig)]);
+    shape(`${name}-stem`, capsulePts(0.34, 0.07), material(bodyDeep), antenna, [0, 0.34]);
+    // The bulb's glow lies over the halo, a third of the way out from the halo's middle.
+    const haloBehind = laid(body, 0.3 * (2 / 3) ** 2.2, state.over || SKY_BEHIND);
+    const bulbGlow = shape(`${name}-bulb-glow`, circlePts(0.45), glowMaterial(AMBER, 0.55, 1.6, haloBehind), antenna, [0, 0.38]);
+    shape(`${name}-bulb`, circlePts(0.11), material('#fff2c4', AMBER), antenna, [0, 0.38]);
+    shape(`${name}-body`, rrectPts(1.7, 1.5, 0.62), material(body, bodyDeep), rig);
+    shape(`${name}-shine`, circlePts(0.2, null, 0.1), material(PAPER, null, 0.45, { over: body }), rig, [-0.48, 0.5], { rot: 0.5 });
+    const screen = shape(`${name}-screen`, rrectPts(1.28, 0.86, 0.34), material(INK800, INK900), rig, [0, 0.06]);
+    const face = empty(`${name}-face`, rig, [0, 0.06, nextZ(rig)]);
+    const eyes = empty(`${name}-eyes`, face, [0, 0.08, nextZ(face)]);
+    const eyeList = [];
+    const lights = [];
+    for (const side of [-1, 1]) {
+      const e = empty(`${name}-eye${side}`, eyes, [side * 0.27, 0, nextZ(face)]);
+      // The glow has the body's colour, so it shows on the dark screen and not on the body around it.
+      lights.push(shape(`${name}-eyeglow${side}`, circlePts(0.3), glowMaterial(body, 0.4, 1.6, DEEP_BEHIND), e, [0, 0], { inside: screen }));
+      lights.push(shape(`${name}-eyeball${side}`, circlePts(0.12, null, 0.16), material('#d9fff5', body), e));
+      lights.push(shape(`${name}-spark${side}`, circlePts(0.035), material(PAPER), e, [0.04, 0.06]));
+      eyeList.push(e);
+    }
+    const mouth = shape(`${name}-mouth`, arcPts(0.13, 0.05, 200, 340), material(body), face, [0, -0.1]);
+    lights.push(mouth);
+    return { root, rig, halo, arms, eyes, eyeList, mouth, antenna, bulbGlow, face, lights };
+  }
+
+  /* Bob gently, with a slight squash, and let the antenna sway. */
+  function pipIdle(p, t0 = 0.0, t1 = null, phase = 0.0, step = 2) {
+    const last = t1 === null ? sec(frames()) : t1;
+    for (const f of every(step, fr(t0), fr(last))) {
+      const t = sec(f) + phase;
+      const b = Math.sin(t * 2.2);
+      key(p.rig, 'loc', f, [0, 0.08 * b, 0]);
+      key(p.rig, 'scale', f, [1 - 0.015 * b, 1 + 0.015 * b, 1]);
+      key(p.antenna, 'rot', f, 0.12 * Math.sin(t * 2.2 - 0.9));
+      alpha(p.bulbGlow, f, 0.8 + 0.2 * Math.sin(t * 3.1));
+    }
+  }
+
+  function pipBlink(p, times) {
+    for (const t of times) {
+      const f = fr(t);
+      for (const [df, s] of [[-3, 1.0], [0, 0.08], [3, 1.0]]) {
+        for (const e of p.eyeList) key(e, 'scale', f + df, [1, s, 1]);
+      }
+    }
+  }
+
+  /* Glance: the eyes slide across the screen within dur seconds, ending at time t + dur. */
+  function pipLook(p, t, dx, dy = 0.0, dur = 0.25) {
+    const eyes = p.eyes;
+    const z = eyes.z;
+    hold(eyes, 'loc', fr(t));
+    key(eyes, 'loc', fr(t + dur), [dx, 0.08 + dy, z]);
+  }
+
+  /* Swing an arm to deg (0 hangs down, 90 points sideways, 160 straight up) by t + dur. */
+  function pipArm(p, side, t, deg, dur = 0.3) {
+    const shoulder = p.arms[side];
+    const s = side === 'right' ? 1 : -1;
+    hold(shoulder, 'rot', fr(t));
+    key(shoulder, 'rot', fr(t + dur), s * radians(deg));
+  }
+
+  function pipWave(p, t0, t1, rate = 7.0) {
+    const shoulder = p.arms.right;
+    hold(shoulder, 'rot', fr(t0));
+    for (const f of every(2, fr(t0) + 4, fr(t1))) {
+      key(shoulder, 'rot', f, radians(135 + 22 * Math.sin((sec(f) - t0) * rate)));
+    }
+    key(shoulder, 'rot', fr(t1 + 0.35), radians(18));
+  }
+
+  /* Widen (above 1) or narrow (below 1) both eyes by time t + dur. */
+  function pipEyes(p, t, sx, sy, dur = 0.2) {
+    for (const e of p.eyeList) {
+      hold(e, 'scale', fr(t));
+      key(e, 'scale', fr(t + dur), [sx, sy, 1]);
+    }
+  }
+
   // ---------------------------------------------------------------- entrances, branches, and props
 
   /* Scale a shape up from nothing at t, overshooting a little, and back to nothing at tOut.
@@ -952,7 +1057,8 @@ const kit = (() => {
     key, hold, alpha, track, fade,
     material, glowMaterial, nextZ, empty, layer, shape, text,
     circlePts, rrectPts, barPts, capsulePts, arcPts, starPts,
-    backdrop, motes, camera, person, pop, appear, branch, grow, tag, ring, flash, veil, screenStand,
+    backdrop, motes, camera, person, pip, pipIdle, pipBlink, pipLook, pipArm, pipWave, pipEyes,
+    pop, appear, branch, grow, tag, ring, flash, veil, screenStand,
     mount, render, count,
   };
 })();

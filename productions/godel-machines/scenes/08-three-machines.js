@@ -72,9 +72,9 @@ function build(T) {
 
   // ------------------------------------------------------------ the Gödel Machine: one program rewriting itself
   const [gRoot] = picture('godel', LEFT, tShow[0], 0);
-  const g = parts.pip('godel-pip', gRoot, [0, 0], 1.0, kit.SKY, kit.SKY_DEEP);
-  parts.pipIdle(g);
-  parts.pipBlink(g, [3.0, tG + 2.6, 14.0, 21.0]);
+  const g = kit.pip('godel-pip', gRoot, [0, 0], 1.0, kit.SKY, kit.SKY_DEEP);
+  kit.pipIdle(g);
+  kit.pipBlink(g, [3.0, tG + 2.6, 14.0, 21.0]);
   const loop = kit.empty('godel-loop', gRoot, [0, 0, kit.nextZ(gRoot)]);
   kit.shape('godel-arc', kit.arcPts(1.65, 0.09, 120, 400, 48), kit.material(kit.SKY, null, 0.75), loop);
   const tipA = 400 * Math.PI / 180;
@@ -148,16 +148,16 @@ function build(T) {
     const t0 = mix(tStair0, tStair1, k / (STAIR.length - 1));
     const step = kit.shape(`stair${k}`, kit.rrectPts(2.0, 0.16, 0.08), kit.material(kit.INK500), stage, [x, y - 1.05 * size]);
     kit.appear(step, t0 - 0.3, null, 0.3);
-    const p = parts.pip(`version${k}`, stage, [x, y], size, ...parts.scoreColour(score));
+    const p = kit.pip(`version${k}`, stage, [x, y], size, ...parts.scoreColour(score));
     kit.pop(p.root, t0, size);
-    parts.pipIdle(p, t0, undefined, k * 1.3, 2);
+    kit.pipIdle(p, t0, undefined, k * 1.3, 2);
     alpha(p.halo, 1, 0.4 + 0.15 * k);
     pips.push([p, t0]);
     cues.push({ t: t0, type: 'pop', pitch: 0.9 + 0.12 * k, gain: 0.55 });
   });
   for (let k = 1; k < pips.length; k++) {
     const [prev, t0] = [pips[k - 1][0], pips[k][1]];
-    parts.pipLook(prev, t0 - 0.5, 0.12, 0.06);
+    kit.pipLook(prev, t0 - 0.5, 0.12, 0.06);
     const spark = kit.shape(`spark${k}`, kit.starPts(0.22, 0.07), kit.material('#fff3cf'), stage, [0, 0], { lift: 0.3 });
     const sg = kit.shape(`spark${k}-glow`, kit.circlePts(0.6), kit.glowMaterial(kit.AMBER, 0.8), stage, [0, 0], { lift: 0.29 });
     const [[x0, y0], [x1, y1]] = [STAIR[k - 1], STAIR[k]];
@@ -172,8 +172,8 @@ function build(T) {
     }
   }
   const last = pips[pips.length - 1][0];
-  parts.pipLook(last, tFar, 0.06, 0.12, 0.4);
-  parts.pipArm(last, 'right', tFar + 0.3, 110, 0.4);
+  kit.pipLook(last, tFar, 0.06, 0.12, 0.4);
+  kit.pipArm(last, 'right', tFar + 0.3, 110, 0.4);
 
   // the trail goes on up, into the dark
   const [lx, ly] = STAIR[STAIR.length - 1];

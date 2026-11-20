@@ -205,6 +205,7 @@ Motion is keyed on frames, which count from 1. `kit.key(shape, 'loc', frame, [x,
 | Motion | `key` sets a value at a frame, and `hold` keys the value a shape has; `alpha`, `track`, `fade`, `appear`, `pop`, `grow`, and `flash` are built on them |
 | The stage | `backdrop`, `motes`, `camera`, and `veil` |
 | Props | `person`, `branch`, `tag`, `ring`, and `screenStand` |
+| Pip | `pip`, the round program that several films draw, each in a body colour of its own; its moves are `pipIdle`, `pipBlink`, `pipLook`, `pipArm`, `pipWave`, and `pipEyes` |
 | Chance | `Random`, which gives the same numbers for the same seed |
 
 The comment above each says what it takes.

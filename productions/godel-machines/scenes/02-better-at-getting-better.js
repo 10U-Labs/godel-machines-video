@@ -68,10 +68,10 @@ function build(T) {
   }
 
   // ------------------------------------------------------------ Pip and Pip's code
-  const p = parts.pip('pip', stage, PIP_AT, 1.15);
-  parts.pipIdle(p);
-  parts.pipBlink(p, [2.6, 9.2, 14.2, 21.0, 24.5]);
-  parts.pipLook(p, 0.3, 0.1, 0.03);
+  const p = kit.pip('pip', stage, PIP_AT, 1.15);
+  kit.pipIdle(p);
+  kit.pipBlink(p, [2.6, 9.2, 14.2, 21.0, 24.5]);
+  kit.pipLook(p, 0.3, 0.1, 0.03);
   const codeGlow = kit.shape('code-glow', kit.rrectPts(4.6, 5.2, 1.5), kit.glowMaterial(kit.AMBER, 0.7, 1.2), stage, CODE_AT);
   alpha(codeGlow, 1, 0.0);
   const code = parts.program('code', stage, CODE_AT, { rows: 6, w: 3.0, h: 3.6, seed: 14, tabIcon: true, scale: 0.85 });
@@ -167,11 +167,11 @@ function build(T) {
   }
   cues.push({ t: laps[0][3], type: 'chime', gain: 0.8 });
 
-  parts.pipLook(p, tWrite - 0.2, 0.13, 0.05);
-  parts.pipLook(p, tBack + 0.3, 0.0, 0.0);
-  parts.pipEyes(p, laps[0][3], 1.1, 0.6);                   // pleased
-  parts.pipEyes(p, laps[0][3] + 1.0, 1.0, 1.0);
-  parts.pipLook(p, tOwn - 0.2, 0.13, 0.03);
+  kit.pipLook(p, tWrite - 0.2, 0.13, 0.05);
+  kit.pipLook(p, tBack + 0.3, 0.0, 0.0);
+  kit.pipEyes(p, laps[0][3], 1.1, 0.6);                   // pleased
+  kit.pipEyes(p, laps[0][3] + 1.0, 1.0, 1.0);
+  kit.pipLook(p, tOwn - 0.2, 0.13, 0.03);
   const icon = code.icon;
   for (const f of every(1, fr(tOwn), fr(tOwn + 1.0))) {
     const q = span(sec(f), tOwn, tOwn + 1.0, (v) => v);
@@ -179,7 +179,7 @@ function build(T) {
     key(icon, 'scale', f, [s, s, 1]);
   }
   cues.push({ t: tOwn, type: 'pop', pitch: 1.2, gain: 0.6 });
-  parts.pipLook(p, T.start(2), 0.06, 0.06);
+  kit.pipLook(p, T.start(2), 0.06, 0.06);
 
   // ------------------------------------------------------------ the name
   const title = kit.text('title', 'recursive self-improvement', 0.62, kit.material(kit.PAPER), stage, [0, 3.75]);

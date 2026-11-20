@@ -90,8 +90,8 @@ function build(T) {
   cues.push({ t: tName, type: 'chime', gain: 0.6 });
 
   // ------------------------------------------------------------ the machine and its own code
-  const m = parts.pip('machine', stage, MACHINE_AT, BOT_S, kit.SKY, kit.SKY_DEEP);
-  const p = parts.pip('pip', stage, [0, 0.2], 1.6);
+  const m = kit.pip('machine', stage, MACHINE_AT, BOT_S, kit.SKY, kit.SKY_DEEP);
+  const p = kit.pip('pip', stage, [0, 0.2], 1.6);
   const zm = m.root.z;
   for (const f of every(1)) {
     const t = sec(f);
@@ -101,8 +101,8 @@ function build(T) {
     key(m.root, 'loc', f, [x, mix(SHEET_AT[1] + 0.5, MACHINE_AT[1], span(t, tOne + 0.5, tOne + 1.3)), zm]);
     key(m.root, 'scale', f, BOT_S * Math.max(0.001, grown));
   }
-  parts.pipIdle(m, undefined, undefined, 0.5);
-  parts.pipBlink(m, [tOne + 2.5, tRewrite + 1.4, tAny + 2.3]);
+  kit.pipIdle(m, undefined, undefined, 0.5);
+  kit.pipBlink(m, [tOne + 2.5, tRewrite + 1.4, tAny + 2.3]);
   cues.push({ t: tOne + 0.2, type: 'pop' });
 
   const code = parts.program('code', stage, CODE_AT, { rows: 7, w: 3.4, h: 4.4, seed: 31 });
@@ -145,10 +145,10 @@ function build(T) {
     }
     cues.push({ t: tMid, type: 'blip', pitch: 1.1 + 0.05 * k, gain: 0.5 });
   }
-  parts.pipLook(m, tJob, -0.05, -0.12);
+  kit.pipLook(m, tJob, -0.05, -0.12);
 
   // ... and while it works, it rewrites its own code
-  parts.pipLook(m, tRewrite - 0.3, 0.13, 0.0);
+  kit.pipLook(m, tRewrite - 0.3, 0.13, 0.0);
   const onPage = { over: kit.laid(kit.INK700, 0.5, kit.INK800) };
   const lit = [];
   for (const r of [1, 3, 5]) {
@@ -168,8 +168,8 @@ function build(T) {
     }
     cues.push({ t: t0, type: 'tick', pitch: 1.3, gain: 0.6 });
   });
-  parts.pipArm(m, 'right', tRewrite - 0.3, 80, 0.25);
-  parts.pipArm(m, 'right', tRewrite + 1.4, 18, 0.3);
+  kit.pipArm(m, 'right', tRewrite - 0.3, 80, 0.25);
+  kit.pipArm(m, 'right', tRewrite + 1.4, 18, 0.3);
 
   // ------------------------------------------------------------ any part, even the part that changes
   const spots = [[0, 1.15], [-0.95, -0.6], [0.95, -0.6], [0, 0.15]];       // antenna, hands, face (in machine units)
@@ -187,8 +187,8 @@ function build(T) {
     alpha(ring, 1, 0.0);
     cues.push({ t: t0, type: 'pop', pitch: 1.0 + 0.1 * k, gain: 0.6 });
   });
-  parts.pipEyes(m, tAny + 1.65, 1.25, 1.25, 0.15);
-  parts.pipEyes(m, tAny + 2.1, 1.0, 1.0, 0.2);
+  kit.pipEyes(m, tAny + 1.65, 1.25, 1.25, 0.15);
+  kit.pipEyes(m, tAny + 2.1, 1.0, 1.0, 0.2);
 
   // the part that makes the changes: a pencil beside one line of the code, which rewrites itself
   const row = 6;
@@ -225,7 +225,7 @@ function build(T) {
     const t = sec(f);
     key(p.root, 'scale', f, 1.6 * Math.max(0.001, kit.backOut((t - tPip - 0.8) / 0.45)));
   }
-  parts.pipIdle(p);
+  kit.pipIdle(p);
   cues.push({ t: tPip + 0.75, type: 'pop', pitch: 1.1 });
   const spot = kit.shape('spotlight', kit.circlePts(4.0), kit.glowMaterial(kit.PAPER, 0.18, 1.0), stage, [0, 0.2], { lift: -0.01 });
   alpha(spot, 1, 0.0);
@@ -255,8 +255,8 @@ function build(T) {
     hold(sh, 'scale', fr(changes[2]));
     key(sh, 'scale', fr(changes[2]) + 5, [1.2, 1.3, 1]);
   }
-  parts.pipArm(p, 'right', changes[2] + 0.3, 140, 0.25);
-  parts.pipArm(p, 'left', changes[2] + 0.3, 140, 0.25);
+  kit.pipArm(p, 'right', changes[2] + 0.3, 140, 0.25);
+  kit.pipArm(p, 'left', changes[2] + 0.3, 140, 0.25);
 
   // ------------------------------------------------------------ camera
   const path = (t) => {

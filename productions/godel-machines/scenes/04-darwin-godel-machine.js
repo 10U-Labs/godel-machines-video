@@ -129,19 +129,19 @@ function build(T) {
 
   const year = kit.text('year', '2025', 0.62, kit.material(kit.PAPER), stage, [-6.9, 3.85], { align: 'LEFT' });
   kit.appear(year, t2025, tOut0, 0.4);
-  const m = parts.pip('machine', stage, [SCREEN_AT[0], SCREEN_AT[1] + 0.05], 1.0);
+  const m = kit.pip('machine', stage, [SCREEN_AT[0], SCREEN_AT[1] + 0.05], 1.0);
   kit.pop(m.root, tBuilt, 1.0, undefined, tOut0 - 0.1);
-  parts.pipIdle(m);
-  parts.pipBlink(m, [tBuilt + 1.5, tName + 0.8]);
+  kit.pipIdle(m);
+  kit.pipBlink(m, [tBuilt + 1.5, tName + 0.8]);
   cues.push({ t: tBuilt, type: 'pop', pitch: 1.2 });
   const title = kit.text('title', 'Darwin Gödel Machine', 0.55, kit.material(kit.PAPER), stage, [SCREEN_AT[0], 3.25]);
   kit.appear(title, tName, tOut0 - 0.2, 0.5);
   cues.push({ t: tName, type: 'chime', gain: 0.6 });
 
   // ------------------------------------------------------------ Pip writes a changed copy: its child
-  const n0 = parts.pip('n0', stage, PIP_AT, 1.3);
-  parts.pipIdle(n0);
-  parts.pipBlink(n0, [tPip + 1.2, tCopy + 1.0, tTests + 2.0, tMove + 3.0, tGrow1 + 1.0]);
+  const n0 = kit.pip('n0', stage, PIP_AT, 1.3);
+  kit.pipIdle(n0);
+  kit.pipBlink(n0, [tPip + 1.2, tCopy + 1.0, tTests + 2.0, tMove + 3.0, tGrow1 + 1.0]);
   alpha(n0.halo, 1, 0.6);
   cues.push({ t: tPip, type: 'pop' });
 
@@ -149,7 +149,7 @@ function build(T) {
   const loop = kit.shape('in-place', kit.arcPts(1.6, 0.1, 110, 410, 48), kit.material(kit.MIST, null, 0.7), stage, PIP_AT, { lift: 0.05 });
   kit.appear(loop, tPlace, tPlace + 1.4, 0.3);
   for (const f of every(1, fr(tPlace), fr(tPlace + 1.8))) key(loop, 'rot', f, -(sec(f) - tPlace) * 2.5);
-  [0.1, -0.1, 0.1, 0.0].forEach((dx, k) => parts.pipLook(n0, tPlace + 0.5 + 0.22 * k, dx, 0.0, 0.18));
+  [0.1, -0.1, 0.1, 0.0].forEach((dx, k) => kit.pipLook(n0, tPlace + 0.5 + 0.22 * k, dx, 0.0, 0.18));
 
   const code = parts.program('code', stage, CODE_AT, { rows: 6, w: 3.0, h: 3.6, seed: 44, tabIcon: true, scale: 0.8 });
   kit.pop(code.root, tCode, 0.8, undefined, tChild - 0.1);
@@ -163,7 +163,7 @@ function build(T) {
     key(copy.root, 'scale', f, 0.8 * (t >= tCopy ? 1.0 : 0.001) * (1 - span(t, tChild, tChild + 0.25)) + 0.001);
   }
   cues.push({ t: tCopy, type: 'whoosh', gain: 0.5 });
-  parts.pipLook(n0, tCopy - 0.3, 0.13, 0.0);
+  kit.pipLook(n0, tCopy - 0.3, 0.13, 0.0);
   const row = 2;
   const y = copy.rows[row][0].y;
   const hl = kit.shape('changed-row', kit.rrectPts(2.8, 0.36, 0.18), kit.material(kit.AMBER, null, 0.4, { over: kit.laid(kit.INK700, 0.5, kit.INK800) }),
@@ -177,18 +177,18 @@ function build(T) {
   }
   cues.push({ t: tChange, type: 'tick', pitch: 1.3, gain: 0.7 });
 
-  const child = parts.pip('n1', stage, CHILD_AT, 1.0, ...parts.scoreColour(23));
+  const child = kit.pip('n1', stage, CHILD_AT, 1.0, ...parts.scoreColour(23));
   kit.pop(child.root, tChild, 1.0);
-  parts.pipIdle(child, undefined, undefined, 1.3, 2);
-  parts.pipBlink(child, [tChild + 1.0, tScore + 0.6, tMove + 2.4]);
+  kit.pipIdle(child, undefined, undefined, 1.3, 2);
+  kit.pipBlink(child, [tChild + 1.0, tScore + 0.6, tMove + 2.4]);
   alpha(child.halo, 1, 0.6);
   cues.push({ t: tChild, type: 'pop', pitch: 1.3 });
   const firstLine = kit.branch('first-line', lines, PIP_AT, CHILD_AT, kit.MIST);
   kit.grow(firstLine, tChild - 0.1, 0.4, tMove - 0.2);
-  parts.pipLook(n0, tChild + 0.3, 0.14, 0.0);
+  kit.pipLook(n0, tChild + 0.3, 0.14, 0.0);
 
   // ------------------------------------------------------------ the child is tested and gets a score
-  parts.pipLook(child, tTests - 0.2, 0.12, -0.05);
+  kit.pipLook(child, tTests - 0.2, 0.12, -0.05);
   for (let k = 0; k < 4; k++) {
     const t0 = tTests + 0.55 * k;
     const job = parts.program(`task${k}`, stage, [9.5, -2.6], { rows: 3, w: 2.0, h: 1.4, seed: 50 + k, mistake: 1, scale: 0.6 });

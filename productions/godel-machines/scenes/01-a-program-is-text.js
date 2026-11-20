@@ -67,7 +67,7 @@ function build(T) {
   const stage = kit.layer('stage', 1.0);
 
   // ------------------------------------------------------------ Pip
-  const p = parts.pip('pip', stage, PIP_SIDE, 1.2);
+  const p = kit.pip('pip', stage, PIP_SIDE, 1.2);
   const zp = p.root.z;
   for (const f of every(1)) {
     const t = sec(f);
@@ -77,9 +77,9 @@ function build(T) {
     const y = mix(mix(PIP_SIDE[1], PIP_TOP[1], q1), PIP_SIDE[1], q2);
     key(p.root, 'loc', f, [x, y, zp]);
   }
-  parts.pipIdle(p);
-  parts.pipBlink(p, [2.4, 7.0, tStream + 2.0, tOpen + 1.5]);
-  parts.pipLook(p, 0.4, 0.13, 0.02);
+  kit.pipIdle(p);
+  kit.pipBlink(p, [2.4, 7.0, tStream + 2.0, tOpen + 1.5]);
+  kit.pipLook(p, 0.4, 0.13, 0.02);
 
   // ------------------------------------------------------------ the page of instructions
   const pg = page(stage);
@@ -204,18 +204,18 @@ function build(T) {
   cues.push({ t: tOwn, type: 'chime', pitch: 0.9, gain: 0.7 });
 
   // Pip follows the files with its eyes, then looks down at its own file
-  parts.pipLook(p, tText, 0.13, 0.0);
-  parts.pipLook(p, tStream + 0.2, 0.08, -0.08);
+  kit.pipLook(p, tText, 0.13, 0.0);
+  kit.pipLook(p, tStream + 0.2, 0.08, -0.08);
   for (let k = 0; k < 4; k++) {
-    parts.pipLook(p, tStream + 0.5 + 0.55 * k, -0.06, -0.08, 0.45);
-    parts.pipLook(p, tStream + 0.75 + 0.55 * k, 0.08, -0.08, 0.05);
+    kit.pipLook(p, tStream + 0.5 + 0.55 * k, -0.06, -0.08, 0.45);
+    kit.pipLook(p, tStream + 0.75 + 0.55 * k, 0.08, -0.08, 0.05);
   }
-  parts.pipLook(p, tOwn - 0.3, 0.0, -0.1, 0.3);
-  parts.pipEyes(p, tOwn, 1.2, 1.2, 0.2);
-  parts.pipEyes(p, tOpen, 1.0, 1.0, 0.3);
-  parts.pipLook(p, tOpen + 0.3, 0.13, 0.02);
-  parts.pipArm(p, 'right', tChange - 0.35, 75, 0.25);
-  parts.pipArm(p, 'right', tTyped + 0.2, 18, 0.35);
+  kit.pipLook(p, tOwn - 0.3, 0.0, -0.1, 0.3);
+  kit.pipEyes(p, tOwn, 1.2, 1.2, 0.2);
+  kit.pipEyes(p, tOpen, 1.0, 1.0, 0.3);
+  kit.pipLook(p, tOpen + 0.3, 0.13, 0.02);
+  kit.pipArm(p, 'right', tChange - 0.35, 75, 0.25);
+  kit.pipArm(p, 'right', tTyped + 0.2, 18, 0.35);
 
   // ------------------------------------------------------------ camera
   const path = (t) => {

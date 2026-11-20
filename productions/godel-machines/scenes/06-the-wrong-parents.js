@@ -56,10 +56,10 @@ function build(T) {
   }
   cues.push({ t: tPick, type: 'chime', gain: 0.5 });
   const aPip = parents.a.pip;
-  parts.pipEyes(aPip, tPick + 0.1, 1.15, 0.65);          // pleased
-  parts.pipEyes(aPip, tGrand + 0.4, 1.0, 1.0);
+  kit.pipEyes(aPip, tPick + 0.1, 1.15, 0.65);          // pleased
+  kit.pipEyes(aPip, tGrand + 0.4, 1.0, 1.0);
   const bPip = parents.b.pip;
-  parts.pipLook(bPip, tPick, 0.0, 0.1);
+  kit.pipLook(bPip, tPick, 0.0, 0.1);
 
   // ------------------------------------------------------------ a second group looks further down the family
   const group = [
@@ -98,7 +98,7 @@ function build(T) {
   const glow = kit.shape('b-glow', kit.rrectPts(7.0, 4.4, 1.6), kit.glowMaterial(kit.AMBER, 0.45, 0.9), stage, [-2.9, -1.6], { lift: -0.2 });
   kit.appear(glow, tVerdict - 0.8, null, 0.8);
   cues.push({ t: tVerdict - 0.8, type: 'rise', dur: 0.8, pitch: 1.1, gain: 0.5 });
-  parts.pipLook(bPip, tGrand + 0.3, 0.12, -0.04);
+  kit.pipLook(bPip, tGrand + 0.3, 0.12, -0.04);
 
   const path = (t) => {
     const q = kit.smooth(t / end);

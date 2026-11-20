@@ -43,12 +43,12 @@ function build(T) {
   kit.motes(undefined, 52, kit.AMBER);
   const stage = kit.layer('stage', 1.0);
 
-  const first = parts.pip('first', stage, FIRST_AT, 1.0, ...parts.scoreColour(20));
+  const first = kit.pip('first', stage, FIRST_AT, 1.0, ...parts.scoreColour(20));
   kit.pop(first.root, tFirst - 0.4, 1.0);
-  parts.pipIdle(first);
-  parts.pipBlink(first, [2.0, 5.5, 8.0]);
-  parts.pipLook(first, tSolve - 0.3, 0.0, -0.1);
-  parts.pipLook(first, tBest + 0.2, 0.13, 0.05);
+  kit.pipIdle(first);
+  kit.pipBlink(first, [2.0, 5.5, 8.0]);
+  kit.pipLook(first, tSolve - 0.3, 0.0, -0.1);
+  kit.pipLook(first, tBest + 0.2, 0.13, 0.05);
   cues.push({ t: Math.max(0.05, tFirst - 0.4), type: 'pop' });
 
   board('first', stage, [FIRST_AT[0], -2.0], 20, tSolve, 0.9, [kit.MINT, kit.MINT_DEEP]);
@@ -69,15 +69,15 @@ function build(T) {
   }
   cues.push({ t: tRounds0, type: 'rise', dur: tRounds1 - tRounds0, pitch: 1.0, gain: 0.5 });
 
-  const best = parts.pip('best', stage, BEST_AT, 1.25, ...parts.scoreColour(50));
+  const best = kit.pip('best', stage, BEST_AT, 1.25, ...parts.scoreColour(50));
   kit.pop(best.root, tBest, 1.25);
-  parts.pipIdle(best, undefined, undefined, 1.1, 2);
-  parts.pipBlink(best, [tBest + 1.2]);
+  kit.pipIdle(best, undefined, undefined, 1.1, 2);
+  kit.pipBlink(best, [tBest + 1.2]);
   alpha(best.halo, 1, 1.0);
   cues.push({ t: tBest, type: 'pop', pitch: 1.3 });
-  parts.pipLook(best, tFifty - 0.3, 0.0, -0.1);
-  parts.pipArm(best, 'right', tFifty + 1.0, 140, 0.3);
-  parts.pipArm(best, 'left', tFifty + 1.0, 140, 0.3);
+  kit.pipLook(best, tFifty - 0.3, 0.0, -0.1);
+  kit.pipArm(best, 'right', tFifty + 1.0, 140, 0.3);
+  kit.pipArm(best, 'left', tFifty + 1.0, 140, 0.3);
 
   board('best', stage, [BEST_AT[0], -2.0], 50, tFifty, 1.1, [kit.AMBER, kit.AMBER_DEEP]);
   for (let k = 0; k < 6; k++) cues.push({ t: tFifty + 0.2 * k, type: 'tick', pitch: 1.2 + 0.05 * k, gain: 0.4 });

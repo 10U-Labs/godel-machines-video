@@ -165,9 +165,9 @@ function build(T) {
   for (const [f, a] of [[fr(tStarts), 0.0], [fr(tStarts + 0.25), 1.0], [fr(tClear - 0.1), 1.0], [fr(tClear + 0.2), 0.0]]) alpha(bRing, f, a);
   cues.push({ t: tStarts, type: 'chime', gain: 0.6 });
   for (const n of ['b', 'b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'b8', 'b9', 'b10']) {
-    parts.pipEyes(fam[n].pip, tStarts + 0.1, 1.12, 0.7);
+    kit.pipEyes(fam[n].pip, tStarts + 0.1, 1.12, 0.7);
   }
-  parts.pipLook(fam.c.pip, tStarts, -0.1, -0.05);
+  kit.pipLook(fam.c.pip, tStarts, -0.1, -0.05);
 
   // ------------------------------------------------------------ the two machines: score and computer time
   cues.push({ t: tClear, type: 'whoosh', gain: 0.5 });
@@ -178,9 +178,9 @@ function build(T) {
   ];
   machines.forEach(([name, x, height, [body, deep], label, lit], k) => {
     const col = kit.shape(`${name}-column`, [[0.75, 0], [0.75, 1], [-0.75, 1], [-0.75, 0]], kit.material(body, deep), stage, [x, base]);
-    const p = parts.pip(`${name}-pip`, stage, [x, base + 0.95], 0.9, body, deep);
-    parts.pipIdle(p, undefined, undefined, k * 1.7, 2);
-    parts.pipBlink(p, [tCols + 2.0 + k * 0.6]);
+    const p = kit.pip(`${name}-pip`, stage, [x, base + 0.95], 0.9, body, deep);
+    kit.pipIdle(p, undefined, undefined, k * 1.7, 2);
+    kit.pipBlink(p, [tCols + 2.0 + k * 0.6]);
     const z = p.root.z;
     const t0 = tCols + 0.35 * k;
     for (const f of every(1)) {
