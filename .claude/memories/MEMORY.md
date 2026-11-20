@@ -24,6 +24,7 @@
 - [One idea at a time](one-idea-at-a-time.md) — each scene carries one idea; cut true but extra details, and scenes that the story can do without
 - [Every word has a purpose](every-word-has-a-purpose.md) — each word of a script does a job; a clause that does none is cut, however well it reads
 - [A colon before what a sentence announces](a-colon-before-what-a-sentence-announces.md) — in a script, a sentence that announces what the next one gives ends in a colon, and the next starts with a capital
+- [At most three things](at-most-three-things.md) — a viewer holds at most three things at once; a named list has three items or fewer, and pairs do not get round it
 
 ## The autopilot
 
@@ -53,4 +54,4 @@
 ## The society film
 
 - [The society film's production decisions](society-film-production-decisions.md) — the sentience film's choices taken over whole: general public, no length limit, agents drawn as Pip, voice Kokoro af_heart, look and music left to Claude; within the look, one thing has one picture, and no message text is made up for the screen
-- [The society film's subject](society-film-subject.md) — did AI agents form a society, through the Hugging Face incident of July 2026; the film follows a made-up Pip, who does only what real agents did; the story holds only what it cannot do without, and rises to the truth about the scorer; six behaviours of social life in three pairs; a possibility, never a finding, that such behaviour comes with intelligence and interaction; the caution that the agents learned from human writing always stays in
+- [The society film's subject](society-film-subject.md) — did AI agents form a society, through the Hugging Face incident of July 2026; a brief story of a made-up Pip, who does only what real agents did, then a question that takes up most of the film; three behaviours: a shared belief, peer influence, and altruism; the story rises to the truth about the scorer; a possibility, never a finding, that such behaviour comes with intelligence and interaction; the caution that the agents learned from human writing always stays in

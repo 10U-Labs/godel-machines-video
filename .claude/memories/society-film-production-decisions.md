@@ -24,7 +24,7 @@ Claude's choices within the look, which the user has not confirmed and may overr
 - Pip is mint, as in the Gödel machines film, and the other agents are sky, violet, amber, coral, and mist. A crowd is drawn with small agents, and the few agents that act are drawn full size.
 - One thing has one picture through the film: a message is a folder with its name beside it; the secret word is an amber card of five stars; the time Pip has left is a clock that runs down; a lock and a fail are coral, and a pass is a mint tick; the scorer is a violet square machine with one eye; a thought is a cloud, and writing in it is drawn as bars; an agent that has stopped has a dark screen and a drooped antenna.
 - A folder's name on screen is bars, with at most a start that can be read, and that start is one the real agents used: HELP, ANSWER, INFO, or ASK. No other message text is made up, since what the agents wrote counts as the science, per [Every production tells a story](every-production-tells-a-story.md).
-- The other words on screen are Pip's name, the signs on OpenAI's and Hugging Face's buildings, the month of the incident, three counts that the narration gives, and the names of the six behaviours, per [Show people, not panels](show-people-not-panels.md).
+- The other words on screen are Pip's name, the signs on OpenAI's and Hugging Face's buildings, the month of the incident, three counts that the narration gives, and the names of the three behaviours, per [Show people, not panels](show-people-not-panels.md).
 
 **Why:** Each is a matter of taste that the user decides. The user's choice is that this film matches the sentience film, so the look and the music are Claude's here as they are there, and the user may overrule either.
 
