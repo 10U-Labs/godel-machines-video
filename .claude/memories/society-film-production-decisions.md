@@ -14,7 +14,7 @@ These production choices are settled for the society film, whose material is in 
 
 - Audience: the general public. The narration assumes no technical background and no knowledge of the incident it is about, and the film stands by itself: a viewer need not have seen the sentience film.
 - Length: no limit. The content decides how long the film runs.
-- The agents: each agent is drawn as Pip, the round program with a screen for a face from the Gödel machines film.
+- The agents: each agent is drawn as Pip, the round program with a screen for a face from the Gödel machines film, and the agent the film follows is called Pip in the narration.
 - Narration voice: Kokoro `af_heart` at speed 0.95. Kokoro is Apache 2.0, so the film owes no credit for the voice.
 - Look: Claude's choice. The film uses the shared kit's flat shapes and its palette, so that Pip looks as it does in the other films; one agent is told from another by its body colour, and the researchers and the staff of Hugging Face are drawn as people.
 - Music: Claude's choice. The film has a tune of its own in the `[music]` table of its `production.toml`.
